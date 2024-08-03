@@ -1,0 +1,73 @@
+{
+	"name": "open-source-stack",
+	"version": "1.0.0",
+	"description": "Minimal open-source stack to help you ship an open-source package in TS",
+	"main": "./dist/index.js",
+	"module": "./dist/index.mjs",
+	"types": "./dist/index.d.mts",
+	"exports": {
+		".": {
+			"import": {
+				"import": "./dist/index.mjs",
+				"default": "./dist/index.mjs",
+				"types": "./dist/index.d.mts"
+			},
+			"require": {
+				"import": "./dist/index.js",
+				"require": "./dist/index.js",
+				"default": "./dist/index.js",
+				"types": "./dist/index.d.ts"
+			}
+		}
+	},
+	"scripts": {
+		"test": "vitest run",
+		"test:cov": "vitest run --coverage",
+		"build": "tsup src/index.ts  --dts --format esm,cjs --outDir dist --minify --clean",
+		"remix:dev": "npm run dev -w test-apps/remix-vite",
+		"remix:cjs:dev": "npm run dev -w test-apps/remix-vite-cjs",
+		"build:dev": "tsup src/index.ts --dts --format cjs,esm  --outDir dist",
+		"build:dev:watch": "npm run build:dev -- --watch",
+		"build:dev:cjs:watch": "npm run build:dev -- --watch",
+		"dev": "npm-run-all -s build:dev -p remix:dev build:dev:watch",
+		"dev:cjs": "npm-run-all -s build:dev -p remix:cjs:dev build:dev:cjs:watch",
+		"prepublishOnly": "npm run build",
+		"check": "biome check .",
+		"check:fix": "biome check --fix .",
+		"typecheck": "tsc",
+		"validate": "npm run check && npm run tsc && npm run test"
+	},
+	"author": "",
+	"license": "ISC",
+	"repository": {
+		"type": "git",
+		"url": "git+https://github.com/forge42dev/open-source-stack.git"
+	},
+	"bugs": {
+		"url": "https://github.com/forge42dev/open-source-stack/issues"
+	},
+	"files": ["dist"],
+	"workspaces": [".", "test-apps/*"],
+	"homepage": "https://github.com/forge42dev/open-source-stack#readme",
+	"devDependencies": {
+		"@biomejs/biome": "^1.8.3",
+		"@types/node": "^20.12.7",
+		"@vitest/coverage-v8": "^1.5.2",
+		"happy-dom": "^14.7.1",
+		"lefthook": "^1.7.2",
+		"npm-run-all": "^4.1.5",
+		"tsup": "^8.0.2",
+		"typescript": "^5.4.5",
+		"vitest": "^1.5.2"
+	},
+	"optionalDependencies": {
+		"@rollup/rollup-linux-x64-gnu": "^4.18.1",
+		"@rollup/rollup-linux-x64-musl": "^4.18.1",
+		"@rollup/rollup-win32-arm64-msvc": "4.18.1",
+		"@rollup/rollup-win32-x64-msvc": "4.18.1",
+		"@rollup/rollup-win32-x64-musl": "4.18.1",
+		"@rollup/rollup-darwin-x64-gnu": "4.18.1",
+		"@rollup/rollup-darwin-x64-musl": "4.18.1",
+		"@rollup/rollup-linux-arm64-gnu": "4.18.1"
+	}
+}

@@ -1,0 +1,34 @@
+{
+	"biome.enabled": true,
+	"editor.defaultFormatter": "biomejs.biome",
+	"editor.formatOnSave": true,
+	"javascript.format.enable": false,
+	"javascript.suggest.autoImports": true,
+	"javascript.suggest.paths": true,
+	"typescript.format.enable": false,
+	"typescript.suggest.paths": true,
+	"typescript.suggest.autoImports": true,
+	"editor.renderWhitespace": "all",
+	"editor.rulers": [120, 160],
+	"editor.codeActionsOnSave": {
+		"source.fixAll": "always",
+		"source.organizeImports": "never",
+		"source.organizeImports.biome": "always",
+		"quickfix.biome": "always"
+	},
+	"editor.insertSpaces": false,
+	"editor.detectIndentation": true,
+	"editor.trimAutoWhitespace": true,
+	"files.trimTrailingWhitespace": true,
+	"files.trimTrailingWhitespaceInRegexAndStrings": true,
+	"files.trimFinalNewlines": true,
+	"explorer.fileNesting.patterns": {
+		"*.ts": "${basename}.*.${extname}",
+		".env": ".env.*",
+		"*.tsx": "${basename}.*.${extname},${basename}.*.ts",
+		"package.json": "*.json, *.yml, *.config.js, *.config.ts, *.yaml"
+	},
+	"eslint.enable": false,
+	"eslint.format.enable": false,
+	"prettier.enable": false
+}
