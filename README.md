@@ -66,6 +66,15 @@ export default defineConfig({
   plugins: [devServer(), remix(), tsconfigPaths()],
 });
 ```
+> [!IMPORTANT]
+> Change the `target` to `esnext` in your _vite.config.ts_ file
+>
+> ```ts
+> build: {
+>   target: "esnext",
+> },
+> ```
+
 
 ### Update package.json scripts
 ```json
