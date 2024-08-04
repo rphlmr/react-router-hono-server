@@ -35,18 +35,63 @@ npm install hono remix-hono react-router-hono-server
 ```
 
 ## Configuration
-
+### Create the server
 From your _entry.server.tsx_ file, export the server from `createHonoServer` and
 name it `server` or the name you defined in `devServer({exportName})` in your _vite.config.ts_.
+
+```ts
+// app/entry.server.tsx
+
+import { createHonoServer } from "react-router-hono-server/node";
+
+export const server = await createHonoServer();
+```
+
+### Add the Vite plugin
+```ts
+// vite.config.ts
+
+import { vitePlugin as remix } from "@remix-run/dev";
+import { installGlobals } from "@remix-run/node";
+import { devServer } from "react-router-hono-server/dev";
+import { defineConfig } from "vite";
+import tsconfigPaths from "vite-tsconfig-paths";
+
+installGlobals();
+
+export default defineConfig({
+  build: {
+    target: "esnext",
+  },
+  plugins: [devServer(), remix(), tsconfigPaths()],
+});
+```
+
+### Update package.json scripts
+```json
+  "scripts": {
+    "build": "NODE_ENV=production remix vite:build",
+    "dev": "vite --host",
+    "start": "NODE_ENV=production node ./build/server/index.js"
+  },
+```
+
+## How it works
 
 This helper function works differently depending on the environment.
 
 For `development`, it creates an Hono server that the Vite plugin will load
-via `viteDevServer.ssrLoadModule('virtual:remix/server-build'). The actual server
-is controlled by Vite through `@hono/vite-dev-server`, and can be configured via _vite.config.ts_ `server` options.
+via `viteDevServer.ssrLoadModule('virtual:remix/server-build')`.
+The actual server is controlled by Vite through `@hono/vite-dev-server`, and can be configured via _vite.config.ts_ `server` options.
 
 For `production`, it will create a standard node HTTP server listening at `HOST:PORT`.
 You can customize the production server port using the `port` option of `createHonoServer`.
+
+When building for production, the Hono server is compiled in the same bundle as the rest of your Remix app, you can import app modules just like you normally would.
+
+To run the server in production, use `NODE_ENV=production node ./build/server/index.js`.
+
+That's all!
 
 ### Options
 

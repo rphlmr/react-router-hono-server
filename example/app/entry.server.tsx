@@ -12,26 +12,7 @@ import { isbot } from "isbot";
 import { renderToPipeableStream } from "react-dom/server";
 import { createHonoServer } from "react-router-hono-server/node";
 
-/**
- * Declare our loaders and actions context type
- */
-declare module "@remix-run/node" {
-  interface AppLoadContext {
-    /**
-     * The app version from the build assets
-     */
-    readonly appVersion: string;
-  }
-}
-
-export const server = await createHonoServer({
-  getLoadContext(_, { build, mode }) {
-    const isProductionMode = mode === "production";
-    return {
-      appVersion: isProductionMode ? build.assets.version : "dev",
-    };
-  },
-});
+export const server = await createHonoServer();
 
 const ABORT_DELAY = 5_000;
 
