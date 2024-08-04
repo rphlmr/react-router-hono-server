@@ -1,55 +1,257 @@
-# Open-source stack
+# React Router Hono Server
 
-![GitHub Repo stars](https://img.shields.io/github/stars/forge42dev/open-source-stack?style=social)
+Inspired by [remix-express-vite-plugin](https://github.com/kiliman/remix-express-vite-plugin) from [@kiliman](https://github.com/kiliman)
+
+<!-- ![GitHub Repo stars](https://img.shields.io/github/stars/rphlmr/react-router-hono-server?style=social)
 ![npm](https://img.shields.io/npm/v/open-source-stack?style=plastic)
-![GitHub](https://img.shields.io/github/license/forge42dev/open-source-stack?style=plastic)
-![npm](https://img.shields.io/npm/dy/open-source-stack?style=plastic) 
-![npm](https://img.shields.io/npm/dw/open-source-stack?style=plastic) 
-![GitHub top language](https://img.shields.io/github/languages/top/forge42dev/open-source-stack?style=plastic) 
+![GitHub](https://img.shields.io/github/license/rphlmr/react-router-hono-server?style=plastic)
+![npm](https://img.shields.io/npm/dy/open-source-stack?style=plastic)
+![npm](https://img.shields.io/npm/dw/open-source-stack?style=plastic)
+![GitHub top language](https://img.shields.io/github/languages/top/rphlmr/react-router-hono-server?style=plastic) -->
 
-Full starter stack to develop CJS/ESM compatible npm packages with TypeScript, Vitest, ESLint, Prettier, and GitHub Actions.
+This package contains a helper function that enables you to create your Hono
+server directly from you _entry.server.tsx_. Since the Hono server is built along
+with the rest of your Remix app, you may import app modules as needed. It also
+supports Vite HMR via the `react-router-hono-server/dev` plugin (which is required
+for this to function).
+
+> [!IMPORTANT]
+> Only works with Remix in **ESM mode**
+>
+> Only works with **Vite**
+>
+> Only works for **node**
+
+> [!TIP]
+> Install [remix-hono](https://github.com/sergiodxa/remix-hono) to add cool middlewares like [`session`](https://github.com/sergiodxa/remix-hono?tab=readme-ov-file#session-management)
+
+## Installation
+
+Install the following npm package. NOTE: This is not a dev dependency, as it
+creates the Hono server used in production.
+
+```bash
+npm install hono remix-hono react-router-hono-server
+```
+
+## Configuration
+
+From your _entry.server.tsx_ file, export the server from `createHonoServer` and
+name it `server` or the name you defined in `devServer({exportName})` in your _vite.config.ts_.
+
+This helper function works differently depending on the environment.
+
+For `development`, it creates an Hono server that the Vite plugin will load
+via `viteDevServer.ssrLoadModule('virtual:remix/server-build'). The actual server
+is controlled by Vite through `@hono/vite-dev-server`, and can be configured via _vite.config.ts_ `server` options.
+
+For `production`, it will create a standard node HTTP server listening at `HOST:PORT`.
+You can customize the production server port using the `port` option of `createHonoServer`.
+
+### Options
+
+```ts
+export type HonoServerOptions = {
+	/**
+	 * Enable the default logger
+	 *
+	 * Defaults to `true`
+	 */
+	defaultLogger?: boolean;
+	/**
+	 * The port to start the server on
+	 *
+	 * Defaults to `process.env.PORT || 3000`
+	 */
+	port?: number;
+	/**
+	 * The directory where the server build files are located (defined in vite.config)
+	 *
+	 * Defaults to `build/server`
+	 *
+	 * See https://remix.run/docs/en/main/file-conventions/vite-config#builddirectory
+	 */
+	buildDirectory?: string;
+	/**
+	 * The file name of the server build file (defined in vite.config)
+	 *
+	 * Defaults to `index.js`
+	 *
+	 * See https://remix.run/docs/en/main/file-conventions/vite-config#serverbuildfile
+	 */
+	serverBuildFile?: `${string}.js`;
+	/**
+	 * The directory where the assets are located (defined in vite.config, build.assetsDir)
+	 *
+	 * Defaults to `assets`
+	 *
+	 * See https://vitejs.dev/config/build-options#build-assetsdir
+	 */
+	assetsDir?: string;
+	/**
+	 * Customize the Hono server, for example, adding middlewares
+	 *
+	 * It is applied after the default middlewares and before the remix middleware
+	 */
+	configure?: (server: Hono) => Promise<void> | void;
+	/**
+	 * Augment the Remix AppLoadContext
+	 *
+	 * Don't forget to declare the AppLoadContext in your app, next to where you create the Hono server
+	 *
+	 * ```ts
+	 * declare module "@remix-run/node" {
+	 *   interface AppLoadContext {
+	 *     // Add your custom context here
+	 *   }
+	 * }
+	 * ```
+	 */
+	getLoadContext?: (
+		c: Context,
+		options: Pick<RemixMiddlewareOptions, "build" | "mode">
+	) => Promise<AppLoadContext> | AppLoadContext;
+	/**
+	 * Listening listener (production mode only)
+	 *
+	 * It is called when the server is listening
+	 *
+	 * Defaults log the port
+	 */
+	listeningListener?: (info: { port: number }) => void;
+};
+```
+
+You can add additional Hono middleware with the `configure` function. If you
+do not provide a function, it will create a default Hono server.
+The `configure` function can be async. So, make sure to `await createHonoServer()`.
+
+If you want to set up the Remix `AppLoadContext`, pass in a function to `getLoadContext`.
+Modify the `AppLoadContext` interface used in your app.
+
+Since the Hono server is compiled in the same bundle as the rest of your Remix
+app, you can import app modules just like you normally would.
+
+### Example
+
+```ts
+// app/entry.server.tsx
+
+import { createHonoServer } from "react-router-hono-server/node";
+
+/**
+ * Declare our loaders and actions context type
+ */
+declare module "@remix-run/node" {
+	interface AppLoadContext {
+		/**
+		 * The app version from the build assets
+		 */
+		readonly appVersion: string;
+	}
+}
+
+export const server = await createHonoServer({
+	getLoadContext(_, { build, mode }) {
+		const isProductionMode = mode === "production";
+		return {
+			appVersion: isProductionMode ? build.assets.version : "dev",
+		};
+	},
+});
+```
+
+```ts
+// app/routes/test.tsx
+
+export async function loader({ context }: LoaderFunctionArgs) {
+  // get the context provided from `getLoadContext`
+  return { appVersion: context.appVersion }
+}
+```
+
+## Middlewares
+
+Middlewares are functions that are called before Remix calls your loader/action.
+
+Hono is the perfect tool for this, as it supports middleware out of the box.
+
+See the [Hono docs](https://hono.dev/docs/guides/middleware) for more information.
+
+You can imagine many use cases for middlewares, such as authentication, protecting routes, caching, logging, etc.
+
+See how [Shelf.nu](https://github.com/Shelf-nu/shelf.nu/blob/main/server/middleware.ts) uses them!
+
+> [!TIP]
+> This lib exports one middleware `cache` (`react-router-hono-server/middlewares`) that you can use to cache your responses.
+
+### Using Remix Hono middlewares
+
+It is easy to use [remix-hono](https://github.com/sergiodxa/remix-hono) middlewares with this package.
+
+```ts
+import { createCookieSessionStorage } from "@remix-run/node";
+import { createHonoServer } from "react-router-hono-server/node";
+import { session } from "remix-hono/session";
+
+export const server = await createHonoServer({
+	configure: (server) => {
+		server.use(
+			session({
+				autoCommit: true,
+				createSessionStorage() {
+					const sessionStorage = createCookieSessionStorage({
+						cookie: {
+							name: "session",
+							httpOnly: true,
+							path: "/",
+							sameSite: "lax",
+							secrets: [process.env.SESSION_SECRET],
+							secure: process.env.NODE_ENV === "production",
+						},
+					});
+
+					return {
+						...sessionStorage,
+						// If a user doesn't come back to the app within 30 days, their session will be deleted.
+						async commitSession(session) {
+							return sessionStorage.commitSession(session, {
+								maxAge: 60 * 60 * 24 * 30, // 30 days
+							});
+						},
+					};
+				},
+			})
+		);
+	}
+});
+```
 
 
-Deploy your open-source project to npm with ease, with fully covered bundling, testing, linting and deployment setup out of the box,
-don't worry about CJS or ESM, bundling your typescript definitions or anything else, focus on coding out your solution and let the stack take care of the rest.
+### Creating custom Middleware
 
-Build your own open-source project today! 🚀
+You can create middlewares using the [`createMiddleware`](https://hono.dev/docs/helpers/factory#createmiddleware) or [`createFactory`](https://hono.dev/docs/helpers/factory#createfactory) functions from `hono/factory`.
 
-## Tools
+Then, use them with the `configure` function of `createHonoServer`.
 
-- **TypeScript**: TypeScript is a typed superset of JavaScript that compiles to plain JavaScript.
-- **Vitest**: A modern test runner built on top of Vite.
-- **ESLint**: ESLint statically analyzes your code to quickly find problems.
-- **Prettier**: Prettier is an opinionated code formatter.
-- **GitHub Actions**: Automate your workflow from idea to production.
-- **tsup** - Zero-config bundler for tiny TypeScript libraries.
+```ts
+import { createMiddleware } from "hono/factory";
+import { createHonoServer } from "react-router-hono-server/node";
 
-## Features
+export const server = await createHonoServer({
+	configure: (server) => {
+		server.use(
+			createMiddleware(async (c, next) => {
+				console.log("middleware");
+				return next();
+			})
+		);
+	},
+});
+```
 
-- **ESM/CJS ready** - Write your code in TypeScript and publish it as ESM and CJS with 0 configuration.
-- **Are The types wrong? ready** - Passes all the checks for typings on https://arethetypeswrong.github.io/ by default.
-- **ESM/CJS test apps setup** - Test your package in both ESM and CJS environments already setup for you.
-- **Test runner setup** - Test your open source package with Vitest already setup for you.
-- **Linting setup** - Lint your code with ESLint and Prettier already setup for you.
-- **GitHub Actions setup** - Automate deployments to npm by using GitHub Actions.
+## Contributors ✨
 
-## Setup
+<!-- ALL-CONTRIBUTORS-LIST:END -->
 
-1. Use this template to create a new repository.
-2. Clone the repository.
-3. Change the package name in `package.json`.
-4. Change the `open-source-stack` dependency in your test-apps to your name
-5. Install the dependencies with `npm install`.
-6. Change the `repository`, `bugs`, and `homepage` fields in `package.json` to your github repo.
-7. Change the license if required.
-8. Add the NPM_TOKEN secret to your GitHub repository.
-9. Start coding!
-
-## Scripts
-
-- `npm run build` - Build the package.
-- `npm run test` - Run the tests.
-- `npm run lint` - Lint the code.
-- `npm run dev` - Start the package and ESM test app in watch mode for development.
-- `npm run dev:cjs` - Start the package and CJS test app in watch mode for development.
-
+This project follows the [all-contributors](https://github.com/all-contributors/all-contributors) specification. Contributions of any kind welcome!

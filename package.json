@@ -1,54 +1,64 @@
 {
-	"name": "open-source-stack",
-	"version": "1.0.0",
-	"description": "Minimal open-source stack to help you ship an open-source package in TS",
-	"main": "./dist/index.js",
-	"module": "./dist/index.mjs",
-	"types": "./dist/index.d.mts",
+	"name": "react-router-hono-server",
+	"version": "0.0.1",
+	"description": "This package includes helper function to create an Hono app in your entry.server.tsx file. It allows you to customize your server.",
 	"exports": {
-		".": {
+		"./node": {
 			"import": {
-				"import": "./dist/index.mjs",
-				"default": "./dist/index.mjs",
-				"types": "./dist/index.d.mts"
-			},
-			"require": {
-				"import": "./dist/index.js",
-				"require": "./dist/index.js",
-				"default": "./dist/index.js",
-				"types": "./dist/index.d.ts"
+				"import": "./dist/node.mjs",
+				"default": "./dist/node.mjs",
+				"types": "./dist/node.d.mts"
+			}
+		},
+		"./dev": {
+			"import": {
+				"import": "./dist/dev.mjs",
+				"default": "./dist/dev.mjs",
+				"types": "./dist/dev.d.mts"
+			}
+		},
+		"./middlewares": {
+			"import": {
+				"import": "./dist/middlewares.mjs",
+				"default": "./dist/middlewares.mjs",
+				"types": "./dist/middlewares.d.mts"
 			}
 		}
 	},
 	"scripts": {
 		"test": "vitest run",
 		"test:cov": "vitest run --coverage",
-		"build": "tsup src/index.ts  --dts --format esm,cjs --outDir dist --minify --clean",
-		"remix:dev": "npm run dev -w test-apps/remix-vite",
-		"remix:cjs:dev": "npm run dev -w test-apps/remix-vite-cjs",
-		"build:dev": "tsup src/index.ts --dts --format cjs,esm  --outDir dist",
+		"build": "tsup src/node.ts src/dev.ts src/middlewares.ts --dts --format esm --outDir dist --minify --clean --external '../build/server/index.js'",
+		"remix:dev": "npm run dev -w example",
+		"build:dev": "tsup src/node.ts src/dev.ts src/middlewares.ts --dts --format esm --outDir dist --external '../build/server/index.js'",
 		"build:dev:watch": "npm run build:dev -- --watch",
-		"build:dev:cjs:watch": "npm run build:dev -- --watch",
 		"dev": "npm-run-all -s build:dev -p remix:dev build:dev:watch",
-		"dev:cjs": "npm-run-all -s build:dev -p remix:cjs:dev build:dev:cjs:watch",
 		"prepublishOnly": "npm run build",
 		"check": "biome check .",
 		"check:fix": "biome check --fix .",
 		"typecheck": "tsc",
-		"validate": "npm run check && npm run tsc && npm run test"
+		"validate": "npm run check && npm run tsc"
 	},
 	"author": "",
 	"license": "ISC",
 	"repository": {
 		"type": "git",
-		"url": "git+https://github.com/forge42dev/open-source-stack.git"
+		"url": "git+https://github.com/rphlmr/react-router-hono-server.git"
 	},
 	"bugs": {
-		"url": "https://github.com/forge42dev/open-source-stack/issues"
+		"url": "https://github.com/rphlmr/react-router-hono-server/issues"
 	},
 	"files": ["dist"],
-	"workspaces": [".", "test-apps/*"],
-	"homepage": "https://github.com/forge42dev/open-source-stack#readme",
+	"workspaces": [".", "example"],
+	"homepage": "https://github.com/rphlmr/react-router-hono-server#readme",
+	"dependencies": {
+		"@hono/node-server": "^1.12.0",
+		"@hono/vite-dev-server": "^0.13.1",
+		"@remix-run/node": "^2.11.0",
+		"hono": "^4.5.3",
+		"remix-hono": "^0.0.16",
+		"vite": "^5.3.5"
+	},
 	"devDependencies": {
 		"@biomejs/biome": "^1.8.3",
 		"@types/node": "^20.12.7",
@@ -61,13 +71,13 @@
 		"vitest": "^1.5.2"
 	},
 	"optionalDependencies": {
+		"@rollup/rollup-darwin-x64-gnu": "4.18.1",
+		"@rollup/rollup-darwin-x64-musl": "4.18.1",
+		"@rollup/rollup-linux-arm64-gnu": "4.18.1",
 		"@rollup/rollup-linux-x64-gnu": "^4.18.1",
 		"@rollup/rollup-linux-x64-musl": "^4.18.1",
 		"@rollup/rollup-win32-arm64-msvc": "4.18.1",
 		"@rollup/rollup-win32-x64-msvc": "4.18.1",
-		"@rollup/rollup-win32-x64-musl": "4.18.1",
-		"@rollup/rollup-darwin-x64-gnu": "4.18.1",
-		"@rollup/rollup-darwin-x64-musl": "4.18.1",
-		"@rollup/rollup-linux-arm64-gnu": "4.18.1"
+		"@rollup/rollup-win32-x64-musl": "4.18.1"
 	}
 }

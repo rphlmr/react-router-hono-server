@@ -7,7 +7,6 @@
 		"useIgnoreFile": true
 	},
 	"formatter": {
-		"ignore": ["test-apps"],
 		"enabled": true,
 		"formatWithErrors": false,
 		"indentStyle": "tab",
@@ -15,12 +14,11 @@
 		"lineWidth": 120
 	},
 	"organizeImports": {
-		"ignore": ["test-apps"],
 		"enabled": true
 	},
 	"linter": {
-		"ignore": ["test-apps"],
 		"enabled": true,
+		"ignore": ["example"],
 		"rules": {
 			"recommended": true,
 			"suspicious": {
@@ -51,7 +49,7 @@
 	},
 	"javascript": {
 		"formatter": {
-			"semicolons": "asNeeded",
+			"semicolons": "always",
 			"trailingCommas": "es5"
 		}
 	}

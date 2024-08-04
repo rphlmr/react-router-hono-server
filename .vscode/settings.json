@@ -1,6 +1,7 @@
 {
 	"biome.enabled": true,
 	"editor.defaultFormatter": "biomejs.biome",
+	"json.format.enable": true,
 	"editor.formatOnSave": true,
 	"javascript.format.enable": false,
 	"javascript.suggest.autoImports": true,
@@ -30,5 +31,23 @@
 	},
 	"eslint.enable": false,
 	"eslint.format.enable": false,
-	"prettier.enable": false
+	"prettier.enable": false,
+	"[javascript]": {
+		"editor.defaultFormatter": "biomejs.biome"
+	},
+	"[json]": {
+		"editor.defaultFormatter": "biomejs.biome"
+	},
+	"[jsonc]": {
+		"editor.defaultFormatter": "biomejs.biome"
+	},
+	"[javascriptreact]": {
+		"editor.defaultFormatter": "biomejs.biome"
+	},
+	"[typescriptreact]": {
+		"editor.defaultFormatter": "biomejs.biome"
+	},
+	"[typescript]": {
+		"editor.defaultFormatter": "biomejs.biome"
+	}
 }
