@@ -52,73 +52,73 @@ You can customize the production server port using the `port` option of `createH
 
 ```ts
 export type HonoServerOptions = {
-	/**
-	 * Enable the default logger
-	 *
-	 * Defaults to `true`
-	 */
-	defaultLogger?: boolean;
-	/**
-	 * The port to start the server on
-	 *
-	 * Defaults to `process.env.PORT || 3000`
-	 */
-	port?: number;
-	/**
-	 * The directory where the server build files are located (defined in vite.config)
-	 *
-	 * Defaults to `build/server`
-	 *
-	 * See https://remix.run/docs/en/main/file-conventions/vite-config#builddirectory
-	 */
-	buildDirectory?: string;
-	/**
-	 * The file name of the server build file (defined in vite.config)
-	 *
-	 * Defaults to `index.js`
-	 *
-	 * See https://remix.run/docs/en/main/file-conventions/vite-config#serverbuildfile
-	 */
-	serverBuildFile?: `${string}.js`;
-	/**
-	 * The directory where the assets are located (defined in vite.config, build.assetsDir)
-	 *
-	 * Defaults to `assets`
-	 *
-	 * See https://vitejs.dev/config/build-options#build-assetsdir
-	 */
-	assetsDir?: string;
-	/**
-	 * Customize the Hono server, for example, adding middlewares
-	 *
-	 * It is applied after the default middlewares and before the remix middleware
-	 */
-	configure?: (server: Hono) => Promise<void> | void;
-	/**
-	 * Augment the Remix AppLoadContext
-	 *
-	 * Don't forget to declare the AppLoadContext in your app, next to where you create the Hono server
-	 *
-	 * ```ts
-	 * declare module "@remix-run/node" {
-	 *   interface AppLoadContext {
-	 *     // Add your custom context here
-	 *   }
-	 * }
-	 * ```
-	 */
-	getLoadContext?: (
-		c: Context,
-		options: Pick<RemixMiddlewareOptions, "build" | "mode">
-	) => Promise<AppLoadContext> | AppLoadContext;
-	/**
-	 * Listening listener (production mode only)
-	 *
-	 * It is called when the server is listening
-	 *
-	 * Defaults log the port
-	 */
-	listeningListener?: (info: { port: number }) => void;
+  /**
+   * Enable the default logger
+   *
+   * Defaults to `true`
+   */
+  defaultLogger?: boolean;
+  /**
+   * The port to start the server on
+   *
+   * Defaults to `process.env.PORT || 3000`
+   */
+  port?: number;
+  /**
+   * The directory where the server build files are located (defined in vite.config)
+   *
+   * Defaults to `build/server`
+   *
+   * See https://remix.run/docs/en/main/file-conventions/vite-config#builddirectory
+   */
+  buildDirectory?: string;
+  /**
+   * The file name of the server build file (defined in vite.config)
+   *
+   * Defaults to `index.js`
+   *
+   * See https://remix.run/docs/en/main/file-conventions/vite-config#serverbuildfile
+   */
+  serverBuildFile?: `${string}.js`;
+  /**
+   * The directory where the assets are located (defined in vite.config, build.assetsDir)
+   *
+   * Defaults to `assets`
+   *
+   * See https://vitejs.dev/config/build-options#build-assetsdir
+   */
+  assetsDir?: string;
+  /**
+   * Customize the Hono server, for example, adding middlewares
+   *
+   * It is applied after the default middlewares and before the remix middleware
+   */
+  configure?: (server: Hono) => Promise<void> | void;
+  /**
+   * Augment the Remix AppLoadContext
+   *
+   * Don't forget to declare the AppLoadContext in your app, next to where you create the Hono server
+   *
+   * ```ts
+   * declare module "@remix-run/node" {
+   *   interface AppLoadContext {
+   *     // Add your custom context here
+   *   }
+   * }
+   * ```
+   */
+  getLoadContext?: (
+    c: Context,
+    options: Pick<RemixMiddlewareOptions, "build" | "mode">
+  ) => Promise<AppLoadContext> | AppLoadContext;
+  /**
+   * Listening listener (production mode only)
+   *
+   * It is called when the server is listening
+   *
+   * Defaults log the port
+   */
+  listeningListener?: (info: { port: number }) => void;
 };
 ```
 
@@ -143,21 +143,21 @@ import { createHonoServer } from "react-router-hono-server/node";
  * Declare our loaders and actions context type
  */
 declare module "@remix-run/node" {
-	interface AppLoadContext {
-		/**
-		 * The app version from the build assets
-		 */
-		readonly appVersion: string;
-	}
+  interface AppLoadContext {
+    /**
+     * The app version from the build assets
+     */
+    readonly appVersion: string;
+  }
 }
 
 export const server = await createHonoServer({
-	getLoadContext(_, { build, mode }) {
-		const isProductionMode = mode === "production";
-		return {
-			appVersion: isProductionMode ? build.assets.version : "dev",
-		};
-	},
+  getLoadContext(_, { build, mode }) {
+    const isProductionMode = mode === "production";
+    return {
+      appVersion: isProductionMode ? build.assets.version : "dev",
+    };
+  },
 });
 ```
 
@@ -195,35 +195,35 @@ import { createHonoServer } from "react-router-hono-server/node";
 import { session } from "remix-hono/session";
 
 export const server = await createHonoServer({
-	configure: (server) => {
-		server.use(
-			session({
-				autoCommit: true,
-				createSessionStorage() {
-					const sessionStorage = createCookieSessionStorage({
-						cookie: {
-							name: "session",
-							httpOnly: true,
-							path: "/",
-							sameSite: "lax",
-							secrets: [process.env.SESSION_SECRET],
-							secure: process.env.NODE_ENV === "production",
-						},
-					});
+  configure: (server) => {
+    server.use(
+      session({
+        autoCommit: true,
+        createSessionStorage() {
+          const sessionStorage = createCookieSessionStorage({
+            cookie: {
+              name: "session",
+              httpOnly: true,
+              path: "/",
+              sameSite: "lax",
+              secrets: [process.env.SESSION_SECRET],
+              secure: process.env.NODE_ENV === "production",
+            },
+          });
 
-					return {
-						...sessionStorage,
-						// If a user doesn't come back to the app within 30 days, their session will be deleted.
-						async commitSession(session) {
-							return sessionStorage.commitSession(session, {
-								maxAge: 60 * 60 * 24 * 30, // 30 days
-							});
-						},
-					};
-				},
-			})
-		);
-	}
+          return {
+            ...sessionStorage,
+            // If a user doesn't come back to the app within 30 days, their session will be deleted.
+            async commitSession(session) {
+              return sessionStorage.commitSession(session, {
+                maxAge: 60 * 60 * 24 * 30, // 30 days
+              });
+            },
+          };
+        },
+      })
+    );
+  },
 });
 ```
 
@@ -239,14 +239,14 @@ import { createMiddleware } from "hono/factory";
 import { createHonoServer } from "react-router-hono-server/node";
 
 export const server = await createHonoServer({
-	configure: (server) => {
-		server.use(
-			createMiddleware(async (c, next) => {
-				console.log("middleware");
-				return next();
-			})
-		);
-	},
+  configure: (server) => {
+    server.use(
+      createMiddleware(async (c, next) => {
+        console.log("middleware");
+        return next();
+      })
+    );
+  },
 });
 ```
 

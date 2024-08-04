@@ -7,8 +7,8 @@ import tsconfigPaths from "vite-tsconfig-paths";
 installGlobals();
 
 export default defineConfig({
-	build: {
-		target: "esnext",
-	},
-	plugins: [devServer(), remix(), tsconfigPaths()],
+  build: {
+    target: "esnext",
+  },
+  plugins: [devServer(), remix(), tsconfigPaths()],
 });
