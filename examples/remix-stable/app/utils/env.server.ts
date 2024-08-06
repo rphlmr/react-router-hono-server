@@ -1,3 +1,3 @@
 export function getEnv() {
-  return process.env;
+  return { ...process.env };
 }

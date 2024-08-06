@@ -1,9 +1,7 @@
-import type { LoaderFunctionArgs } from "@remix-run/node";
-import { useLoaderData } from "@remix-run/react";
+import { useLoaderData, useRevalidator } from "@remix-run/react";
 import { getEnv } from "~/utils/env.server";
 
-export function loader({ context }: LoaderFunctionArgs) {
-  console.log("context", context);
+export function loader() {
   return {
     env: getEnv(),
   };
@@ -11,8 +9,12 @@ export function loader({ context }: LoaderFunctionArgs) {
 
 export default function Index() {
   const data = useLoaderData<typeof loader>();
+  const { revalidate } = useRevalidator();
   return (
     <div className="min-h-screen bg-gray-100 flex flex-col items-center justify-center">
+      <button type="button" onClick={revalidate}>
+        Revalidate
+      </button>
       <div className="mt-8 w-full max-w-4xl overflow-x-auto">
         <table className="w-full border-collapse bg-gray-100 shadow-md rounded-lg">
           <thead>

@@ -29,7 +29,7 @@
     "test": "vitest run",
     "test:cov": "vitest run --coverage",
     "build": "tsup src/node.ts src/dev.ts src/middlewares.ts --dts --format esm --outDir dist --clean --minifyIdentifiers --minifySyntax --external '../build/server/index.js'",
-    "remix:dev": "npm run dev -w example",
+    "remix:dev": "npm run dev -w remix-stable",
     "build:dev": "tsup src/node.ts src/dev.ts src/middlewares.ts --dts --format esm --outDir dist --external '../build/server/index.js'",
     "build:dev:watch": "npm run build:dev -- --watch",
     "dev": "npm-run-all -s build:dev -p remix:dev build:dev:watch",
@@ -49,7 +49,7 @@
     "url": "https://github.com/rphlmr/react-router-hono-server/issues"
   },
   "files": ["dist"],
-  "workspaces": [".", "example"],
+  "workspaces": [".", "examples/*"],
   "homepage": "https://github.com/rphlmr/react-router-hono-server#readme",
   "dependencies": {
     "@hono/node-server": "^1.12.0",
@@ -70,7 +70,7 @@
     "vitest": "^1.5.2"
   },
   "peerDependencies": {
-    "@remix-run/node": "^2.11.0",
+    "@remix-run/node": ">=2.10.0",
     "vite": "^5.0.0"
   },
   "peerDependenciesMeta": {

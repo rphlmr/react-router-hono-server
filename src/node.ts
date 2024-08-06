@@ -101,6 +101,7 @@ export async function createHonoServer(options: HonoServerOptions = {}) {
     ...options,
     defaultLogger: options.defaultLogger ?? true,
   };
+
   const mode = process.env.NODE_ENV === "test" ? "development" : process.env.NODE_ENV;
 
   const isProductionMode = mode === "production";

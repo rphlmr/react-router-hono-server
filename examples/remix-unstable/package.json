@@ -1,5 +1,5 @@
 {
-  "name": "remix-vite",
+  "name": "remix-unstable",
   "private": true,
   "sideEffects": false,
   "type": "module",
@@ -11,8 +11,8 @@
     "typecheck": "tsc"
   },
   "dependencies": {
-    "@remix-run/node": "^2.9.1",
-    "@remix-run/react": "^2.9.1",
+    "@remix-run/node": "^2.11.0",
+    "@remix-run/react": "^2.11.0",
     "isbot": "^4.1.0",
     "react": "^18.2.0",
     "react-dom": "^18.2.0",

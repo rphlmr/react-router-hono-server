@@ -18,14 +18,15 @@
   },
   "linter": {
     "enabled": true,
-    "ignore": ["example"],
+    "ignore": ["examples"],
     "rules": {
       "recommended": true,
       "suspicious": {
         "recommended": true
       },
       "style": {
-        "recommended": true
+        "recommended": true,
+        "noParameterAssign": "info"
       },
       "complexity": {
         "recommended": true
