@@ -75,7 +75,7 @@
   },
   "peerDependenciesMeta": {
     "@remix-run/node": {
-      "optional": true
+      "optional": false
     }
   },
   "optionalDependencies": {
