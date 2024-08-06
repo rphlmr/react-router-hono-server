@@ -1,11 +1,24 @@
-import { useLoaderData, useRevalidator } from "@remix-run/react";
+import { type ClientLoaderFunctionArgs, useLoaderData, useRevalidator } from "@remix-run/react";
+import { getPublic } from "~/utils/.client/public";
+import { getCommon } from "~/utils/.common/common";
+import { getSecret } from "~/utils/.server/secret";
 import { getEnv } from "~/utils/env.server";
 
 export function loader() {
+  console.log(getSecret(), getCommon());
   return {
     env: getEnv(),
   };
 }
+
+export async function clientLoader({ serverLoader }: ClientLoaderFunctionArgs) {
+  console.log(getPublic(), getCommon());
+  return {
+    ...(await serverLoader<typeof loader>()),
+  };
+}
+
+clientLoader.hydrate = true;
 
 export default function Index() {
   const data = useLoaderData<typeof loader>();
