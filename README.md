@@ -15,7 +15,7 @@ with the rest of your Remix app, you may import app modules as needed. It also
 supports Vite HMR via the `react-router-hono-server/dev` plugin (which is required
 for this to function).
 
-It relies on [remix-hono](https://github.com/sergiodxa/remix-hono) and preset a default Hono server config that you can [customize](#options)
+It relies on [remix-hono](https://github.com/sergiodxa/remix-hono) and presets a default Hono server config that you can [customize](#options)
 
 > [!IMPORTANT]
 > Only works with Remix in **ESM mode**
