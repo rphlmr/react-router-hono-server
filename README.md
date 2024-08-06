@@ -31,7 +31,7 @@ Install the following npm package. NOTE: This is not a dev dependency, as it
 creates the Hono server used in production.
 
 ```bash
-npm install hono remix-hono react-router-hono-server
+npm install react-router-hono-server
 ```
 
 ## Configuration

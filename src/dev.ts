@@ -50,6 +50,12 @@ export function devServer(config?: HonoDevServerOptions) {
     injectClientScript: false,
     entry: mergedConfig.entry, // The file path of your server.
     export: mergedConfig.exportName,
-    exclude: [`/${mergedConfig.appDirectory}/**`, /^\/@.+$/, /^\/node_modules\/.*/, ...mergedConfig.exclude],
+    exclude: [
+      `/${mergedConfig.appDirectory}/**/*`,
+      `/${mergedConfig.appDirectory}/**/.*/**`,
+      /^\/@.+$/,
+      /^\/node_modules\/.*/,
+      ...mergedConfig.exclude,
+    ],
   });
 }
