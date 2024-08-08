@@ -10,9 +10,8 @@ import { createReadableStreamFromReadable } from "@remix-run/node";
 import { RemixServer } from "@remix-run/react";
 import { isbot } from "isbot";
 import { renderToPipeableStream } from "react-dom/server";
-import { createHonoServer } from "react-router-hono-server/node";
 
-export const server = await createHonoServer();
+export * from "./server";
 
 const ABORT_DELAY = 5_000;
 

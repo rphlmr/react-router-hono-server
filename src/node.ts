@@ -7,7 +7,7 @@ import { type Context, Hono } from "hono";
 import { logger } from "hono/logger";
 import { type RemixMiddlewareOptions, remix } from "remix-hono/handler";
 import { importDevBuild } from "./dev-build";
-import { cache } from "./middlewares";
+import { cache } from "./middleware";
 
 export type HonoServerOptions = {
   /**
@@ -47,9 +47,9 @@ export type HonoServerOptions = {
    */
   assetsDir?: string;
   /**
-   * Customize the Hono server, for example, adding middlewares
+   * Customize the Hono server, for example, adding middleware
    *
-   * It is applied after the default middlewares and before the remix middleware
+   * It is applied after the default middleware and before the remix middleware
    */
   configure?: (server: Hono) => Promise<void> | void;
   /**
@@ -130,7 +130,7 @@ export async function createHonoServer(options: HonoServerOptions = {}) {
   }
 
   /**
-   * Add optional middlewares
+   * Add optional middleware
    */
 
   if (mergedOptions.configure) {

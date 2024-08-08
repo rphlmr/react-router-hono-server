@@ -25,7 +25,7 @@ It relies on [remix-hono](https://github.com/sergiodxa/remix-hono) and presets a
 > Only works for **node**
 
 > [!TIP]
-> You can use [remix-hono](https://github.com/sergiodxa/remix-hono) to add cool middlewares like [`session`](https://github.com/sergiodxa/remix-hono?tab=readme-ov-file#session-management)
+> You can use [remix-hono](https://github.com/sergiodxa/remix-hono) to add cool middleware like [`session`](https://github.com/sergiodxa/remix-hono?tab=readme-ov-file#session-management)
 
 ## Installation
 
@@ -47,6 +47,25 @@ name it `server` or the name you defined in `devServer({exportName})` in your _v
 import { createHonoServer } from "react-router-hono-server/node";
 
 export const server = await createHonoServer();
+```
+
+#### Alternative
+You can create your server in a separate file and export it from your _entry.server.tsx_.
+
+It is useful if you have many middleware and want to keep your _entry.server.tsx_ clean.
+
+```ts
+// app/server.ts
+
+import { createHonoServer } from "react-router-hono-server/node";
+
+export const server = await createHonoServer();
+```
+```ts
+// app/entry.server.tsx
+
+export * from "./server";
+
 ```
 
 ### Add the Vite plugin
@@ -145,9 +164,9 @@ export type HonoServerOptions = {
    */
   assetsDir?: string;
   /**
-   * Customize the Hono server, for example, adding middlewares
+   * Customize the Hono server, for example, adding middleware
    *
-   * It is applied after the default middlewares and before the remix middleware
+   * It is applied after the default middleware and before the remix middleware
    */
   configure?: (server: Hono) => Promise<void> | void;
   /**
@@ -226,24 +245,24 @@ export async function loader({ context }: LoaderFunctionArgs) {
 }
 ```
 
-## Middlewares
+## Middleware
 
-Middlewares are functions that are called before Remix calls your loader/action.
+Middleware are functions that are called before Remix calls your loader/action.
 
 Hono is the perfect tool for this, as it supports middleware out of the box.
 
 See the [Hono docs](https://hono.dev/docs/guides/middleware) for more information.
 
-You can imagine many use cases for middlewares, such as authentication, protecting routes, caching, logging, etc.
+You can imagine many use cases for middleware, such as authentication, protecting routes, caching, logging, etc.
 
 See how [Shelf.nu](https://github.com/Shelf-nu/shelf.nu/blob/main/server/middleware.ts) uses them!
 
 > [!TIP]
-> This lib exports one middleware `cache` (`react-router-hono-server/middlewares`) that you can use to cache your responses.
+> This lib exports one middleware `cache` (`react-router-hono-server/middleware`) that you can use to cache your responses.
 
-### Using Remix Hono middlewares
+### Using Remix Hono middleware
 
-It is easy to use [remix-hono](https://github.com/sergiodxa/remix-hono) middlewares with this package.
+It is easy to use [remix-hono](https://github.com/sergiodxa/remix-hono) middleware with this package.
 
 ```ts
 import { createCookieSessionStorage } from "@remix-run/node";
@@ -286,7 +305,7 @@ export const server = await createHonoServer({
 
 ### Creating custom Middleware
 
-You can create middlewares using the [`createMiddleware`](https://hono.dev/docs/helpers/factory#createmiddleware) or [`createFactory`](https://hono.dev/docs/helpers/factory#createfactory) functions from `hono/factory`.
+You can create middleware using the [`createMiddleware`](https://hono.dev/docs/helpers/factory#createmiddleware) or [`createFactory`](https://hono.dev/docs/helpers/factory#createfactory) functions from `hono/factory`.
 
 Then, use them with the `configure` function of `createHonoServer`.
 
