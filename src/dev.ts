@@ -29,7 +29,7 @@ type HonoDevServerOptions = {
    *
    * Defaults include `appDirectory` content.
    */
-  exclude?: string[];
+  exclude?: (string | RegExp)[];
 };
 
 const defaultConfig: Required<HonoDevServerOptions> = {
