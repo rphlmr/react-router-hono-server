@@ -3,13 +3,15 @@ import url from "node:url";
 import { serve } from "@hono/node-server";
 import { serveStatic } from "@hono/node-server/serve-static";
 import type { AppLoadContext, ServerBuild } from "@remix-run/node";
-import { type Context, Hono } from "hono";
+import { type Context, type Env, Hono } from "hono";
+import type { HonoOptions } from "hono/hono-base";
 import { logger } from "hono/logger";
+import type { BlankEnv } from "hono/types";
 import { type RemixMiddlewareOptions, remix } from "remix-hono/handler";
 import { importDevBuild } from "./dev-build";
 import { cache } from "./middleware";
 
-export type HonoServerOptions = {
+export type HonoServerOptions<E extends Env = BlankEnv> = {
   /**
    * Enable the default logger
    *
@@ -51,7 +53,7 @@ export type HonoServerOptions = {
    *
    * It is applied after the default middleware and before the remix middleware
    */
-  configure?: (server: Hono) => Promise<void> | void;
+  configure?: <E extends Env = BlankEnv>(server: Hono<E>) => Promise<void> | void;
   /**
    * Augment the Remix AppLoadContext
    *
@@ -77,9 +79,15 @@ export type HonoServerOptions = {
    * Defaults log the port
    */
   listeningListener?: (info: { port: number }) => void;
+  /**
+   * Hono constructor options
+   *
+   * {@link HonoOptions}
+   */
+  honoOptions?: HonoOptions<E>;
 };
 
-const defaultOptions: HonoServerOptions = {
+const defaultOptions: HonoServerOptions<BlankEnv> = {
   defaultLogger: true,
   port: Number(process.env.PORT) || 3000,
   buildDirectory: "build/server",
@@ -95,8 +103,8 @@ const defaultOptions: HonoServerOptions = {
  *
  * @param config {@link HonoServerOptions} - The configuration options for the server
  */
-export async function createHonoServer(options: HonoServerOptions = {}) {
-  const mergedOptions: HonoServerOptions = {
+export async function createHonoServer<E extends Env = BlankEnv>(options: HonoServerOptions<E> = {}) {
+  const mergedOptions: HonoServerOptions<E> = {
     ...defaultOptions,
     ...options,
     defaultLogger: options.defaultLogger ?? true,
@@ -106,7 +114,7 @@ export async function createHonoServer(options: HonoServerOptions = {}) {
 
   const isProductionMode = mode === "production";
 
-  const server = new Hono();
+  const server = new Hono<E>(mergedOptions.honoOptions);
 
   /**
    * Serve assets files from build/client/assets

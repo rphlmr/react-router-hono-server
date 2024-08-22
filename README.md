@@ -126,7 +126,7 @@ That's all!
 ### Options
 
 ```ts
-export type HonoServerOptions = {
+export type HonoServerOptions<E extends Env = BlankEnv> = {
   /**
    * Enable the default logger
    *
@@ -168,7 +168,7 @@ export type HonoServerOptions = {
    *
    * It is applied after the default middleware and before the remix middleware
    */
-  configure?: (server: Hono) => Promise<void> | void;
+  configure?: <E extends Env = BlankEnv>(server: Hono<E>) => Promise<void> | void;
   /**
    * Augment the Remix AppLoadContext
    *
@@ -194,6 +194,12 @@ export type HonoServerOptions = {
    * Defaults log the port
    */
   listeningListener?: (info: { port: number }) => void;
+  /**
+   * Hono constructor options
+   *
+   * {@link HonoOptions}
+   */
+  honoOptions?: HonoOptions<E>;
 };
 ```
 
