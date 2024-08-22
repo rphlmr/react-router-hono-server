@@ -1,6 +1,6 @@
 {
   "name": "react-router-hono-server",
-  "version": "0.0.4",
+  "version": "0.0.5",
   "description": "This package includes helper function to create an Hono app in your entry.server.tsx file. It allows you to customize your server.",
   "exports": {
     "./node": {
