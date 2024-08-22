@@ -1,27 +1,27 @@
 {
   "name": "react-router-hono-server",
-  "version": "0.0.5",
+  "version": "0.1.0",
   "description": "This package includes helper function to create an Hono app in your entry.server.tsx file. It allows you to customize your server.",
   "exports": {
     "./node": {
       "import": {
         "import": "./dist/node.mjs",
-        "default": "./dist/node.mjs",
-        "types": "./dist/node.d.mts"
+        "types": "./dist/node.d.mts",
+        "default": "./dist/node.mjs"
       }
     },
     "./dev": {
       "import": {
         "import": "./dist/dev.mjs",
-        "default": "./dist/dev.mjs",
-        "types": "./dist/dev.d.mts"
+        "types": "./dist/dev.d.mts",
+        "default": "./dist/dev.mjs"
       }
     },
     "./middlewares": {
       "import": {
         "import": "./dist/middlewares.mjs",
-        "default": "./dist/middlewares.mjs",
-        "types": "./dist/middlewares.d.mts"
+        "types": "./dist/middlewares.d.mts",
+        "default": "./dist/middlewares.mjs"
       }
     }
   },
