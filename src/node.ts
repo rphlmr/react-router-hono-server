@@ -165,13 +165,16 @@ export async function createHonoServer<E extends Env = BlankEnv>(options: HonoSe
     ) as ServerBuild;
 
     return remix({
-      build,
-      mode,
+      // biome-ignore lint/suspicious/noExplicitAny: temp
+      build: build as any,
+      // biome-ignore lint/suspicious/noExplicitAny: temp
+      mode: mode as any,
       getLoadContext(c) {
         if (!mergedOptions.getLoadContext) {
           return {};
         }
-        return mergedOptions.getLoadContext(c, { build });
+        // biome-ignore lint/suspicious/noExplicitAny: temp
+        return mergedOptions.getLoadContext(c, { build: build as any });
       },
     })(c, next);
   });
