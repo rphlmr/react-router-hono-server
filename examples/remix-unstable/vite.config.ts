@@ -16,7 +16,7 @@ export default defineConfig({
     devServer(),
     remix({
       future: {
-        unstable_singleFetch: true,
+        v3_singleFetch: true,
       },
       // For Sentry instrumentation
       // https://docs.sentry.io/platforms/javascript/guides/remix/manual-setup/#custom-express-server

@@ -29,7 +29,7 @@
     "test": "vitest run",
     "test:cov": "vitest run --coverage",
     "build": "tsup src/node.ts src/dev.ts src/middlewares.ts --dts --format esm --outDir dist --clean --minifyIdentifiers --minifySyntax --external '../build/server/index.js'",
-    "remix:dev": "npm run dev -w remix-stable",
+    "remix:dev": "npm run dev -w remix-unstable",
     "build:dev": "tsup src/node.ts src/dev.ts src/middlewares.ts --dts --format esm --outDir dist --external '../build/server/index.js'",
     "build:dev:watch": "npm run build:dev -- --watch",
     "dev": "npm-run-all -s build:dev -p remix:dev build:dev:watch",

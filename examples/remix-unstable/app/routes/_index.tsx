@@ -3,6 +3,7 @@ import { getPublic } from "~/utils/.client/public";
 import { getCommon } from "~/utils/.common/common";
 import { getSecret } from "~/utils/.server/secret";
 import { getEnv } from "~/utils/env.server";
+import dbLogo from "/images/database.svg";
 
 export function loader() {
   console.log(getSecret(), getCommon());
@@ -22,10 +23,12 @@ clientLoader.hydrate = true;
 
 export default function Index() {
   const data = useLoaderData<typeof loader>();
+  console.log(dbLogo);
   const { revalidate } = useRevalidator();
   return (
     <div className="min-h-screen bg-gray-100 flex flex-col items-center justify-center">
-      <button type="button" onClick={revalidate}>
+      <button type="button" onClick={revalidate} className="flex items-center gap-2">
+        <img src={dbLogo} alt="Database" />
         Revalidate
       </button>
       <div className="mt-8 w-full max-w-4xl overflow-x-auto">

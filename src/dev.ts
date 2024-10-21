@@ -55,6 +55,7 @@ export function devServer(config?: HonoDevServerOptions) {
       `/${mergedConfig.appDirectory}/**/.*/**`,
       /^\/@.+$/,
       /^\/node_modules\/.*/,
+      /\?import$/,
       ...mergedConfig.exclude,
     ],
   });
