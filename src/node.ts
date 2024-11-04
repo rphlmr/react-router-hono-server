@@ -1,3 +1,4 @@
+import type { AddressInfo } from "node:net";
 import path from "node:path";
 import url from "node:url";
 import { serve } from "@hono/node-server";
@@ -27,7 +28,7 @@ export type HonoServerOptions<E extends Env = BlankEnv> = {
   /**
    * The directory where the server build files are located (defined in vite.config)
    *
-   * Defaults to `build/server`
+   * Defaults to `build`
    *
    * See https://remix.run/docs/en/main/file-conventions/vite-config#builddirectory
    */
@@ -78,7 +79,7 @@ export type HonoServerOptions<E extends Env = BlankEnv> = {
    *
    * Defaults log the port
    */
-  listeningListener?: (info: { port: number }) => void;
+  listeningListener?: (info: AddressInfo) => void;
   /**
    * Hono constructor options
    *
@@ -90,7 +91,7 @@ export type HonoServerOptions<E extends Env = BlankEnv> = {
 const defaultOptions: HonoServerOptions<BlankEnv> = {
   defaultLogger: true,
   port: Number(process.env.PORT) || 3000,
-  buildDirectory: "build/server",
+  buildDirectory: "build",
   serverBuildFile: "index.js",
   assetsDir: "assets",
   listeningListener: (info) => {
@@ -116,19 +117,23 @@ export async function createHonoServer<E extends Env = BlankEnv>(options: HonoSe
 
   const server = new Hono<E>(mergedOptions.honoOptions);
 
+  const serverBuildPath = `./${mergedOptions.buildDirectory}/server`;
+
+  const clientBuildPath = `./${mergedOptions.buildDirectory}/client`;
+
   /**
    * Serve assets files from build/client/assets
    */
   server.use(
     `/${mergedOptions.assetsDir}/*`,
     cache(60 * 60 * 24 * 365), // 1 year
-    serveStatic({ root: "./build/client" })
+    serveStatic({ root: clientBuildPath })
   );
 
   /**
    * Serve public files
    */
-  server.use("*", cache(60 * 60), serveStatic({ root: isProductionMode ? "./build/client" : "./public" })); // 1 hour
+  server.use("*", cache(60 * 60), serveStatic({ root: isProductionMode ? clientBuildPath : "./public" })); // 1 hour
 
   /**
    * Add logger middleware
@@ -155,9 +160,7 @@ export async function createHonoServer<E extends Env = BlankEnv>(options: HonoSe
             /* @vite-ignore */
             url
               .pathToFileURL(
-                path.resolve(
-                  path.join(process.cwd(), `./${mergedOptions.buildDirectory}/${mergedOptions.serverBuildFile}`)
-                )
+                path.resolve(path.join(process.cwd(), `${serverBuildPath}/${mergedOptions.serverBuildFile}`))
               )
               .toString()
           )
