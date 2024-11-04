@@ -1,3 +1,11 @@
+import type { ServerOptions as ServerOptions$1, createServer } from "node:http";
+import type {
+  SecureServerOptions,
+  ServerOptions as ServerOptions$3,
+  createSecureServer,
+  createServer as createServer$2,
+} from "node:http2";
+import type { ServerOptions as ServerOptions$2, createServer as createServer$1 } from "node:https";
 import type { AddressInfo } from "node:net";
 import path from "node:path";
 import url from "node:url";
@@ -9,8 +17,27 @@ import type { HonoOptions } from "hono/hono-base";
 import { logger } from "hono/logger";
 import type { BlankEnv } from "hono/types";
 import { type RemixMiddlewareOptions, remix } from "remix-hono/handler";
+
 import { importDevBuild } from "./dev-build";
 import { cache } from "./middleware";
+
+type createHttpOptions = {
+  serverOptions?: ServerOptions$1;
+  createServer?: typeof createServer;
+};
+type createHttpsOptions = {
+  serverOptions?: ServerOptions$2;
+  createServer?: typeof createServer$1;
+};
+type createHttp2Options = {
+  serverOptions?: ServerOptions$3;
+  createServer?: typeof createServer$2;
+};
+type createSecureHttp2Options = {
+  serverOptions?: SecureServerOptions;
+  createServer?: typeof createSecureServer;
+};
+type CreateNodeServerOptions = createHttpOptions | createHttpsOptions | createHttp2Options | createSecureHttp2Options;
 
 export type HonoServerOptions<E extends Env = BlankEnv> = {
   /**
@@ -86,6 +113,12 @@ export type HonoServerOptions<E extends Env = BlankEnv> = {
    * {@link HonoOptions}
    */
   honoOptions?: HonoOptions<E>;
+  /**
+   * Customize the node server (ex: using http2)
+   *
+   * {@link https://hono.dev/docs/getting-started/nodejs#http2}
+   */
+  customNodeServer?: CreateNodeServerOptions;
 };
 
 const defaultOptions: HonoServerOptions<BlankEnv> = {
@@ -187,6 +220,7 @@ export async function createHonoServer<E extends Env = BlankEnv>(options: HonoSe
     serve(
       {
         ...server,
+        ...mergedOptions.customNodeServer,
         port: mergedOptions.port,
       },
       mergedOptions.listeningListener
