@@ -67,7 +67,7 @@ export type HonoServerOptions<E extends Env = BlankEnv> = {
    *
    * See https://remix.run/docs/en/main/file-conventions/vite-config#serverbuildfile
    */
-  serverBuildFile?: `${string}.js`;
+  serverBuildFile?: `${string}.js` | `${string}.mjs` | `${string}.cjs`;
   /**
    * The directory where the assets are located (defined in vite.config, build.assetsDir)
    *
