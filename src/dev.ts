@@ -32,20 +32,21 @@ type HonoDevServerOptions = {
   exclude?: (string | RegExp)[];
 };
 
-const defaultConfig: Required<HonoDevServerOptions> = {
-  entry: "app/entry.server.tsx",
-  exportName: "server",
-  appDirectory: "app",
-  exclude: [],
-};
-
 /**
  * Create a dev server for the Hono server
  *
  * @param config {@link HonoDevServerOptions} - The configuration options for the dev server
  */
 export function devServer(config?: HonoDevServerOptions) {
-  const mergedConfig = { ...defaultConfig, ...config };
+  const appDirectory = config?.appDirectory || "app";
+  const mergedConfig: Required<HonoDevServerOptions> = {
+    entry: `${appDirectory}/entry.server.tsx`,
+    exportName: "server",
+    appDirectory,
+    exclude: [],
+    ...config,
+  };
+
   return honoDevServer({
     injectClientScript: false,
     entry: mergedConfig.entry, // The file path of your server.
