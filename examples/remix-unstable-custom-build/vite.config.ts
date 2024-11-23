@@ -15,6 +15,7 @@ export default defineConfig({
   plugins: [
     devServer(),
     remix({
+      buildDirectory: "dist",
       future: {
         v3_singleFetch: true,
       },

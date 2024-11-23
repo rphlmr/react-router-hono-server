@@ -1,3 +1,12 @@
+import type { ServerOptions as ServerOptions$1, createServer } from "node:http";
+import type {
+  SecureServerOptions,
+  ServerOptions as ServerOptions$3,
+  createSecureServer,
+  createServer as createServer$2,
+} from "node:http2";
+import type { ServerOptions as ServerOptions$2, createServer as createServer$1 } from "node:https";
+import type { AddressInfo } from "node:net";
 import path from "node:path";
 import url from "node:url";
 import { serve } from "@hono/node-server";
@@ -8,8 +17,27 @@ import { logger } from "hono/logger";
 import type { BlankEnv } from "hono/types";
 import type { AppLoadContext, ServerBuild } from "react-router";
 import { type RemixMiddlewareOptions, remix } from "remix-hono/handler";
+
 import { importDevBuild } from "./dev-build";
 import { cache } from "./middleware";
+
+type createHttpOptions = {
+  serverOptions?: ServerOptions$1;
+  createServer?: typeof createServer;
+};
+type createHttpsOptions = {
+  serverOptions?: ServerOptions$2;
+  createServer?: typeof createServer$1;
+};
+type createHttp2Options = {
+  serverOptions?: ServerOptions$3;
+  createServer?: typeof createServer$2;
+};
+type createSecureHttp2Options = {
+  serverOptions?: SecureServerOptions;
+  createServer?: typeof createSecureServer;
+};
+type CreateNodeServerOptions = createHttpOptions | createHttpsOptions | createHttp2Options | createSecureHttp2Options;
 
 export type HonoServerOptions<E extends Env = BlankEnv> = {
   /**
@@ -27,7 +55,7 @@ export type HonoServerOptions<E extends Env = BlankEnv> = {
   /**
    * The directory where the server build files are located (defined in vite.config)
    *
-   * Defaults to `build/server`
+   * Defaults to `build`
    *
    * See https://remix.run/docs/en/main/file-conventions/vite-config#builddirectory
    */
@@ -39,7 +67,7 @@ export type HonoServerOptions<E extends Env = BlankEnv> = {
    *
    * See https://remix.run/docs/en/main/file-conventions/vite-config#serverbuildfile
    */
-  serverBuildFile?: `${string}.js`;
+  serverBuildFile?: `${string}.js` | `${string}.mjs` | `${string}.cjs`;
   /**
    * The directory where the assets are located (defined in vite.config, build.assetsDir)
    *
@@ -78,19 +106,25 @@ export type HonoServerOptions<E extends Env = BlankEnv> = {
    *
    * Defaults log the port
    */
-  listeningListener?: (info: { port: number }) => void;
+  listeningListener?: (info: AddressInfo) => void;
   /**
    * Hono constructor options
    *
    * {@link HonoOptions}
    */
   honoOptions?: HonoOptions<E>;
+  /**
+   * Customize the node server (ex: using http2)
+   *
+   * {@link https://hono.dev/docs/getting-started/nodejs#http2}
+   */
+  customNodeServer?: CreateNodeServerOptions;
 };
 
 const defaultOptions: HonoServerOptions<BlankEnv> = {
   defaultLogger: true,
   port: Number(process.env.PORT) || 3000,
-  buildDirectory: "build/server",
+  buildDirectory: "build",
   serverBuildFile: "index.js",
   assetsDir: "assets",
   listeningListener: (info) => {
@@ -116,19 +150,23 @@ export async function createHonoServer<E extends Env = BlankEnv>(options: HonoSe
 
   const server = new Hono<E>(mergedOptions.honoOptions);
 
+  const serverBuildPath = `./${mergedOptions.buildDirectory}/server`;
+
+  const clientBuildPath = `./${mergedOptions.buildDirectory}/client`;
+
   /**
    * Serve assets files from build/client/assets
    */
   server.use(
     `/${mergedOptions.assetsDir}/*`,
     cache(60 * 60 * 24 * 365), // 1 year
-    serveStatic({ root: "./build/client" })
+    serveStatic({ root: clientBuildPath })
   );
 
   /**
    * Serve public files
    */
-  server.use("*", cache(60 * 60), serveStatic({ root: isProductionMode ? "./build/client" : "./public" })); // 1 hour
+  server.use("*", cache(60 * 60), serveStatic({ root: isProductionMode ? clientBuildPath : "./public" })); // 1 hour
 
   /**
    * Add logger middleware
@@ -155,9 +193,7 @@ export async function createHonoServer<E extends Env = BlankEnv>(options: HonoSe
             /* @vite-ignore */
             url
               .pathToFileURL(
-                path.resolve(
-                  path.join(process.cwd(), `./${mergedOptions.buildDirectory}/${mergedOptions.serverBuildFile}`)
-                )
+                path.resolve(path.join(process.cwd(), `${serverBuildPath}/${mergedOptions.serverBuildFile}`))
               )
               .toString()
           )
@@ -187,6 +223,7 @@ export async function createHonoServer<E extends Env = BlankEnv>(options: HonoSe
     serve(
       {
         ...server,
+        ...mergedOptions.customNodeServer,
         port: mergedOptions.port,
       },
       mergedOptions.listeningListener
