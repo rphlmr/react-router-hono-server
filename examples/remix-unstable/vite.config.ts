@@ -1,23 +1,24 @@
 import fs from "node:fs";
-import { vitePlugin as remix } from "@remix-run/dev";
-import { installGlobals } from "@remix-run/node";
+import { reactRouter } from "@react-router/dev/vite";
 import esbuild from "esbuild";
 import { devServer } from "react-router-hono-server/dev";
 import { defineConfig } from "vite";
 import tsconfigPaths from "vite-tsconfig-paths";
 
-installGlobals({ nativeFetch: true });
-
-export default defineConfig({
+export default defineConfig(({ isSsrBuild }) => ({
   build: {
     target: "esnext",
+    rollupOptions: isSsrBuild
+      ? {
+          input: "./server/index.ts",
+        }
+      : undefined,
   },
   plugins: [
-    devServer(),
-    remix({
-      future: {
-        v3_singleFetch: true,
-      },
+    devServer({
+      entry: "./server/index.ts",
+    }),
+    reactRouter(
       // For Sentry instrumentation
       // https://docs.sentry.io/platforms/javascript/guides/remix/manual-setup/#custom-express-server
       // buildEnd: async ({ remixConfig }) => {
@@ -51,7 +52,7 @@ export default defineConfig({
       //       process.exit(1);
       //     });
       // },
-    }),
+    ),
     tsconfigPaths(),
   ],
-});
+}));

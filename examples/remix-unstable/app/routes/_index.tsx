@@ -1,4 +1,4 @@
-import { type ClientLoaderFunctionArgs, useLoaderData, useRevalidator } from "@remix-run/react";
+import { type ClientLoaderFunctionArgs, useLoaderData, useRevalidator } from "react-router";
 import { getPublic } from "~/utils/.client/public";
 import { getCommon } from "~/utils/.common/common";
 import { getSecret } from "~/utils/.server/secret";
