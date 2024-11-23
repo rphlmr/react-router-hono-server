@@ -144,7 +144,7 @@ export async function createHonoServer<E extends Env = BlankEnv>(options: HonoSe
     defaultLogger: options.defaultLogger ?? true,
   };
 
-  const mode = process.env.NODE_ENV === "test" ? "development" : process.env.NODE_ENV;
+  const mode = process.env.NODE_ENV === "test" ? "development" : (process.env.NODE_ENV as "production" | "development");
 
   const isProductionMode = mode === "production";
 
@@ -201,10 +201,8 @@ export async function createHonoServer<E extends Env = BlankEnv>(options: HonoSe
     ) as ServerBuild;
 
     return remix({
-      // biome-ignore lint/suspicious/noExplicitAny: temp
-      build: build as any,
-      // biome-ignore lint/suspicious/noExplicitAny: temp
-      mode: mode as any,
+      build,
+      mode,
       getLoadContext(c) {
         if (!mergedOptions.getLoadContext) {
           return {};
