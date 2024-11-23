@@ -11,11 +11,11 @@ import path from "node:path";
 import url from "node:url";
 import { serve } from "@hono/node-server";
 import { serveStatic } from "@hono/node-server/serve-static";
-import type { AppLoadContext, ServerBuild } from "@remix-run/node";
 import { type Context, type Env, Hono } from "hono";
 import type { HonoOptions } from "hono/hono-base";
 import { logger } from "hono/logger";
 import type { BlankEnv } from "hono/types";
+import type { AppLoadContext, ServerBuild } from "react-router";
 import { type RemixMiddlewareOptions, remix } from "remix-hono/handler";
 
 import { importDevBuild } from "./dev-build";
@@ -201,13 +201,16 @@ export async function createHonoServer<E extends Env = BlankEnv>(options: HonoSe
     ) as ServerBuild;
 
     return remix({
-      build,
-      mode,
+      // biome-ignore lint/suspicious/noExplicitAny: temp
+      build: build as any,
+      // biome-ignore lint/suspicious/noExplicitAny: temp
+      mode: mode as any,
       getLoadContext(c) {
         if (!mergedOptions.getLoadContext) {
           return {};
         }
-        return mergedOptions.getLoadContext(c, { build });
+        // biome-ignore lint/suspicious/noExplicitAny: temp
+        return mergedOptions.getLoadContext(c, { build: build as any });
       },
     })(c, next);
   });
