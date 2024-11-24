@@ -12,6 +12,18 @@ import type { CreateNodeServerOptions } from "./types/node.https";
 import { getMode } from "./utils";
 export type HonoServerOptions<E extends Env = BlankEnv> = {
   /**
+   * The build module to use
+   *
+   * Use
+   * ```ts
+   import(
+      //@ts-expect-error virtual module provided by React Router at build time
+      "virtual:react-router/server-build"
+    )
+   * ```
+   */
+  build: Promise<ServerBuild>;
+  /**
    * Enable the default logger
    *
    * Defaults to `true`
@@ -88,7 +100,7 @@ export type HonoServerOptions<E extends Env = BlankEnv> = {
   customNodeServer?: CreateNodeServerOptions;
 };
 
-const defaultOptions: HonoServerOptions<BlankEnv> = {
+const defaultOptions: Omit<HonoServerOptions<BlankEnv>, "build"> = {
   defaultLogger: true,
   port: Number(process.env.PORT) || 3000,
   buildDirectory: "build",
@@ -107,7 +119,7 @@ const defaultOptions: HonoServerOptions<BlankEnv> = {
  *
  * @param config {@link HonoServerOptions} - The configuration options for the server
  */
-export async function createHonoServer<E extends Env = BlankEnv>(options: HonoServerOptions<E> = {}) {
+export async function createHonoServer<E extends Env = BlankEnv>(options: HonoServerOptions<E>) {
   const mergedOptions: HonoServerOptions<E> = {
     ...defaultOptions,
     ...options,
@@ -153,12 +165,7 @@ export async function createHonoServer<E extends Env = BlankEnv>(options: HonoSe
    * Add React Router middleware to Hono server
    */
   server.use(async (c, next) => {
-    const build: ServerBuild = await import(
-      /* @vite-ignore */
-      /* @ts-expect-error - virtual module provided by React Router at build time */
-      "virtual:react-router/server-build"
-    );
-
+    const build = await mergedOptions.build;
     return createMiddleware(async (c) => {
       const requestHandler = createRequestHandler(build, mode);
       const loadContext = mergedOptions.getLoadContext?.(c, { build, mode });

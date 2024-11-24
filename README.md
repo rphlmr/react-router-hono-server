@@ -61,12 +61,21 @@ In your `app` folder, create a file named `server.ts` and export **as default** 
 touch app/server.ts
 ```
 
+> [!IMPORTANT]
+> You need to import the build module using the `import()` function and loading the virtual module `virtual:react-router/server-build`.
+>
+> For technical reasons, it can't be imported for you within `createHonoServer`.
+
 ```ts
 // app/server.ts
-
 import { createHonoServer } from "react-router-hono-server/node";
 
-export default await createHonoServer();
+export default await createHonoServer({
+  build: import(
+    // @ts-expect-error - virtual module provided by React Router at build time
+    "virtual:react-router/server-build"
+  ),
+});
 ```
 
 #### Alternative
@@ -79,7 +88,12 @@ It is useful if you have many middleware and want to keep your server file clean
 
 import { createHonoServer } from "react-router-hono-server/node";
 
-export default await createHonoServer();
+export default await createHonoServer({
+  build: import(
+    // @ts-expect-error - virtual module provided by React Router at build time
+    "virtual:react-router/server-build"
+  ),
+});
 ```
 
 ### Add the Vite plugin
@@ -250,6 +264,10 @@ declare module "react-router" {
 }
 
 export default await createHonoServer({
+  build: import(
+    // @ts-expect-error - virtual module provided by React Router at build time
+    "virtual:react-router/server-build"
+  ),
   getLoadContext(_, { build, mode }) {
     const isProductionMode = mode === "production";
     return {
@@ -337,6 +355,10 @@ import { createMiddleware } from "hono/factory";
 import { createHonoServer } from "react-router-hono-server/node";
 
 export const server = await createHonoServer({
+  build: import(
+    // @ts-expect-error - virtual module provided by React Router at build time
+    "virtual:react-router/server-build"
+  ),
   configure: (server) => {
     server.use(
       createMiddleware(async (c, next) => {
@@ -383,7 +405,13 @@ One option is gone, `serverBuildFile`. We now use the Vite virtual import `virtu
 > ```ts
 > import { createHonoServer } from "react-router-hono-server/node";
 >
-> export default await createHonoServer({/* options */});
+> export default await createHonoServer({
+>   build: import(
+>     // @ts-expect-error - virtual module provided by React Router at build time
+>     "virtual:react-router/server-build"
+>   ),
+>  // other options
+> });
 > ```
 
 #### Update your `vite.config.ts`

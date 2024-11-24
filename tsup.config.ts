@@ -1,3 +1,4 @@
+import fs from "node:fs";
 import { defineConfig } from "tsup";
 
 export default defineConfig({
@@ -12,4 +13,10 @@ export default defineConfig({
     // virtual module provided by React Router at build time
     "virtual:react-router/server-build",
   ],
+  onSuccess: async () => {
+    fs.cpSync("dist", "examples/react-router/node_modules/react-router-hono-server/dist", {
+      recursive: true,
+      force: true,
+    });
+  },
 });
