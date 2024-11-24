@@ -28,7 +28,7 @@ It presets a default Hono server config that you can [customize](#options)
 
 
 > [!IMPORTANT]
-> Only works with Remix in **ESM mode**
+> Only works with React Router v7 in **ESM mode**
 >
 > Only works with **Vite**
 >
