@@ -28,11 +28,10 @@
   "scripts": {
     "test": "vitest run",
     "test:cov": "vitest run --coverage",
-    "build": "tsup src/node.ts src/dev.ts src/middlewares.ts --dts --format esm --outDir dist --clean --minifyIdentifiers --minifySyntax --external '../build/server/index.js'",
-    "remix:dev": "npm run dev -w remix-unstable",
-    "build:dev": "tsup src/node.ts src/dev.ts src/middlewares.ts --dts --format esm --outDir dist --external '../build/server/index.js'",
-    "build:dev:watch": "npm run build:dev -- --watch",
-    "dev": "npm-run-all -s build:dev -p remix:dev build:dev:watch",
+    "build": "tsup",
+    "build:watch": "npm run build -- --watch",
+    "example:dev": "npm run dev -w react-router-example",
+    "dev": "npm-run-all -s build -p example:dev build:watch",
     "prepublishOnly": "npm run build",
     "check": "biome check .",
     "check:fix": "biome check --fix .",
@@ -54,24 +53,21 @@
   "dependencies": {
     "@hono/node-server": "^1.13.7",
     "@hono/vite-dev-server": "^0.17.0",
-    "hono": "^4.5.3",
-    "remix-hono": "^0.0.16"
+    "hono": "^4.6.11"
   },
   "devDependencies": {
-    "@biomejs/biome": "^1.8.3",
+    "@biomejs/biome": "^1.9.4",
+    "@types/node": "^22.9.3",
     "@vitest/coverage-v8": "^2.1.5",
-    "happy-dom": "^15.11.6",
     "lefthook": "^1.8.4",
     "npm-run-all": "^4.1.5",
-    "react-router": "^7.0.1",
     "tsup": "^8.3.5",
     "typescript": "^5.7.2",
     "vitest": "^2.1.5"
   },
   "peerDependencies": {
-    "hono": "^4.5.3",
     "react-router": "^7.0.1",
-    "vite": "^5.0.0"
+    "vite": "^5.4.0"
   },
   "engines": {
     "node": ">=20.0.0"

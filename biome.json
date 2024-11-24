@@ -38,7 +38,8 @@
         "recommended": true
       },
       "correctness": {
-        "recommended": true
+        "recommended": true,
+        "noUnusedImports": "warn"
       },
       "a11y": {
         "recommended": true

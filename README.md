@@ -1,6 +1,4 @@
-# React Router Hono Server
-
-Inspired by [remix-express-vite-plugin](https://github.com/kiliman/remix-express-vite-plugin) from [@kiliman](https://github.com/kiliman)
+# React Router v7 Hono Server
 
 <!-- ![GitHub Repo stars](https://img.shields.io/github/stars/rphlmr/react-router-hono-server?style=social)
 ![npm](https://img.shields.io/npm/v/open-source-stack?style=plastic)
@@ -9,13 +7,25 @@ Inspired by [remix-express-vite-plugin](https://github.com/kiliman/remix-express
 ![npm](https://img.shields.io/npm/dw/open-source-stack?style=plastic)
 ![GitHub top language](https://img.shields.io/github/languages/top/rphlmr/react-router-hono-server?style=plastic) -->
 
-This package contains a helper function that enables you to create your Hono
-server directly from you _entry.server.tsx_. Since the Hono server is built along
-with the rest of your Remix app, you may import app modules as needed. It also
-supports Vite HMR via the `react-router-hono-server/dev` plugin (which is required
+## Psst!
+> [!IMPORTANT]
+> This package is only compatible with React Router v7
+>
+> You can still use the v1 with @remix-run. [Previous docs](https://github.com/rphlmr/react-router-hono-server/tree/v1.2.0)
+>
+> Migration guide from v1 [here](#migrate-from-v1)
+
+## TLDR
+This package contains a helper function `createHonoServer` that enables you to create a Hono
+server bound to your React Router v7 app.
+
+Since the Hono server is built along with the rest of your app, you may import app modules as needed.
+
+It also supports Vite HMR via the `react-router-hono-server/dev` plugin (which is required
 for this to function).
 
-It relies on [remix-hono](https://github.com/sergiodxa/remix-hono) and presets a default Hono server config that you can [customize](#options)
+It presets a default Hono server config that you can [customize](#options)
+
 
 > [!IMPORTANT]
 > Only works with Remix in **ESM mode**
@@ -25,99 +35,104 @@ It relies on [remix-hono](https://github.com/sergiodxa/remix-hono) and presets a
 > Only works for **node**
 
 > [!TIP]
+> 👨‍🏫 There is some examples in the [examples](./examples) folder. I hope they will help you.
+>
 > You can use [remix-hono](https://github.com/sergiodxa/remix-hono) to add cool middleware like [`session`](https://github.com/sergiodxa/remix-hono?tab=readme-ov-file#session-management)
 
 ## Installation
 
-Install the following npm package. NOTE: This is not a dev dependency, as it
-creates the Hono server used in production.
+Install the following npm package.
+
+> [!NOTE]
+> This is not a dev dependency, as it creates the Hono server used in production.
 
 ```bash
 npm install react-router-hono-server
 ```
 
+> [!TIP]
+> You don't need to install `hono` as it is included in this package.
+
 ## Configuration
 ### Create the server
-From your _entry.server.tsx_ file, export the server from `createHonoServer` and
-name it `server` or the name you defined in `devServer({exportName})` in your _vite.config.ts_.
+In your `app` folder, create a file named `server.ts` and export **as default** the server created by `createHonoServer`.
 
-```ts
-// app/entry.server.tsx
-
-import { createHonoServer } from "react-router-hono-server/node";
-
-export const server = await createHonoServer();
+```bash
+touch app/server.ts
 ```
-
-#### Alternative
-You can create your server in a separate file and export it from your _entry.server.tsx_.
-
-It is useful if you have many middleware and want to keep your _entry.server.tsx_ clean.
 
 ```ts
 // app/server.ts
 
 import { createHonoServer } from "react-router-hono-server/node";
 
-export const server = await createHonoServer();
+export default await createHonoServer();
 ```
+
+#### Alternative
+You can define your server in `app/server/index.ts`.
+
+It is useful if you have many middleware and want to keep your server file clean.
+
 ```ts
-// app/entry.server.tsx
+// app/server/index.ts
 
-export * from "./server";
+import { createHonoServer } from "react-router-hono-server/node";
 
+export default await createHonoServer();
 ```
 
 ### Add the Vite plugin
 ```ts
 // vite.config.ts
-
-import { vitePlugin as remix } from "@remix-run/dev";
-import { installGlobals } from "@remix-run/node";
+import { reactRouter } from "@react-router/dev/vite";
 import { devServer } from "react-router-hono-server/dev";
 import { defineConfig } from "vite";
 import tsconfigPaths from "vite-tsconfig-paths";
 
-installGlobals();
-
-export default defineConfig({
+export default defineConfig(({ isSsrBuild }) => ({
   build: {
     target: "esnext",
+    rollupOptions: isSsrBuild
+      ? {
+          input: "app/server.ts", // or app/server/index.ts if you choose the folder way
+        }
+      : undefined,
   },
-  plugins: [devServer(), remix(), tsconfigPaths()],
-});
+  plugins: [
+    devServer(),
+    reactRouter(),
+    tsconfigPaths()
+  ],
+}));
 ```
 > [!IMPORTANT]
-> Change the `target` to `esnext` in your _vite.config.ts_ file
->
-> ```ts
-> build: {
->   target: "esnext",
-> },
-> ```
+> Key points:
+> - Change the `target` to `esnext` in your _vite.config.ts_ file
+> - Set the `input` to the path of your server file in your _vite.config.ts_ file
 
 
-### Update package.json scripts
+### Update your package.json scripts
+It is not an error, you can keep the React Router defaults!
 ```json
   "scripts": {
-    "build": "NODE_ENV=production remix vite:build",
-    "dev": "vite --host",
-    "start": "NODE_ENV=production node ./build/server/index.js"
+    "build": "NODE_ENV=production react-router build",
+    "dev": "react-router dev",
+    "start": "NODE_ENV=production node ./build/server/index.js",
   },
 ```
 
 ## How it works
 
-This helper function works differently depending on the environment.
+This helper works differently depending on the environment.
 
-For `development`, it creates an Hono server that the Vite plugin will load
-via `viteDevServer.ssrLoadModule('virtual:remix/server-build')`.
-The actual server is controlled by Vite through `@hono/vite-dev-server`, and can be configured via _vite.config.ts_ `server` options.
+In development, it uses [@hono/vite-dev-server](https://github.com/honojs/vite-plugins/tree/main/packages/dev-server) and loads your server and React Router app with `import('virtual:react-router/server-build')`.
+It can be configured in `vite.config.ts`.
 
-For `production`, it will create a standard node HTTP server listening at `HOST:PORT`.
+In `production`, it will create a standard node HTTP server listening at `HOST:PORT`.
 You can customize the production server port using the `port` option of `createHonoServer`.
 
-When building for production, the Hono server is compiled in the same bundle as the rest of your Remix app, you can import app modules just like you normally would.
+When building for production, the Hono server is compiled as `build/server/index.js` and imports your React Router app.
 
 To run the server in production, use `NODE_ENV=production node ./build/server/index.js`.
 
@@ -142,19 +157,11 @@ export type HonoServerOptions<E extends Env = BlankEnv> = {
   /**
    * The directory where the server build files are located (defined in vite.config)
    *
-   * Defaults to `build/server`
+   * Defaults to `build`
    *
    * See https://remix.run/docs/en/main/file-conventions/vite-config#builddirectory
    */
   buildDirectory?: string;
-  /**
-   * The file name of the server build file (defined in vite.config)
-   *
-   * Defaults to `index.js`
-   *
-   * See https://remix.run/docs/en/main/file-conventions/vite-config#serverbuildfile
-   */
-  serverBuildFile?: `${string}.js`;
   /**
    * The directory where the assets are located (defined in vite.config, build.assetsDir)
    *
@@ -166,25 +173,29 @@ export type HonoServerOptions<E extends Env = BlankEnv> = {
   /**
    * Customize the Hono server, for example, adding middleware
    *
-   * It is applied after the default middleware and before the remix middleware
+   * It is applied after the default middleware and before the React Router middleware
    */
   configure?: <E extends Env = BlankEnv>(server: Hono<E>) => Promise<void> | void;
   /**
-   * Augment the Remix AppLoadContext
+   * Augment the React Router AppLoadContext
    *
    * Don't forget to declare the AppLoadContext in your app, next to where you create the Hono server
    *
    * ```ts
-   * declare module "@remix-run/node" {
+   * declare module "react-router" {
    *   interface AppLoadContext {
    *     // Add your custom context here
+   *     whatever: string;
    *   }
    * }
    * ```
    */
   getLoadContext?: (
     c: Context,
-    options: Pick<RemixMiddlewareOptions, "build" | "mode">
+    options: {
+      build: ServerBuild;
+      mode: "development" | "production" | "test";
+    }
   ) => Promise<AppLoadContext> | AppLoadContext;
   /**
    * Listening listener (production mode only)
@@ -193,37 +204,43 @@ export type HonoServerOptions<E extends Env = BlankEnv> = {
    *
    * Defaults log the port
    */
-  listeningListener?: (info: { port: number }) => void;
+  listeningListener?: (info: AddressInfo) => void;
   /**
    * Hono constructor options
    *
    * {@link HonoOptions}
    */
   honoOptions?: HonoOptions<E>;
+  /**
+   * Customize the node server (ex: using http2)
+   *
+   * {@link https://hono.dev/docs/getting-started/nodejs#http2}
+   */
+  customNodeServer?: CreateNodeServerOptions;
 };
 ```
 
-You can add additional Hono middleware with the `configure` function. If you
-do not provide a function, it will create a default Hono server.
+You can add additional Hono middleware with the `configure` function. If you do not provide a function, it will create a default Hono server.
+
 The `configure` function can be async. So, make sure to `await createHonoServer()`.
 
-If you want to set up the Remix `AppLoadContext`, pass in a function to `getLoadContext`.
+If you want to set up the React Router `AppLoadContext`, pass in a function to `getLoadContext`.
+
 Modify the `AppLoadContext` interface used in your app.
 
-Since the Hono server is compiled in the same bundle as the rest of your Remix
-app, you can import app modules just like you normally would.
+Since the Hono server is compiled in the same bundle as the rest of your React Router app, you can import app modules just like you normally would.
 
 ### Example
 
 ```ts
-// app/entry.server.tsx
+// app/server.ts
 
 import { createHonoServer } from "react-router-hono-server/node";
 
 /**
  * Declare our loaders and actions context type
  */
-declare module "@remix-run/node" {
+declare module "react-router" {
   interface AppLoadContext {
     /**
      * The app version from the build assets
@@ -232,7 +249,7 @@ declare module "@remix-run/node" {
   }
 }
 
-export const server = await createHonoServer({
+export default await createHonoServer({
   getLoadContext(_, { build, mode }) {
     const isProductionMode = mode === "production";
     return {
@@ -244,8 +261,8 @@ export const server = await createHonoServer({
 
 ```ts
 // app/routes/test.tsx
-
-export async function loader({ context }: LoaderFunctionArgs) {
+import type { Route } from "./+types/test";
+export async function loader({ context }: Route.LoaderArgs) {
   // get the context provided from `getLoadContext`
   return { appVersion: context.appVersion }
 }
@@ -253,7 +270,7 @@ export async function loader({ context }: LoaderFunctionArgs) {
 
 ## Middleware
 
-Middleware are functions that are called before Remix calls your loader/action.
+Middleware are functions that are called before React Router calls your loader/action.
 
 Hono is the perfect tool for this, as it supports middleware out of the box.
 
@@ -266,12 +283,12 @@ See how [Shelf.nu](https://github.com/Shelf-nu/shelf.nu/blob/main/server/middlew
 > [!TIP]
 > This lib exports one middleware `cache` (`react-router-hono-server/middleware`) that you can use to cache your responses.
 
-### Using Remix Hono middleware
+### Using remix-hono middleware
 
 It is easy to use [remix-hono](https://github.com/sergiodxa/remix-hono) middleware with this package.
 
 ```ts
-import { createCookieSessionStorage } from "@remix-run/node";
+import { createCookieSessionStorage } from "react-router";
 import { createHonoServer } from "react-router-hono-server/node";
 import { session } from "remix-hono/session";
 
@@ -330,6 +347,90 @@ export const server = await createHonoServer({
   },
 });
 ```
+
+### Migrate from v1
+_You should not expect any breaking changes._
+
+#### Install the latest version
+
+```bash
+npm install react-router-hono-server@latest
+```
+
+#### Create the server file
+##### Option 1 - You previously had all your server code in `app/entry.server.tsx`
+```bash
+touch app/server.ts
+```
+
+##### Option 2 - You previously had your server code in a `server` folder
+```bash
+mkdir app/server
+touch app/server/index.ts
+```
+
+#### Move your server code
+Move your previous server code to the new file you created in the previous step.
+
+> [!NOTE]
+> You can remove the import from `react-router-hono-server/node` in your `entry.server.tsx` file and any other server code.
+
+One option is gone, `serverBuildFile`. We now use the Vite virtual import `virtual:react-router/server-build` to load the server build.
+
+> [!IMPORTANT]
+> You now need to export the server created by `createHonoServer` as **default**.
+>
+> ```ts
+> import { createHonoServer } from "react-router-hono-server/node";
+>
+> export default await createHonoServer({/* options */});
+> ```
+
+#### Update your `vite.config.ts`
+
+One option is gone for `devServer`, `exportName` as it now expects a default export from your server file.
+
+> [!IMPORTANT]
+> You need to add a new `build.rollupOptions.input` option to your `vite.config.ts` file (see [here](#add-the-vite-plugin) for more information).
+>
+> ```diff ts
+> // vite.config.ts
+> import { reactRouter } from "@react-router/dev/vite";
+> import { devServer } from "react-router-hono-server/dev";
+> import { defineConfig } from "vite";
+> import tsconfigPaths from "vite-tsconfig-paths";
+>
+> export default defineConfig(({ isSsrBuild }) => ({
+>   build: {
+>     target: "esnext",
+>+     rollupOptions: isSsrBuild
+>+       ? {
+>+           input: "app/server.ts", // or app/server/index.ts if you choose the folder way
+>+         }
+>+       : undefined,
+>   },
+>   plugins: [
+>     devServer(),
+>     reactRouter(),
+>     tsconfigPaths()
+>   ],
+> }));
+> ```
+
+##### You used `buildEnd` from `remix()` plugin or a custom `buildDirectory` option
+You may know that it has been moved to `react-router.config.ts` (see [here](https://reactrouter.com/upgrading/remix#5-add-a-react-router-config) for more information).
+
+If you used this hook for Sentry, check this [example](./examples/react-router-sentry/react-router.config.ts) to see how to migrate.
+
+If you used a custom `buildDirectory` option, check this [example](./examples/react-router-custom-build/react-router.config.ts) to see how to migrate.
+
+## Special Thanks
+
+Inspired by [remix-express-vite-plugin](https://github.com/kiliman/remix-express-vite-plugin) from [@kiliman](https://github.com/kiliman)
+
+`remix` handler was forked from [remix-hono](https://github.com/sergiodxa/remix-hono) by [@sergiodxa](https://github.com/sergiodxa) as it is a small and simple core dependency of this library.
+
+I will still help maintain it.
 
 ## Contributors ✨
 

@@ -4,26 +4,17 @@ type HonoDevServerOptions = {
   /**
    * The path to the `app` directory, relative to `vite.config.ts`.
    *
-   * Defaults to `"app"`.
+   * Defaults to `app`.
    */
   appDirectory?: string;
   /**
-   * The path to the entry file, relative to `vite.config.ts`.
+   * The path to the server file, relative to `vite.config.ts`.
    *
-   * Defaults to `"app/entry.server.tsx"`.
+   * If it is a folder (`app/server`), it will look for an `index.ts` file.
+   *
+   * Defaults to `${appDirectory}/server[.ts | /index.ts]`.
    */
   entry?: string;
-  /**
-   * The name of the export from the entry file.
-   *
-   * Defaults to `server`. If you are using export default, use `default`
-   *
-   * @example
-   * ```ts
-   * export const server = createHonoServer();
-   * ```
-   */
-  exportName?: string;
   /**
    * The paths that are not served by the dev-server.
    *
@@ -35,29 +26,28 @@ type HonoDevServerOptions = {
 /**
  * Create a dev server for the Hono server
  *
- * @param config {@link HonoDevServerOptions} - The configuration options for the dev server
+ * @param options {@link HonoDevServerOptions} - The configuration options for the dev server
  */
-export function devServer(config?: HonoDevServerOptions) {
-  const appDirectory = config?.appDirectory || "app";
-  const mergedConfig: Required<HonoDevServerOptions> = {
-    entry: `${appDirectory}/entry.server.tsx`,
-    exportName: "server",
+export function devServer(options?: HonoDevServerOptions) {
+  const appDirectory = options?.appDirectory || "app";
+  const mergedOptions: Required<HonoDevServerOptions> = {
+    entry: `${appDirectory}/server`,
     appDirectory,
     exclude: [],
-    ...config,
+    ...options,
   };
 
   return honoDevServer({
     injectClientScript: false,
-    entry: mergedConfig.entry, // The file path of your server.
-    export: mergedConfig.exportName,
+    entry: mergedOptions.entry,
+    export: "default",
     exclude: [
-      `/${mergedConfig.appDirectory}/**/*`,
-      `/${mergedConfig.appDirectory}/**/.*/**`,
+      `/${mergedOptions.appDirectory}/**/*`,
+      `/${mergedOptions.appDirectory}/**/.*/**`,
       /^\/@.+$/,
       /^\/node_modules\/.*/,
       /\?import$/,
-      ...mergedConfig.exclude,
+      ...mergedOptions.exclude,
     ],
   });
 }
