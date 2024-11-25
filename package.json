@@ -47,10 +47,14 @@
   "bugs": {
     "url": "https://github.com/rphlmr/react-router-hono-server/issues"
   },
+  "bin": {
+    "react-router-hono-server": "dist/cli.mjs"
+  },
   "files": ["dist"],
   "workspaces": [".", "examples/*"],
   "homepage": "https://github.com/rphlmr/react-router-hono-server#readme",
   "dependencies": {
+    "@drizzle-team/brocli": "^0.11.0",
     "@hono/node-server": "^1.13.7",
     "@hono/vite-dev-server": "^0.17.0",
     "hono": "^4.6.11"

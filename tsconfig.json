@@ -12,6 +12,6 @@
     "outDir": "./dist",
     "noEmit": true
   },
-  "include": ["src/**/*", "tests/**/*"],
+  "include": ["src/**/*", "tests/**/*", "cli.ts"],
   "exclude": ["node_modules", "dist", "virtual:react-router/server-build"]
 }

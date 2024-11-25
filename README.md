@@ -81,6 +81,13 @@ When building for production, it will create the server file at `build/server/in
 Ok, by default it works, but you may want to customize the server and use some middleware.
 
 ### Create the server
+> [!TIP]
+> You can use the CLI to create the server file for you.
+>
+> ```bash
+> npx react-router-hono-server reveal file
+> ```
+
 In your `app` folder, create a file named `server.ts` and export **as default** the server created by `createHonoServer`.
 
 ```bash
@@ -96,6 +103,13 @@ export default await createHonoServer({/* options */});
 
 #### Alternative
 You can define your server in `app/server/index.ts`.
+
+> [!TIP]
+> You can use the CLI to create the server file for you.
+>
+> ```bash
+> npx react-router-hono-server reveal folder
+> ```
 
 It is useful if you have many middleware and want to keep your server file clean.
 
