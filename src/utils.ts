@@ -4,8 +4,6 @@ type NodeEnv = (typeof envs)[number];
 export function getMode(): NodeEnv {
   const NODE_ENV = process.env.NODE_ENV?.toLowerCase() as NodeEnv | undefined;
 
-  console.log(NODE_ENV);
-
   if (!NODE_ENV || !envs.includes(NODE_ENV)) {
     throw new Error(
       `NODE_ENV is not set or is not valid: ${NODE_ENV}. Please set it to one of the following: ${envs.join(", ")}`
