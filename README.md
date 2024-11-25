@@ -53,7 +53,33 @@ npm install react-router-hono-server
 > [!TIP]
 > You don't need to install `hono` as it is included in this package.
 
+## Easy mode
+In your `vite.config.ts`, add the `reactRouterHonoServer` plugin.
+
+```diff ts
+import { reactRouter } from "@react-router/dev/vite";
++import { reactRouterHonoServer } from "react-router-hono-server/dev";
+import { defineConfig } from "vite";
+import tsconfigPaths from "vite-tsconfig-paths";
+
+export default defineConfig({
+  plugins: [
++   reactRouterHonoServer(),
+    reactRouter(),
+    tsconfigPaths()
+  ],
+});
+```
+**That's all!**
+
+Wait, what?
+
+For really simple apps, that's all you need to do. Behind the hood, it will create a virtual module with a default Hono server.
+When building for production, it will create the server file at `build/server/index.js` and import your React Router app from `virtual:react-router/server-build` module (replacing it with the real file located in `build/server/assets/server-build-[hash].js`).
+
 ## Configuration
+Ok, by default it works, but you may want to customize the server and use some middleware.
+
 ### Create the server
 In your `app` folder, create a file named `server.ts` and export **as default** the server created by `createHonoServer`.
 
@@ -61,21 +87,11 @@ In your `app` folder, create a file named `server.ts` and export **as default** 
 touch app/server.ts
 ```
 
-> [!IMPORTANT]
-> You need to import the build module using the `import()` function and loading the virtual module `virtual:react-router/server-build`.
->
-> For technical reasons, it can't be imported for you within `createHonoServer`.
-
 ```ts
 // app/server.ts
 import { createHonoServer } from "react-router-hono-server/node";
 
-export default await createHonoServer({
-  build: import(
-    // @ts-expect-error - virtual module provided by React Router at build time
-    "virtual:react-router/server-build"
-  ),
-});
+export default await createHonoServer({/* options */});
 ```
 
 #### Alternative
@@ -88,42 +104,27 @@ It is useful if you have many middleware and want to keep your server file clean
 
 import { createHonoServer } from "react-router-hono-server/node";
 
-export default await createHonoServer({
-  build: import(
-    // @ts-expect-error - virtual module provided by React Router at build time
-    "virtual:react-router/server-build"
-  ),
-});
+export default await createHonoServer({/* options */});
 ```
 
-### Add the Vite plugin
-```ts
+### Add the Vite plugin (if not already)
+```diff ts
 // vite.config.ts
 import { reactRouter } from "@react-router/dev/vite";
-import { devServer } from "react-router-hono-server/dev";
++import { reactRouterHonoServer } from "react-router-hono-server/dev";
 import { defineConfig } from "vite";
 import tsconfigPaths from "vite-tsconfig-paths";
 
-export default defineConfig(({ isSsrBuild }) => ({
-  build: {
-    target: "esnext",
-    rollupOptions: isSsrBuild
-      ? {
-          input: "app/server.ts", // or app/server/index.ts if you choose the folder way
-        }
-      : undefined,
-  },
+export default defineConfig({
   plugins: [
-    devServer(),
++   reactRouterHonoServer(),
     reactRouter(),
     tsconfigPaths()
   ],
-}));
+});
 ```
-> [!IMPORTANT]
-> Key points:
-> - Change the `target` to `esnext` in your _vite.config.ts_ file
-> - Set the `input` to the path of your server file in your _vite.config.ts_ file
+> [!NOTE]
+> It uses the `reactRouter` plugin to build your app and will automatically load its config.
 
 
 ### Update your package.json scripts
@@ -146,7 +147,7 @@ It can be configured in `vite.config.ts`.
 In `production`, it will create a standard node HTTP server listening at `HOST:PORT`.
 You can customize the production server port using the `port` option of `createHonoServer`.
 
-When building for production, the Hono server is compiled as `build/server/index.js` and imports your React Router app.
+When building for production, the Hono server is compiled as `build/server/index.js` and imports your React Router app from `assets/server-build-[hash].js`.
 
 To run the server in production, use `NODE_ENV=production node ./build/server/index.js`.
 
@@ -168,22 +169,6 @@ export type HonoServerOptions<E extends Env = BlankEnv> = {
    * Defaults to `process.env.PORT || 3000`
    */
   port?: number;
-  /**
-   * The directory where the server build files are located (defined in vite.config)
-   *
-   * Defaults to `build`
-   *
-   * See https://remix.run/docs/en/main/file-conventions/vite-config#builddirectory
-   */
-  buildDirectory?: string;
-  /**
-   * The directory where the assets are located (defined in vite.config, build.assetsDir)
-   *
-   * Defaults to `assets`
-   *
-   * See https://vitejs.dev/config/build-options#build-assetsdir
-   */
-  assetsDir?: string;
   /**
    * Customize the Hono server, for example, adding middleware
    *
@@ -264,10 +249,6 @@ declare module "react-router" {
 }
 
 export default await createHonoServer({
-  build: import(
-    // @ts-expect-error - virtual module provided by React Router at build time
-    "virtual:react-router/server-build"
-  ),
   getLoadContext(_, { build, mode }) {
     const isProductionMode = mode === "production";
     return {
@@ -310,7 +291,7 @@ import { createCookieSessionStorage } from "react-router";
 import { createHonoServer } from "react-router-hono-server/node";
 import { session } from "remix-hono/session";
 
-export const server = await createHonoServer({
+export default await createHonoServer({
   configure: (server) => {
     server.use(
       session({
@@ -343,7 +324,6 @@ export const server = await createHonoServer({
 });
 ```
 
-
 ### Creating custom Middleware
 
 You can create middleware using the [`createMiddleware`](https://hono.dev/docs/helpers/factory#createmiddleware) or [`createFactory`](https://hono.dev/docs/helpers/factory#createfactory) functions from `hono/factory`.
@@ -354,11 +334,7 @@ Then, use them with the `configure` function of `createHonoServer`.
 import { createMiddleware } from "hono/factory";
 import { createHonoServer } from "react-router-hono-server/node";
 
-export const server = await createHonoServer({
-  build: import(
-    // @ts-expect-error - virtual module provided by React Router at build time
-    "virtual:react-router/server-build"
-  ),
+export default await createHonoServer({
   configure: (server) => {
     server.use(
       createMiddleware(async (c, next) => {
@@ -397,7 +373,9 @@ Move your previous server code to the new file you created in the previous step.
 > [!NOTE]
 > You can remove the import from `react-router-hono-server/node` in your `entry.server.tsx` file and any other server code.
 
-One option is gone, `serverBuildFile`. We now use the Vite virtual import `virtual:react-router/server-build` to load the server build.
+Many options are gone, `serverBuildFile` `assetsDir` and `buildDirectory`.
+
+We now use the Vite virtual import `virtual:react-router/server-build` to load the server build and we read the Vite config thanks to the `reactRouterHonoServer` plugin.
 
 > [!IMPORTANT]
 > You now need to export the server created by `createHonoServer` as **default**.
@@ -405,45 +383,18 @@ One option is gone, `serverBuildFile`. We now use the Vite virtual import `virtu
 > ```ts
 > import { createHonoServer } from "react-router-hono-server/node";
 >
-> export default await createHonoServer({
->   build: import(
->     // @ts-expect-error - virtual module provided by React Router at build time
->     "virtual:react-router/server-build"
->   ),
->  // other options
-> });
+> export default await createHonoServer({/* other options */});
 > ```
 
 #### Update your `vite.config.ts`
 
-One option is gone for `devServer`, `exportName` as it now expects a default export from your server file.
-
 > [!IMPORTANT]
-> You need to add a new `build.rollupOptions.input` option to your `vite.config.ts` file (see [here](#add-the-vite-plugin) for more information).
->
-> ```diff ts
-> // vite.config.ts
-> import { reactRouter } from "@react-router/dev/vite";
-> import { devServer } from "react-router-hono-server/dev";
-> import { defineConfig } from "vite";
-> import tsconfigPaths from "vite-tsconfig-paths";
->
-> export default defineConfig(({ isSsrBuild }) => ({
->   build: {
->     target: "esnext",
->+     rollupOptions: isSsrBuild
->+       ? {
->+           input: "app/server.ts", // or app/server/index.ts if you choose the folder way
->+         }
->+       : undefined,
->   },
->   plugins: [
->     devServer(),
->     reactRouter(),
->     tsconfigPaths()
->   ],
-> }));
-> ```
+> `devServer` is now `reactRouterHonoServer`.
+
+Many options are gone or have changed.
+
+`exportName` (`reactRouterHonoServer` expects a default export from your server file), `entry` is now `serverEntryPoint`. `appDirectory` is removed (read from `vite.config.ts`), and `exclude` has been moved under `dev`.
+
 
 ##### You used `buildEnd` from `remix()` plugin or a custom `buildDirectory` option
 You may know that it has been moved to `react-router.config.ts` (see [here](https://reactrouter.com/upgrading/remix#5-add-a-react-router-config) for more information).

@@ -18,5 +18,9 @@ export default defineConfig({
       recursive: true,
       force: true,
     });
+    fs.cpSync("dist", "examples/react-router-virtual/node_modules/react-router-hono-server/dist", {
+      recursive: true,
+      force: true,
+    });
   },
 });
