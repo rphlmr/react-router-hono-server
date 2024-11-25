@@ -52,6 +52,12 @@ npm install react-router-hono-server
 
 > [!TIP]
 > You don't need to install `hono` as it is included in this package.
+>
+> If you use `pnpm`, and want to use some imports from `hono`, you may need to install `hono` manually or create a `.npmrc` file in your project with the following content:
+>
+> ```
+> public-hoist-pattern[]=hono
+> ```
 
 ## Easy mode
 In your `vite.config.ts`, add the `reactRouterHonoServer` plugin.
