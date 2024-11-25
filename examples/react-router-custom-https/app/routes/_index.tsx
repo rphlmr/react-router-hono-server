@@ -1,11 +1,12 @@
 import { useState } from "react";
-import { type ClientLoaderFunctionArgs, useLoaderData, useRevalidator } from "react-router";
+import { useRevalidator } from "react-router";
 import { Input } from "~/components/input";
 import { getPublic } from "~/utils/.client/public";
 import { getCommon } from "~/utils/.common/common";
 import { getSecret } from "~/utils/.server/secret";
 import { getEnv } from "~/utils/env.server";
 import dbLogo from "/images/database.svg";
+import type { Route } from "./+types/_index";
 
 export function loader() {
   console.log(getSecret(), getCommon());
@@ -14,18 +15,17 @@ export function loader() {
   };
 }
 
-export async function clientLoader({ serverLoader }: ClientLoaderFunctionArgs) {
+export async function clientLoader({ serverLoader }: Route.ClientLoaderArgs) {
   console.log(getPublic(), getCommon());
   return {
-    ...(await serverLoader<typeof loader>()),
+    ...(await serverLoader()),
   };
 }
 
 clientLoader.hydrate = true;
 
-export default function Index() {
+export default function Index({ loaderData: data }: Route.ComponentProps) {
   const [value, setValue] = useState("");
-  const data = useLoaderData<typeof loader>();
   console.log("dbLogo", dbLogo);
   console.log("value", value);
   const { revalidate } = useRevalidator();
