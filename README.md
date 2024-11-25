@@ -86,6 +86,11 @@ When building for production, it will create the server file at `build/server/in
 ## Configuration
 Ok, by default it works, but you may want to customize the server and use some middleware.
 
+> [!IMPORTANT]
+> Until you define your own `serverEntryPoint`, the file name `${appDirectory}/server.ts` and the folder name `${appDirectory}/server` are reserved words.
+>
+> `reactRouterHonoServer` plugin is looking for them to find your server file.
+
 ### Create the server
 > [!TIP]
 > You can use the CLI to create the server file for you.
@@ -126,6 +131,11 @@ import { createHonoServer } from "react-router-hono-server/node";
 
 export default await createHonoServer({/* options */});
 ```
+
+#### I don't like this default
+No problem, you can define your files wherever you want.
+
+Use the `serverEntryPoint` option of `reactRouterHonoServer` to point to your server file.
 
 ### Add the Vite plugin (if not already)
 ```ts
