@@ -142,10 +142,10 @@ export default defineConfig({
 
 
 ### Update your package.json scripts
-It is not an error, you can keep the React Router defaults!
+It is not an error, you can keep the React Router defaults for `build` and `dev`!
 ```json
   "scripts": {
-    "build": "NODE_ENV=production react-router build",
+    "build": "react-router build",
     "dev": "react-router dev",
     "start": "NODE_ENV=production node ./build/server/index.js",
   },
