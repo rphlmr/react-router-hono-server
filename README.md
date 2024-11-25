@@ -409,11 +409,19 @@ npm install react-router-hono-server@latest
 ```bash
 touch app/server.ts
 ```
+or
+```bash
+npx react-router-hono-server reveal file
+```
 
 ##### Option 2 - You previously had your server code in a `server` folder
 ```bash
 mkdir app/server
 touch app/server/index.ts
+```
+or
+```bash
+npx react-router-hono-server reveal folder
 ```
 
 #### Move your server code
@@ -451,6 +459,15 @@ You may know that it has been moved to `react-router.config.ts` (see [here](http
 If you used this hook for Sentry, check this [example](./examples/react-router-sentry/react-router.config.ts) to see how to migrate.
 
 If you used a custom `buildDirectory` option, check this [example](./examples/react-router-custom-build/react-router.config.ts) to see how to migrate.
+
+#### Update your package.json scripts
+```json
+  "scripts": {
+    "build": "react-router build",
+    "dev": "react-router dev",
+    "start": "NODE_ENV=production node ./build/server/index.js",
+  },
+```
 
 ## Special Thanks
 
