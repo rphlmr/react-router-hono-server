@@ -8,8 +8,6 @@ export default defineConfig([
     format: ["esm"],
     clean: true,
     dts: true,
-    minifyIdentifiers: true,
-    minifySyntax: true,
     external: [
       // virtual module provided by React Router at build time
       "virtual:react-router/server-build",
@@ -29,8 +27,6 @@ export default defineConfig([
     entry: ["src/cli.ts"],
     outDir: "dist",
     format: ["esm"],
-    minifyIdentifiers: true,
-    minifySyntax: true,
     onSuccess: async () => {
       const banner = "#!/usr/bin/env node\n";
       const cliFilePath = "dist/cli.mjs";

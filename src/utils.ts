@@ -1,8 +1,10 @@
 const envs = ["test", "development", "production"] as const;
 type NodeEnv = (typeof envs)[number];
 
-export function getMode() {
+export function getMode(): NodeEnv {
   const NODE_ENV = process.env.NODE_ENV?.toLowerCase() as NodeEnv | undefined;
+
+  console.log(NODE_ENV);
 
   if (!NODE_ENV || !envs.includes(NODE_ENV)) {
     throw new Error(
