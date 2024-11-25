@@ -56,15 +56,15 @@ npm install react-router-hono-server
 ## Easy mode
 In your `vite.config.ts`, add the `reactRouterHonoServer` plugin.
 
-```diff ts
+```ts
 import { reactRouter } from "@react-router/dev/vite";
-+import { reactRouterHonoServer } from "react-router-hono-server/dev";
+import { reactRouterHonoServer } from "react-router-hono-server/dev"; // add this
 import { defineConfig } from "vite";
 import tsconfigPaths from "vite-tsconfig-paths";
 
 export default defineConfig({
   plugins: [
-+   reactRouterHonoServer(),
+    reactRouterHonoServer(), // add this
     reactRouter(),
     tsconfigPaths()
   ],
@@ -108,16 +108,16 @@ export default await createHonoServer({/* options */});
 ```
 
 ### Add the Vite plugin (if not already)
-```diff ts
+```ts
 // vite.config.ts
 import { reactRouter } from "@react-router/dev/vite";
-+import { reactRouterHonoServer } from "react-router-hono-server/dev";
+import { reactRouterHonoServer } from "react-router-hono-server/dev"; // add this
 import { defineConfig } from "vite";
 import tsconfigPaths from "vite-tsconfig-paths";
 
 export default defineConfig({
   plugins: [
-+   reactRouterHonoServer(),
+    reactRouterHonoServer(), // add this
     reactRouter(),
     tsconfigPaths()
   ],
@@ -154,7 +154,7 @@ To run the server in production, use `NODE_ENV=production node ./build/server/in
 That's all!
 
 ### Options
-
+#### `createHonoServer`
 ```ts
 export type HonoServerOptions<E extends Env = BlankEnv> = {
   /**
@@ -229,7 +229,7 @@ Modify the `AppLoadContext` interface used in your app.
 
 Since the Hono server is compiled in the same bundle as the rest of your React Router app, you can import app modules just like you normally would.
 
-### Example
+##### Example
 
 ```ts
 // app/server.ts
@@ -265,6 +265,35 @@ export async function loader({ context }: Route.LoaderArgs) {
   // get the context provided from `getLoadContext`
   return { appVersion: context.appVersion }
 }
+```
+
+#### `reactRouterHonoServer`
+```ts
+type ReactRouterHonoServerPluginOptions = {
+  /**
+   * The path to the server file, relative to `vite.config.ts`.
+   *
+   * If it is a folder (`app/server`), it will look for an `index.ts` file.
+   *
+   * Defaults to `${appDirectory}/server[.ts | /index.ts]` if present.
+   *
+   * Fallback to a virtual module `virtual:react-router-hono-server/server`.
+   */
+  serverEntryPoint?: string;
+  /**
+   * The paths that are not served by the dev-server.
+   *
+   * Defaults include `appDirectory` content.
+   */
+  dev?: {
+    /**
+     * The paths that are not served by the dev-server.
+     *
+     * Defaults include `appDirectory` content.
+     */
+    exclude?: (string | RegExp)[];
+  };
+};
 ```
 
 ## Middleware

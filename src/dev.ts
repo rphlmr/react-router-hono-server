@@ -5,16 +5,7 @@ import type { Config as ReactRouterConfig } from "@react-router/dev/config";
 import type { Plugin, UserConfig } from "vite";
 import type { MetaEnv } from "./utils";
 
-interface ReactRouterHonoServerDevServerOptions {
-  /**
-   * The paths that are not served by the dev-server.
-   *
-   * Defaults include `appDirectory` content.
-   */
-  exclude?: (string | RegExp)[];
-}
-
-interface ReactRouterHonoServerPluginOptions {
+type ReactRouterHonoServerPluginOptions = {
   /**
    * The path to the server file, relative to `vite.config.ts`.
    *
@@ -30,8 +21,15 @@ interface ReactRouterHonoServerPluginOptions {
    *
    * Defaults include `appDirectory` content.
    */
-  dev?: ReactRouterHonoServerDevServerOptions;
-}
+  dev?: {
+    /**
+     * The paths that are not served by the dev-server.
+     *
+     * Defaults include `appDirectory` content.
+     */
+    exclude?: (string | RegExp)[];
+  };
+};
 
 const virtualModuleId = "\0virtual:react-router-hono-server/server";
 
