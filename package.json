@@ -1,6 +1,6 @@
 {
   "name": "react-router-hono-server",
-  "version": "1.2.0",
+  "version": "2.0.0",
   "description": "This package includes helper function to create an Hono app in your entry.server.tsx file. It allows you to customize your server.",
   "exports": {
     "./node": {
@@ -28,11 +28,10 @@
   "scripts": {
     "test": "vitest run",
     "test:cov": "vitest run --coverage",
-    "build": "tsup src/node.ts src/dev.ts src/middlewares.ts --dts --format esm --outDir dist --clean --minifyIdentifiers --minifySyntax --external '../build/server/index.js'",
-    "remix:dev": "npm run dev -w remix-unstable",
-    "build:dev": "tsup src/node.ts src/dev.ts src/middlewares.ts --dts --format esm --outDir dist --external '../build/server/index.js'",
-    "build:dev:watch": "npm run build:dev -- --watch",
-    "dev": "npm-run-all -s build:dev -p remix:dev build:dev:watch",
+    "build": "tsup",
+    "build:watch": "npm run build -- --watch",
+    "example:dev": "npm run dev -w react-router-example",
+    "dev": "npm-run-all -s build -p example:dev build:watch",
     "prepublishOnly": "npm run build",
     "check": "biome check .",
     "check:fix": "biome check --fix .",
@@ -48,32 +47,33 @@
   "bugs": {
     "url": "https://github.com/rphlmr/react-router-hono-server/issues"
   },
+  "bin": {
+    "react-router-hono-server": "dist/cli.mjs"
+  },
   "files": ["dist"],
   "workspaces": [".", "examples/*"],
   "homepage": "https://github.com/rphlmr/react-router-hono-server#readme",
   "dependencies": {
-    "@hono/node-server": "^1.13.2",
-    "@hono/vite-dev-server": "^0.13.1",
-    "hono": "^4.6.5",
-    "remix-hono": "^0.0.16"
+    "@drizzle-team/brocli": "^0.11.0",
+    "@hono/node-server": "^1.13.7",
+    "@hono/vite-dev-server": "^0.17.0",
+    "hono": "^4.6.11"
   },
   "devDependencies": {
-    "@biomejs/biome": "^1.8.3",
-    "react-router": "^7.0.0-pre.0",
-    "@types/node": "^20.12.7",
-    "@vitest/coverage-v8": "^1.5.2",
-    "happy-dom": "^14.7.1",
-    "lefthook": "^1.7.2",
+    "@biomejs/biome": "^1.9.4",
+    "@types/node": "^22.9.3",
+    "@vitest/coverage-v8": "^2.1.5",
+    "lefthook": "^1.8.4",
     "npm-run-all": "^4.1.5",
-    "tsup": "^8.0.2",
-    "typescript": "^5.4.5",
-    "vitest": "^1.5.2"
+    "tsup": "^8.3.5",
+    "typescript": "^5.7.2",
+    "vitest": "^2.1.5"
   },
   "peerDependencies": {
-    "@remix-run/node": "^2.0.0",
-    "react-router": "^7.0.0-pre.0",
-    "remix-hono": "^0.0.16",
-    "hono": "^4.5.3",
-    "vite": "^5.0.0"
+    "react-router": "^7.0.1",
+    "vite": "^5.4.0"
+  },
+  "engines": {
+    "node": ">=20.0.0"
   }
 }

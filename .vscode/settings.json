@@ -12,10 +12,10 @@
   "editor.renderWhitespace": "all",
   "editor.rulers": [120, 160],
   "editor.codeActionsOnSave": {
-    "source.fixAll": "always",
+    "source.fixAll": "never",
     "source.organizeImports": "never",
-    "source.organizeImports.biome": "always",
-    "quickfix.biome": "always"
+    "source.organizeImports.biome": "explicit",
+    "quickfix.biome": "never"
   },
   "editor.insertSpaces": false,
   "editor.detectIndentation": true,

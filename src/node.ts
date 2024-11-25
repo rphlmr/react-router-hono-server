@@ -1,43 +1,15 @@
-import type { ServerOptions as ServerOptions$1, createServer } from "node:http";
-import type {
-  SecureServerOptions,
-  ServerOptions as ServerOptions$3,
-  createSecureServer,
-  createServer as createServer$2,
-} from "node:http2";
-import type { ServerOptions as ServerOptions$2, createServer as createServer$1 } from "node:https";
 import type { AddressInfo } from "node:net";
-import path from "node:path";
-import url from "node:url";
 import { serve } from "@hono/node-server";
 import { serveStatic } from "@hono/node-server/serve-static";
 import { type Context, type Env, Hono } from "hono";
+import { createMiddleware } from "hono/factory";
 import type { HonoOptions } from "hono/hono-base";
 import { logger } from "hono/logger";
 import type { BlankEnv } from "hono/types";
-import type { AppLoadContext, ServerBuild } from "react-router";
-import { type RemixMiddlewareOptions, remix } from "remix-hono/handler";
-
-import { importDevBuild } from "./dev-build";
+import { type AppLoadContext, type ServerBuild, createRequestHandler } from "react-router";
 import { cache } from "./middleware";
-
-type createHttpOptions = {
-  serverOptions?: ServerOptions$1;
-  createServer?: typeof createServer;
-};
-type createHttpsOptions = {
-  serverOptions?: ServerOptions$2;
-  createServer?: typeof createServer$1;
-};
-type createHttp2Options = {
-  serverOptions?: ServerOptions$3;
-  createServer?: typeof createServer$2;
-};
-type createSecureHttp2Options = {
-  serverOptions?: SecureServerOptions;
-  createServer?: typeof createSecureServer;
-};
-type CreateNodeServerOptions = createHttpOptions | createHttpsOptions | createHttp2Options | createSecureHttp2Options;
+import type { CreateNodeServerOptions } from "./types/node.https";
+import { getMode } from "./utils";
 
 export type HonoServerOptions<E extends Env = BlankEnv> = {
   /**
@@ -53,51 +25,31 @@ export type HonoServerOptions<E extends Env = BlankEnv> = {
    */
   port?: number;
   /**
-   * The directory where the server build files are located (defined in vite.config)
-   *
-   * Defaults to `build`
-   *
-   * See https://remix.run/docs/en/main/file-conventions/vite-config#builddirectory
-   */
-  buildDirectory?: string;
-  /**
-   * The file name of the server build file (defined in vite.config)
-   *
-   * Defaults to `index.js`
-   *
-   * See https://remix.run/docs/en/main/file-conventions/vite-config#serverbuildfile
-   */
-  serverBuildFile?: `${string}.js` | `${string}.mjs` | `${string}.cjs`;
-  /**
-   * The directory where the assets are located (defined in vite.config, build.assetsDir)
-   *
-   * Defaults to `assets`
-   *
-   * See https://vitejs.dev/config/build-options#build-assetsdir
-   */
-  assetsDir?: string;
-  /**
    * Customize the Hono server, for example, adding middleware
    *
-   * It is applied after the default middleware and before the remix middleware
+   * It is applied after the default middleware and before the React Router middleware
    */
   configure?: <E extends Env = BlankEnv>(server: Hono<E>) => Promise<void> | void;
   /**
-   * Augment the Remix AppLoadContext
+   * Augment the React Router AppLoadContext
    *
    * Don't forget to declare the AppLoadContext in your app, next to where you create the Hono server
    *
    * ```ts
-   * declare module "@remix-run/node" {
+   * declare module "react-router" {
    *   interface AppLoadContext {
    *     // Add your custom context here
+   *     whatever: string;
    *   }
    * }
    * ```
    */
   getLoadContext?: (
     c: Context,
-    options: Pick<RemixMiddlewareOptions, "build" | "mode">
+    options: {
+      build: ServerBuild;
+      mode: "development" | "production" | "test";
+    }
   ) => Promise<AppLoadContext> | AppLoadContext;
   /**
    * Listening listener (production mode only)
@@ -121,14 +73,15 @@ export type HonoServerOptions<E extends Env = BlankEnv> = {
   customNodeServer?: CreateNodeServerOptions;
 };
 
-const defaultOptions: HonoServerOptions<BlankEnv> = {
+const defaultOptions: Omit<HonoServerOptions<BlankEnv>, "build"> = {
   defaultLogger: true,
   port: Number(process.env.PORT) || 3000,
-  buildDirectory: "build",
-  serverBuildFile: "index.js",
-  assetsDir: "assets",
   listeningListener: (info) => {
     console.log(`🚀 Server started on port ${info.port}`);
+    console.log(`🌍 http://127.0.0.1:${info.port}`);
+  },
+  getLoadContext() {
+    return {};
   },
 };
 
@@ -144,21 +97,18 @@ export async function createHonoServer<E extends Env = BlankEnv>(options: HonoSe
     defaultLogger: options.defaultLogger ?? true,
   };
 
-  const mode = process.env.NODE_ENV === "test" ? "development" : process.env.NODE_ENV;
-
-  const isProductionMode = mode === "production";
+  const mode = getMode();
+  const PRODUCTION = mode === "production";
 
   const server = new Hono<E>(mergedOptions.honoOptions);
 
-  const serverBuildPath = `./${mergedOptions.buildDirectory}/server`;
-
-  const clientBuildPath = `./${mergedOptions.buildDirectory}/client`;
+  const clientBuildPath = `${import.meta.env.REACT_ROUTER_HONO_SERVER_BUILD_DIRECTORY}/client`;
 
   /**
    * Serve assets files from build/client/assets
    */
   server.use(
-    `/${mergedOptions.assetsDir}/*`,
+    `/${import.meta.env.REACT_ROUTER_HONO_SERVER_ASSETS_DIR}/*`,
     cache(60 * 60 * 24 * 365), // 1 year
     serveStatic({ root: clientBuildPath })
   );
@@ -166,7 +116,7 @@ export async function createHonoServer<E extends Env = BlankEnv>(options: HonoSe
   /**
    * Serve public files
    */
-  server.use("*", cache(60 * 60), serveStatic({ root: isProductionMode ? clientBuildPath : "./public" })); // 1 hour
+  server.use("*", cache(60 * 60), serveStatic({ root: PRODUCTION ? clientBuildPath : "./public" })); // 1 hour
 
   /**
    * Add logger middleware
@@ -178,48 +128,30 @@ export async function createHonoServer<E extends Env = BlankEnv>(options: HonoSe
   /**
    * Add optional middleware
    */
-
   if (mergedOptions.configure) {
     await mergedOptions.configure(server);
   }
 
   /**
-   * Add remix middleware to Hono server
+   * Add React Router middleware to Hono server
    */
   server.use(async (c, next) => {
-    const build = (
-      isProductionMode
-        ? await import(
-            /* @vite-ignore */
-            url
-              .pathToFileURL(
-                path.resolve(path.join(process.cwd(), `${serverBuildPath}/${mergedOptions.serverBuildFile}`))
-              )
-              .toString()
-          )
-        : await importDevBuild()
-    ) as ServerBuild;
+    const build: ServerBuild = (await import(
+      // @ts-expect-error - Virtual module provided by React Router at build time
+      "virtual:react-router/server-build"
+    )) as ServerBuild;
 
-    return remix({
-      // biome-ignore lint/suspicious/noExplicitAny: temp
-      build: build as any,
-      // biome-ignore lint/suspicious/noExplicitAny: temp
-      mode: mode as any,
-      getLoadContext(c) {
-        if (!mergedOptions.getLoadContext) {
-          return {};
-        }
-        // biome-ignore lint/suspicious/noExplicitAny: temp
-        return mergedOptions.getLoadContext(c, { build: build as any });
-      },
+    return createMiddleware(async (c) => {
+      const requestHandler = createRequestHandler(build, mode);
+      const loadContext = mergedOptions.getLoadContext?.(c, { build, mode });
+      return requestHandler(c.req.raw, loadContext instanceof Promise ? await loadContext : loadContext);
     })(c, next);
   });
 
   /**
    * Start the production server
    */
-
-  if (isProductionMode) {
+  if (PRODUCTION) {
     serve(
       {
         ...server,
@@ -228,6 +160,8 @@ export async function createHonoServer<E extends Env = BlankEnv>(options: HonoSe
       },
       mergedOptions.listeningListener
     );
+  } else {
+    console.log("🚧 Dev server started");
   }
 
   return server;
