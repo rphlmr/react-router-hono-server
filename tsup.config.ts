@@ -3,7 +3,13 @@ import { defineConfig } from "tsup";
 
 export default defineConfig([
   {
-    entry: ["src/adapters/node.ts", "src/adapters/bun.ts", "src/dev.ts", "src/middleware.ts"],
+    entry: [
+      "src/adapters/node.ts",
+      "src/adapters/bun.ts",
+      "src/adapters/cloudflare.ts",
+      "src/dev.ts",
+      "src/middleware.ts",
+    ],
     outDir: "dist",
     format: ["esm"],
     clean: true,
@@ -18,6 +24,10 @@ export default defineConfig([
         force: true,
       });
       fs.cpSync("dist", "examples/react-router-bun/node_modules/react-router-hono-server/dist", {
+        recursive: true,
+        force: true,
+      });
+      fs.cpSync("dist", "examples/react-router-cloudflare/node_modules/react-router-hono-server/dist", {
         recursive: true,
         force: true,
       });

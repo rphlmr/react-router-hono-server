@@ -32,7 +32,7 @@ It presets a default Hono server config that you can [customize](#options)
 >
 > Only works with **Vite**
 >
-> Only works for **node**
+> Only **Node**, **Bun** and **Cloudflare Workers** are not supported
 
 > [!TIP]
 > 👨‍🏫 There is some examples in the [examples](./examples) folder. I hope they will help you.
@@ -91,6 +91,77 @@ Ok, by default it works, but you may want to customize the server and use some m
 >
 > `reactRouterHonoServer` plugin is looking for them to find your server file.
 
+
+### Add the Vite plugin
+> [!NOTE]
+> It uses the `reactRouter` plugin to build your app and will automatically load its config.
+
+#### Node
+> [!TIP]
+> Check this [example](./examples/react-router) to see how to use it.
+
+```ts
+// vite.config.ts
+import { reactRouter } from "@react-router/dev/vite";
+import { reactRouterHonoServer } from "react-router-hono-server/dev"; // add this
+import { defineConfig } from "vite";
+import tsconfigPaths from "vite-tsconfig-paths";
+
+export default defineConfig({
+  plugins: [
+    reactRouterHonoServer(), // add this
+    reactRouter(),
+    tsconfigPaths()
+  ],
+});
+```
+
+#### Bun
+> [!TIP]
+> Check this [example](./examples/react-router-bun) to see how to use it.
+
+```ts
+// vite.config.ts
+import { reactRouter } from "@react-router/dev/vite";
+import { reactRouterHonoServer } from "react-router-hono-server/dev"; // add this
+import { defineConfig } from "vite";
+import tsconfigPaths from "vite-tsconfig-paths";
+
+export default defineConfig({
+  plugins: [
+    reactRouterHonoServer({ runtime: "bun"} ), // add this
+    reactRouter(),
+    tsconfigPaths()
+  ],
+});
+```
+
+#### Cloudflare Workers
+> [!TIP]
+> Check this [example](./examples/react-router-cloudflare) to see how to use it.
+
+> [!IMPORTANT]
+> You need to add the `cloudflareDevProxy` plugin to use the Cloudflare Workers runtime on dev.
+
+
+```ts
+// vite.config.ts
+import { reactRouter } from "@react-router/dev/vite";
+import { cloudflareDevProxy } from "@react-router/dev/vite/cloudflare"; // add this
+import { reactRouterHonoServer } from "react-router-hono-server/dev"; // add this
+import { defineConfig } from "vite";
+import tsconfigPaths from "vite-tsconfig-paths";
+
+export default defineConfig({
+  plugins: [
+    cloudflareDevProxy(),
+    reactRouterHonoServer({ runtime: "cloudflare"} ), // add this
+    reactRouter(),
+    tsconfigPaths()
+  ],
+});
+```
+
 ### Create the server
 > [!TIP]
 > You can use the CLI to create the server file for you.
@@ -135,26 +206,7 @@ export default await createHonoServer({/* options */});
 #### I don't like this default
 No problem, you can define your files wherever you want.
 
-Use the `serverEntryPoint` option of `reactRouterHonoServer` to point to your server file.
-
-### Add the Vite plugin (if not already)
-```ts
-// vite.config.ts
-import { reactRouter } from "@react-router/dev/vite";
-import { reactRouterHonoServer } from "react-router-hono-server/dev"; // add this
-import { defineConfig } from "vite";
-import tsconfigPaths from "vite-tsconfig-paths";
-
-export default defineConfig({
-  plugins: [
-    reactRouterHonoServer(), // add this
-    reactRouter(),
-    tsconfigPaths()
-  ],
-});
-```
-> [!NOTE]
-> It uses the `reactRouter` plugin to build your app and will automatically load its config.
+Use the `serverEntryPoint` option of the Vite plugin `reactRouterHonoServer` to point to your server file.
 
 
 ### Update your package.json scripts
@@ -163,7 +215,7 @@ It is not an error, you can keep the React Router defaults for `build` and `dev`
   "scripts": {
     "build": "react-router build",
     "dev": "react-router dev",
-    "start": "NODE_ENV=production node ./build/server/index.js",
+    "start": "node ./build/server/index.js",
   },
 ```
 
@@ -184,7 +236,46 @@ To run the server in production, use `NODE_ENV=production node ./build/server/in
 That's all!
 
 ### Options
+
+#### `reactRouterHonoServer` (Vite Plugin)
+```ts
+type Runtime = "node" | "bun" | "cloudflare";
+
+type ReactRouterHonoServerPluginOptions = {
+  /**
+   * The runtime to use for the server.
+   *
+   * Defaults to `node`.
+   */
+  runtime?: Runtime;
+  /**
+   * The path to the server file, relative to `vite.config.ts`.
+   *
+   * If it is a folder (`app/server`), it will look for an `index.ts` file.
+   *
+   * Defaults to `${appDirectory}/server[.ts | /index.ts]` if present.
+   *
+   * Fallback to a virtual module `virtual:react-router-hono-server/server`.
+   */
+  serverEntryPoint?: string;
+  /**
+   * The paths that are not served by the dev-server.
+   *
+   * Defaults include `appDirectory` content.
+   */
+  dev?: {
+    /**
+     * The paths that are not served by the dev-server.
+     *
+     * Defaults include `appDirectory` content.
+     */
+    exclude?: (string | RegExp)[];
+  };
+};
+```
+
 #### `createHonoServer`
+##### All adapters
 ```ts
 export type HonoServerOptions<E extends Env = BlankEnv> = {
   /**
@@ -240,12 +331,6 @@ export type HonoServerOptions<E extends Env = BlankEnv> = {
    * {@link HonoOptions}
    */
   honoOptions?: HonoOptions<E>;
-  /**
-   * Customize the node server (ex: using http2)
-   *
-   * {@link https://hono.dev/docs/getting-started/nodejs#http2}
-   */
-  customNodeServer?: CreateNodeServerOptions;
 };
 ```
 
@@ -259,7 +344,7 @@ Modify the `AppLoadContext` interface used in your app.
 
 Since the Hono server is compiled in the same bundle as the rest of your React Router app, you can import app modules just like you normally would.
 
-##### Example
+###### Example
 
 ```ts
 // app/server.ts
@@ -297,33 +382,41 @@ export async function loader({ context }: Route.LoaderArgs) {
 }
 ```
 
-#### `reactRouterHonoServer`
+##### Node
 ```ts
-type ReactRouterHonoServerPluginOptions = {
+export interface HonoServerOptions<E extends Env = BlankEnv> extends HonoServerOptionsBase<E> {
   /**
-   * The path to the server file, relative to `vite.config.ts`.
+   * Listening listener (production mode only)
    *
-   * If it is a folder (`app/server`), it will look for an `index.ts` file.
+   * It is called when the server is listening
    *
-   * Defaults to `${appDirectory}/server[.ts | /index.ts]` if present.
-   *
-   * Fallback to a virtual module `virtual:react-router-hono-server/server`.
+   * Defaults log the port
    */
-  serverEntryPoint?: string;
+  listeningListener?: (info: AddressInfo) => void;
   /**
-   * The paths that are not served by the dev-server.
+   * Customize the node server (ex: using http2)
    *
-   * Defaults include `appDirectory` content.
+   * {@link https://hono.dev/docs/getting-started/nodejs#http2}
    */
-  dev?: {
-    /**
-     * The paths that are not served by the dev-server.
-     *
-     * Defaults include `appDirectory` content.
-     */
-    exclude?: (string | RegExp)[];
-  };
-};
+  customNodeServer?: CreateNodeServerOptions;
+}
+```
+
+##### Bun
+```ts
+export interface HonoServerOptions<E extends Env = BlankEnv> extends HonoServerOptionsBase<E> {
+  /**
+   * Customize the bun server
+   *
+   * {@link https://bun.sh/docs/api/http#start-a-server-bun-serve}
+   */
+  customBunServer?: Serve & ServeOptions;
+}
+```
+
+##### Cloudflare Workers
+```ts
+export interface HonoServerOptions<E extends Env = BlankEnv> extends Omit<HonoServerOptionsBase<E>, "port"> {}
 ```
 
 ## Middleware

@@ -52,5 +52,6 @@
   },
   "[css]": {
     "editor.defaultFormatter": "biomejs.biome"
-  }
+  },
+  "deno.enable": false
 }

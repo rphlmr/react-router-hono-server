@@ -17,6 +17,13 @@
         "default": "./dist/adapters/bun.mjs"
       }
     },
+    "./cloudflare": {
+      "import": {
+        "import": "./dist/adapters/cloudflare.mjs",
+        "types": "./dist/adapters/cloudflare.d.mts",
+        "default": "./dist/adapters/cloudflare.mjs"
+      }
+    },
     "./dev": {
       "import": {
         "import": "./dist/dev.mjs",
@@ -72,6 +79,7 @@
     "@types/node": "^22.9.3",
     "@vitest/coverage-v8": "^2.1.5",
     "lefthook": "^1.8.4",
+    "miniflare": "^3.20241106.1",
     "npm-run-all": "^4.1.5",
     "tsup": "^8.3.5",
     "typescript": "^5.7.2",

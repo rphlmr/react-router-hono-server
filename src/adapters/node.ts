@@ -9,7 +9,6 @@ import { type ServerBuild, createRequestHandler } from "react-router";
 import { cache } from "../middleware";
 import type { HonoServerOptionsBase } from "../types/hono-server-options-base";
 import type { CreateNodeServerOptions } from "../types/node.https";
-import { getMode } from "../utils";
 
 export interface HonoServerOptions<E extends Env = BlankEnv> extends HonoServerOptionsBase<E> {
   /**
@@ -43,7 +42,7 @@ export async function createHonoServer<E extends Env = BlankEnv>(options: HonoSe
     port: options.port || Number(process.env.PORT) || 3000,
     defaultLogger: options.defaultLogger ?? true,
   };
-  const mode = getMode();
+  const mode = import.meta.env.MODE;
   const PRODUCTION = mode === "production";
   const server = new Hono<E>(mergedOptions.honoOptions);
   const clientBuildPath = `${import.meta.env.REACT_ROUTER_HONO_SERVER_BUILD_DIRECTORY}/client`;

@@ -40,7 +40,7 @@ export interface HonoServerOptionsBase<E extends Env = BlankEnv> {
     c: Context,
     options: {
       build: ServerBuild;
-      mode: "development" | "production" | "test";
+      mode: string;
     }
   ) => Promise<AppLoadContext> | AppLoadContext;
   /**

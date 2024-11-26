@@ -2,11 +2,12 @@ import fs from "node:fs";
 import path from "node:path";
 import honoDevServer, { type DevServerOptions } from "@hono/vite-dev-server";
 import bunAdapter from "@hono/vite-dev-server/bun";
+import cloudflareAdapter from "@hono/vite-dev-server/cloudflare";
 import type { Config as ReactRouterConfig } from "@react-router/dev/config";
 import type { Plugin, UserConfig } from "vite";
 import type { MetaEnv } from "./utils";
 
-type Runtime = "node" | "bun";
+type Runtime = "node" | "bun" | "cloudflare";
 
 type ReactRouterHonoServerPluginOptions = {
   /**
@@ -72,6 +73,16 @@ export function reactRouterHonoServer(options: ReactRouterHonoServerPluginOption
         return;
       }
 
+      if (
+        runtime === "cloudflare" &&
+        !config.plugins?.find((p) => p && "name" in p && p.name === "react-router-cloudflare-vite-dev-proxy")
+      ) {
+        console.error(
+          `\x1b[31mMissing cloudflareDevProxy() in your vite.config.ts.\nPlease add it to your plugins: import { cloudflareDevProxy } from "@react-router/dev/vite/cloudflare";\x1b[0m\n`
+        );
+        throw new Error("Missing mandatory plugin cloudflareDevProxy() in vite.config.ts");
+      }
+
       const baseConfig = {
         // Define environment variables that are hot-swapped during development and SSR build
         define: {
@@ -79,6 +90,7 @@ export function reactRouterHonoServer(options: ReactRouterHonoServerPluginOption
           "import.meta.env.REACT_ROUTER_HONO_SERVER_ASSETS_DIR": JSON.stringify(pluginConfig.assetsDir),
         } satisfies MetaEnv<ReactRouterHonoServerEnv>,
         ssr: {
+          target: runtime === "cloudflare" ? "webworker" : undefined,
           // Ensure our package is not externalized during SSR build
           // This is necessary because we are using a virtual import to load the React Router server entry point
           noExternal: ["react-router-hono-server"],
@@ -112,6 +124,10 @@ export function reactRouterHonoServer(options: ReactRouterHonoServerPluginOption
 
       if (runtime === "bun") {
         adapter = bunAdapter;
+      }
+
+      if (runtime === "cloudflare") {
+        adapter = cloudflareAdapter;
       }
 
       // Create and apply the Hono dev server plugin
