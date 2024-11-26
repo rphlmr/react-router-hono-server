@@ -1,56 +1,17 @@
 import type { AddressInfo } from "node:net";
 import { serve } from "@hono/node-server";
 import { serveStatic } from "@hono/node-server/serve-static";
-import { type Context, type Env, Hono } from "hono";
+import { type Env, Hono } from "hono";
 import { createMiddleware } from "hono/factory";
-import type { HonoOptions } from "hono/hono-base";
 import { logger } from "hono/logger";
 import type { BlankEnv } from "hono/types";
-import { type AppLoadContext, type ServerBuild, createRequestHandler } from "react-router";
-import { cache } from "./middleware";
-import type { CreateNodeServerOptions } from "./types/node.https";
-import { getMode } from "./utils";
+import { type ServerBuild, createRequestHandler } from "react-router";
+import { cache } from "../middleware";
+import type { HonoServerOptionsBase } from "../types/hono-server-options-base";
+import type { CreateNodeServerOptions } from "../types/node.https";
+import { getMode } from "../utils";
 
-export type HonoServerOptions<E extends Env = BlankEnv> = {
-  /**
-   * Enable the default logger
-   *
-   * Defaults to `true`
-   */
-  defaultLogger?: boolean;
-  /**
-   * The port to start the server on
-   *
-   * Defaults to `process.env.PORT || 3000`
-   */
-  port?: number;
-  /**
-   * Customize the Hono server, for example, adding middleware
-   *
-   * It is applied after the default middleware and before the React Router middleware
-   */
-  configure?: <E extends Env = BlankEnv>(server: Hono<E>) => Promise<void> | void;
-  /**
-   * Augment the React Router AppLoadContext
-   *
-   * Don't forget to declare the AppLoadContext in your app, next to where you create the Hono server
-   *
-   * ```ts
-   * declare module "react-router" {
-   *   interface AppLoadContext {
-   *     // Add your custom context here
-   *     whatever: string;
-   *   }
-   * }
-   * ```
-   */
-  getLoadContext?: (
-    c: Context,
-    options: {
-      build: ServerBuild;
-      mode: "development" | "production" | "test";
-    }
-  ) => Promise<AppLoadContext> | AppLoadContext;
+export interface HonoServerOptions<E extends Env = BlankEnv> extends HonoServerOptionsBase<E> {
   /**
    * Listening listener (production mode only)
    *
@@ -60,30 +21,12 @@ export type HonoServerOptions<E extends Env = BlankEnv> = {
    */
   listeningListener?: (info: AddressInfo) => void;
   /**
-   * Hono constructor options
-   *
-   * {@link HonoOptions}
-   */
-  honoOptions?: HonoOptions<E>;
-  /**
    * Customize the node server (ex: using http2)
    *
    * {@link https://hono.dev/docs/getting-started/nodejs#http2}
    */
   customNodeServer?: CreateNodeServerOptions;
-};
-
-const defaultOptions: Omit<HonoServerOptions<BlankEnv>, "build"> = {
-  defaultLogger: true,
-  port: Number(process.env.PORT) || 3000,
-  listeningListener: (info) => {
-    console.log(`🚀 Server started on port ${info.port}`);
-    console.log(`🌍 http://127.0.0.1:${info.port}`);
-  },
-  getLoadContext() {
-    return {};
-  },
-};
+}
 
 /**
  * Create a Hono server
@@ -92,16 +35,17 @@ const defaultOptions: Omit<HonoServerOptions<BlankEnv>, "build"> = {
  */
 export async function createHonoServer<E extends Env = BlankEnv>(options: HonoServerOptions<E> = {}) {
   const mergedOptions: HonoServerOptions<E> = {
-    ...defaultOptions,
+    listeningListener: (info) => {
+      console.log(`🚀 Server started on port ${info.port}`);
+      console.log(`🌍 http://127.0.0.1:${info.port}`);
+    },
     ...options,
+    port: options.port || Number(process.env.PORT) || 3000,
     defaultLogger: options.defaultLogger ?? true,
   };
-
   const mode = getMode();
   const PRODUCTION = mode === "production";
-
   const server = new Hono<E>(mergedOptions.honoOptions);
-
   const clientBuildPath = `${import.meta.env.REACT_ROUTER_HONO_SERVER_BUILD_DIRECTORY}/client`;
 
   /**

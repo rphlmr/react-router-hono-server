@@ -5,9 +5,16 @@
   "exports": {
     "./node": {
       "import": {
-        "import": "./dist/node.mjs",
-        "types": "./dist/node.d.mts",
-        "default": "./dist/node.mjs"
+        "import": "./dist/adapters/node.mjs",
+        "types": "./dist/adapters/node.d.mts",
+        "default": "./dist/adapters/node.mjs"
+      }
+    },
+    "./bun": {
+      "import": {
+        "import": "./dist/adapters/bun.mjs",
+        "types": "./dist/adapters/bun.d.mts",
+        "default": "./dist/adapters/bun.mjs"
       }
     },
     "./dev": {
@@ -61,6 +68,7 @@
   },
   "devDependencies": {
     "@biomejs/biome": "^1.9.4",
+    "@types/bun": "^1.1.14",
     "@types/node": "^22.9.3",
     "@vitest/coverage-v8": "^2.1.5",
     "lefthook": "^1.8.4",
