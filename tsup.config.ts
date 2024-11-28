@@ -19,22 +19,10 @@ export default defineConfig([
       "virtual:react-router/server-build",
     ],
     onSuccess: async () => {
-      fs.cpSync("dist", "examples/react-router/node_modules/react-router-hono-server/dist", {
-        recursive: true,
-        force: true,
-      });
-      fs.cpSync("dist", "examples/react-router-bun/node_modules/react-router-hono-server/dist", {
-        recursive: true,
-        force: true,
-      });
-      fs.cpSync("dist", "examples/react-router-cloudflare/node_modules/react-router-hono-server/dist", {
-        recursive: true,
-        force: true,
-      });
-      fs.cpSync("dist", "examples/react-router-virtual/node_modules/react-router-hono-server/dist", {
-        recursive: true,
-        force: true,
-      });
+      copyBuild("react-router");
+      copyBuild("react-router-bun");
+      copyBuild("react-router-cloudflare");
+      copyBuild("react-router-virtual");
     },
   },
   {
@@ -58,3 +46,11 @@ export default defineConfig([
     },
   },
 ]);
+
+function copyBuild(example: string) {
+  fs.cpSync("dist", `examples/${example}/node_modules/react-router-hono-server/dist`, {
+    recursive: true,
+    force: true,
+  });
+  fs.copyFileSync("package.json", `examples/${example}/node_modules/react-router-hono-server/package.json`);
+}
