@@ -32,7 +32,7 @@ It presets a default Hono server config that you can [customize](#options)
 >
 > Only works with **Vite**
 >
-> Only **Node**, **Bun** and **Cloudflare Workers** are not supported
+> Only **Node**, **Bun** and **Cloudflare Workers** are supported
 
 > [!TIP]
 > 👨‍🏫 There is some examples in the [examples](./examples) folder. I hope they will help you.
