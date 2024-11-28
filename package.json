@@ -1,13 +1,27 @@
 {
   "name": "react-router-hono-server",
-  "version": "2.0.0",
-  "description": "This package includes helper function to create an Hono app in your entry.server.tsx file. It allows you to customize your server.",
+  "version": "2.1.0",
+  "description": "The Vite plugin you need to create a Hono server for your React Router app in less than 10 seconds.",
   "exports": {
     "./node": {
       "import": {
-        "import": "./dist/node.mjs",
-        "types": "./dist/node.d.mts",
-        "default": "./dist/node.mjs"
+        "import": "./dist/adapters/node.mjs",
+        "types": "./dist/adapters/node.d.mts",
+        "default": "./dist/adapters/node.mjs"
+      }
+    },
+    "./bun": {
+      "import": {
+        "import": "./dist/adapters/bun.mjs",
+        "types": "./dist/adapters/bun.d.mts",
+        "default": "./dist/adapters/bun.mjs"
+      }
+    },
+    "./cloudflare": {
+      "import": {
+        "import": "./dist/adapters/cloudflare.mjs",
+        "types": "./dist/adapters/cloudflare.d.mts",
+        "default": "./dist/adapters/cloudflare.mjs"
       }
     },
     "./dev": {
@@ -61,9 +75,11 @@
   },
   "devDependencies": {
     "@biomejs/biome": "^1.9.4",
+    "@types/bun": "^1.1.14",
     "@types/node": "^22.9.3",
     "@vitest/coverage-v8": "^2.1.5",
     "lefthook": "^1.8.4",
+    "miniflare": "^3.20241106.1",
     "npm-run-all": "^4.1.5",
     "tsup": "^8.3.5",
     "typescript": "^5.7.2",
