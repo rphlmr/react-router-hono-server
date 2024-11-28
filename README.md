@@ -48,6 +48,9 @@ Install the following npm package.
 
 ```bash
 npm install react-router-hono-server
+
+# For Cloudflare Workers, add the following
+npm install -D miniflare wrangler
 ```
 
 > [!TIP]
