@@ -210,6 +210,7 @@ Use the `serverEntryPoint` option of the Vite plugin `reactRouterHonoServer` to 
 
 
 ### Update your package.json scripts
+### Node
 It is not an error, you can keep the React Router defaults for `build` and `dev`!
 ```json
   "scripts": {
@@ -217,6 +218,37 @@ It is not an error, you can keep the React Router defaults for `build` and `dev`
     "dev": "react-router dev",
     "start": "node ./build/server/index.js",
   },
+```
+### Bun
+It is not an error, you can keep the React Router defaults for `build`!
+```json
+  "scripts": {
+    "build": "react-router build",
+    "dev": "bunx --bun vite",
+    "start": "bun ./build/server/index.js",
+  },
+```
+
+### Cloudflare
+It is not an error, you can keep the React Router defaults for `build` and `dev`!
+```json
+  "scripts": {
+    "build": "react-router build",
+    "dev": "react-router dev",
+    "start": "wrangler dev",
+  },
+```
+
+#### Wrangler
+Add a file named `wrangler.toml` at the root of your project (close to `package.json`).
+
+Adapt the `main` and `assets` fields based on your build output, if you changed them from the defaults.
+```toml
+workers_dev = true
+name = "my-worker"
+compatibility_date = "2024-11-18"
+main = "./build/server/index.js"
+assets = { directory = "./build/client/" }
 ```
 
 ## How it works
@@ -231,7 +263,7 @@ You can customize the production server port using the `port` option of `createH
 
 When building for production, the Hono server is compiled as `build/server/index.js` and imports your React Router app from `assets/server-build-[hash].js`.
 
-To run the server in production, use `NODE_ENV=production node ./build/server/index.js`.
+To run the server in production, use `node ./build/server/index.js`.
 
 That's all!
 
@@ -568,7 +600,7 @@ If you used a custom `buildDirectory` option, check this [example](./examples/re
   "scripts": {
     "build": "react-router build",
     "dev": "react-router dev",
-    "start": "NODE_ENV=production node ./build/server/index.js",
+    "start": "node ./build/server/index.js",
   },
 ```
 
