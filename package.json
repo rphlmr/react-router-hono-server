@@ -65,7 +65,7 @@
     "react-router-hono-server": "dist/cli.mjs"
   },
   "files": ["dist"],
-  "workspaces": [".", "examples/*"],
+  "workspaces": [".", "examples/**/*"],
   "homepage": "https://github.com/rphlmr/react-router-hono-server#readme",
   "dependencies": {
     "@drizzle-team/brocli": "^0.11.0",
