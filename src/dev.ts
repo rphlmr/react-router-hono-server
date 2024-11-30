@@ -111,7 +111,10 @@ export function reactRouterHonoServer(options: ReactRouterHonoServerPluginOption
         },
       };
     },
-    configureServer(server) {
+    async configureServer(server) {
+      // bind viteDevServer to global 🤫
+      globalThis.__viteDevServer = server;
+
       if (!pluginConfig) {
         return;
       }

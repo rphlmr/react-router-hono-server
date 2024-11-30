@@ -19,26 +19,26 @@ export async function createHonoServer<E extends Env = BlankEnv>(options: HonoSe
   };
   const mode = import.meta.env.MODE;
   const PRODUCTION = mode === "production";
-  const server = new Hono<E>(mergedOptions.honoOptions);
+  const app = new Hono<E>(mergedOptions.honoOptions || mergedOptions.app);
 
   /**
    * Add logger middleware
    */
   if (mergedOptions.defaultLogger) {
-    server.use("*", logger());
+    app.use("*", logger());
   }
 
   /**
    * Add optional middleware
    */
   if (mergedOptions.configure) {
-    await mergedOptions.configure(server);
+    await mergedOptions.configure(app);
   }
 
   /**
    * Add React Router middleware to Hono server
    */
-  server.use(async (c, next) => {
+  app.use(async (c, next) => {
     const build: ServerBuild = (await import(
       // @ts-expect-error - Virtual module provided by React Router at build time
       "virtual:react-router/server-build"
@@ -55,5 +55,5 @@ export async function createHonoServer<E extends Env = BlankEnv>(options: HonoSe
     console.log("🚧 Running in development mode");
   }
 
-  return server;
+  return app;
 }

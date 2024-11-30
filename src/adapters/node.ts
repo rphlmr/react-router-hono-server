@@ -1,5 +1,5 @@
 import type { AddressInfo } from "node:net";
-import { serve } from "@hono/node-server";
+import { type ServerType, serve } from "@hono/node-server";
 import { serveStatic } from "@hono/node-server/serve-static";
 import { type Env, Hono } from "hono";
 import { createMiddleware } from "hono/factory";
@@ -10,7 +10,7 @@ import { cache } from "../middleware";
 import type { HonoServerOptionsBase } from "../types/hono-server-options-base";
 import type { CreateNodeServerOptions } from "../types/node.https";
 
-export interface HonoServerOptions<E extends Env = BlankEnv> extends HonoServerOptionsBase<E> {
+export type HonoServerOptions<E extends Env = BlankEnv> = HonoServerOptionsBase<E> & {
   /**
    * Listening listener (production mode only)
    *
@@ -25,7 +25,15 @@ export interface HonoServerOptions<E extends Env = BlankEnv> extends HonoServerO
    * {@link https://hono.dev/docs/getting-started/nodejs#http2}
    */
   customNodeServer?: CreateNodeServerOptions;
-}
+  /**
+   * Callback executed just after `serve` from `@hono/node-server`
+   *
+   * **Only applied to production mode**
+   *
+   * For example, you can use this to bind `@hono/node-ws`'s `injectWebSocket`
+   */
+  onServe?: (server: ServerType) => void;
+};
 
 /**
  * Create a Hono server
@@ -42,16 +50,16 @@ export async function createHonoServer<E extends Env = BlankEnv>(options: HonoSe
     port: options.port || Number(process.env.PORT) || 3000,
     defaultLogger: options.defaultLogger ?? true,
   };
-  const mode = import.meta.env.MODE;
+  const mode = import.meta.env?.MODE;
   const PRODUCTION = mode === "production";
-  const server = new Hono<E>(mergedOptions.honoOptions);
-  const clientBuildPath = `${import.meta.env.REACT_ROUTER_HONO_SERVER_BUILD_DIRECTORY}/client`;
+  const app = new Hono<E>(mergedOptions.honoOptions || mergedOptions.app);
+  const clientBuildPath = `${import.meta.env?.REACT_ROUTER_HONO_SERVER_BUILD_DIRECTORY}/client`;
 
   /**
    * Serve assets files from build/client/assets
    */
-  server.use(
-    `/${import.meta.env.REACT_ROUTER_HONO_SERVER_ASSETS_DIR}/*`,
+  app.use(
+    `/${import.meta.env?.REACT_ROUTER_HONO_SERVER_ASSETS_DIR}/*`,
     cache(60 * 60 * 24 * 365), // 1 year
     serveStatic({ root: clientBuildPath })
   );
@@ -59,26 +67,26 @@ export async function createHonoServer<E extends Env = BlankEnv>(options: HonoSe
   /**
    * Serve public files
    */
-  server.use("*", cache(60 * 60), serveStatic({ root: PRODUCTION ? clientBuildPath : "./public" })); // 1 hour
+  app.use("*", cache(60 * 60), serveStatic({ root: PRODUCTION ? clientBuildPath : "./public" })); // 1 hour
 
   /**
    * Add logger middleware
    */
   if (mergedOptions.defaultLogger) {
-    server.use("*", logger());
+    app.use("*", logger());
   }
 
   /**
    * Add optional middleware
    */
   if (mergedOptions.configure) {
-    await mergedOptions.configure(server);
+    await mergedOptions.configure(app);
   }
 
   /**
    * Add React Router middleware to Hono server
    */
-  server.use(async (c, next) => {
+  app.use(async (c, next) => {
     const build: ServerBuild = (await import(
       // @ts-expect-error - Virtual module provided by React Router at build time
       "virtual:react-router/server-build"
@@ -95,17 +103,33 @@ export async function createHonoServer<E extends Env = BlankEnv>(options: HonoSe
    * Start the production server
    */
   if (PRODUCTION) {
-    serve(
+    const server = serve(
       {
-        ...server,
+        ...app,
         ...mergedOptions.customNodeServer,
         port: mergedOptions.port,
       },
       mergedOptions.listeningListener
     );
+    mergedOptions.onServe?.(server);
   } else {
+    const viteDevServer = globalThis.__viteDevServer;
+
+    // You wonder why I'm doing this?
+    // It is to make the dev server work with `hono/node-ws`
+    if (viteDevServer?.httpServer) {
+      for (const listener of viteDevServer.httpServer.listeners("upgrade")) {
+        if (listener.name !== "hmrServerWsListener") {
+          // @ts-ignore
+          viteDevServer.httpServer.removeListener("upgrade", listener);
+        }
+      }
+
+      mergedOptions.onServe?.(viteDevServer.httpServer);
+    }
+
     console.log("🚧 Dev server started");
   }
 
-  return server;
+  return app;
 }

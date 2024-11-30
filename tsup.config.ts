@@ -23,6 +23,8 @@ export default defineConfig([
       copyBuild("react-router-bun");
       copyBuild("react-router-cloudflare");
       copyBuild("react-router-virtual");
+      copyBuild("react-router-session");
+      copyBuild("react-router-websocket");
     },
   },
   {

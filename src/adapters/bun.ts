@@ -30,13 +30,13 @@ export async function createHonoServer<E extends Env = BlankEnv>(options: HonoSe
   } satisfies HonoServerOptions<E>;
   const mode = import.meta.env.MODE;
   const PRODUCTION = mode === "production";
-  const server = new Hono<E>(mergedOptions.honoOptions);
+  const app = new Hono<E>(mergedOptions.honoOptions || mergedOptions.app);
   const clientBuildPath = `${import.meta.env.REACT_ROUTER_HONO_SERVER_BUILD_DIRECTORY}/client`;
 
   /**
    * Serve assets files from build/client/assets
    */
-  server.use(
+  app.use(
     `/${import.meta.env.REACT_ROUTER_HONO_SERVER_ASSETS_DIR}/*`,
     cache(60 * 60 * 24 * 365), // 1 year
     serveStatic({ root: clientBuildPath })
@@ -45,26 +45,26 @@ export async function createHonoServer<E extends Env = BlankEnv>(options: HonoSe
   /**
    * Serve public files
    */
-  server.use("*", cache(60 * 60), serveStatic({ root: PRODUCTION ? clientBuildPath : "./public" })); // 1 hour
+  app.use("*", cache(60 * 60), serveStatic({ root: PRODUCTION ? clientBuildPath : "./public" })); // 1 hour
 
   /**
    * Add logger middleware
    */
   if (mergedOptions.defaultLogger) {
-    server.use("*", logger());
+    app.use("*", logger());
   }
 
   /**
    * Add optional middleware
    */
   if (mergedOptions.configure) {
-    await mergedOptions.configure(server);
+    await mergedOptions.configure(app);
   }
 
   /**
    * Add React Router middleware to Hono server
    */
-  server.use(async (c, next) => {
+  app.use(async (c, next) => {
     const build: ServerBuild = (await import(
       // @ts-expect-error - Virtual module provided by React Router at build time
       "virtual:react-router/server-build"
@@ -83,7 +83,7 @@ export async function createHonoServer<E extends Env = BlankEnv>(options: HonoSe
 
   return {
     ...mergedOptions.customBunServer,
-    fetch: server.fetch,
+    fetch: app.fetch,
     port: mergedOptions.port,
     development: !PRODUCTION,
   } satisfies Serve;
