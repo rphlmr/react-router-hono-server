@@ -1,4 +1,5 @@
 import fs from "node:fs";
+import path from "node:path";
 import { defineConfig } from "tsup";
 
 export default defineConfig([
@@ -19,12 +20,7 @@ export default defineConfig([
       "virtual:react-router/server-build",
     ],
     onSuccess: async () => {
-      copyBuild("react-router");
-      copyBuild("react-router-bun");
-      copyBuild("react-router-cloudflare");
-      copyBuild("react-router-virtual");
-      copyBuild("react-router-session");
-      copyBuild("react-router-websocket");
+      setupExamples();
     },
   },
   {
@@ -37,22 +33,37 @@ export default defineConfig([
       const originalContent = fs.readFileSync(cliFilePath, "utf-8");
       fs.writeFileSync(cliFilePath, banner + originalContent);
       fs.chmodSync(cliFilePath, "755");
-      fs.cpSync("dist", "examples/react-router/node_modules/react-router-hono-server/dist", {
-        recursive: true,
-        force: true,
-      });
-      fs.cpSync("dist", "examples/react-router-virtual/node_modules/react-router-hono-server/dist", {
-        recursive: true,
-        force: true,
-      });
     },
   },
 ]);
 
-function copyBuild(example: string) {
-  fs.cpSync("dist", `examples/${example}/node_modules/react-router-hono-server/dist`, {
-    recursive: true,
-    force: true,
-  });
-  fs.copyFileSync("package.json", `examples/${example}/node_modules/react-router-hono-server/package.json`);
+function setupExamples() {
+  const adapters = fs.readdirSync("examples");
+
+  for (const adapter of adapters) {
+    const adapterPath = path.join("examples", adapter);
+
+    if (!fs.statSync(adapterPath).isDirectory()) {
+      continue;
+    }
+
+    const examples = fs.readdirSync(adapterPath);
+
+    for (const example of examples) {
+      const examplePath = path.join(adapterPath, example);
+
+      if (!fs.statSync(examplePath).isDirectory()) {
+        continue;
+      }
+
+      const moduleDir = path.join(examplePath, "node_modules", "react-router-hono-server");
+
+      fs.rmSync(moduleDir, { recursive: true, force: true });
+      fs.mkdirSync(moduleDir, { recursive: true });
+      fs.symlinkSync(path.resolve("dist"), path.join(moduleDir, "dist"), "junction");
+
+      // Copy package.json
+      fs.copyFileSync("package.json", path.join(moduleDir, "package.json"));
+    }
+  }
 }

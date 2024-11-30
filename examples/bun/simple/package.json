@@ -1,13 +1,13 @@
 {
-  "name": "react-router-sentry-example",
+  "name": "bun-simple",
   "private": true,
   "sideEffects": true,
   "type": "module",
   "scripts": {
     "build": "react-router build",
-    "dev": "react-router dev",
+    "dev": "bunx --bun vite",
     "lint": "eslint --ignore-path .gitignore --cache --cache-location ./node_modules/.cache/eslint .",
-    "start": "node ./build/server/index.js",
+    "start": "bun ./build/server/index.js",
     "typecheck": "react-router typegen && tsc"
   },
   "dependencies": {
@@ -38,8 +38,5 @@
     "typescript": "^5.7.2",
     "vite": "^5.4.11",
     "vite-tsconfig-paths": "^5.1.3"
-  },
-  "engines": {
-    "node": ">=20.0.0"
   }
 }

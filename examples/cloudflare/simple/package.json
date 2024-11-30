@@ -1,13 +1,13 @@
 {
-  "name": "react-router-virtual-example",
+  "name": "cloudflare-simple",
   "private": true,
   "sideEffects": true,
   "type": "module",
   "scripts": {
     "build": "react-router build",
     "dev": "react-router dev",
+    "start": "wrangler dev",
     "lint": "eslint --ignore-path .gitignore --cache --cache-location ./node_modules/.cache/eslint .",
-    "start": "node ./build/server/index.js",
     "typecheck": "react-router typegen && tsc"
   },
   "dependencies": {
@@ -20,6 +20,7 @@
     "react-router-hono-server": "*"
   },
   "devDependencies": {
+    "@cloudflare/workers-types": "^4.20241112.0",
     "@react-router/dev": "^7.0.1",
     "@types/react": "^18.3.12",
     "@types/react-dom": "^18.3.0",
@@ -33,13 +34,12 @@
     "eslint-plugin-jsx-a11y": "^6.7.1",
     "eslint-plugin-react": "^7.33.2",
     "eslint-plugin-react-hooks": "^4.6.0",
+    "miniflare": "^3.20241106.1",
     "postcss": "^8.4.41",
     "tailwindcss": "^3.4.7",
     "typescript": "^5.7.2",
     "vite": "^5.4.11",
-    "vite-tsconfig-paths": "^5.1.3"
-  },
-  "engines": {
-    "node": ">=20.0.0"
+    "vite-tsconfig-paths": "^5.1.3",
+    "wrangler": "^3.91.0"
   }
 }

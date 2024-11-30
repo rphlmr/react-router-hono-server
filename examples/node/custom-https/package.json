@@ -1,5 +1,5 @@
 {
-  "name": "react-router-custom-https-example",
+  "name": "node-custom-https",
   "private": true,
   "sideEffects": true,
   "type": "module",

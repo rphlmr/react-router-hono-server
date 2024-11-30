@@ -3,7 +3,7 @@
 import "./instrument.server.js";
 
 import { createHonoServer } from "react-router-hono-server/node";
-import { exampleMiddleware } from "./middleware";
+import { exampleMiddleware } from "./middleware.js";
 
 console.log("loading server");
 
