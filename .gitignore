@@ -131,3 +131,4 @@ dist
 /dist
 .history
 .react-router
+/build
