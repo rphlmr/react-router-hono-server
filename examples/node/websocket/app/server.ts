@@ -22,7 +22,7 @@ export default await createHonoServer({
       upgradeWebSocket(() => ({
         // https://hono.dev/helpers/websocket
         onOpen(_, ws) {
-          console.log("New connection ");
+          console.log("New connection 🔥");
           clients.add(ws);
         },
         onMessage(event, ws) {
