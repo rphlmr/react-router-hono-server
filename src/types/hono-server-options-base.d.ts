@@ -1,4 +1,6 @@
 import type { Context, Env, Hono } from "hono";
+import type { HonoOptions } from "hono/hono-base";
+import type { UpgradeWebSocket } from "hono/ws";
 import type { AppLoadContext, ServerBuild } from "react-router";
 
 export interface HonoServerOptionsBase<E extends Env> {
@@ -21,12 +23,6 @@ export interface HonoServerOptionsBase<E extends Env> {
    */
   port?: number;
   /**
-   * Customize the Hono server, for example, adding middleware
-   *
-   * It is applied after the default middleware and before the React Router middleware
-   */
-  configure?: (app: Hono<E>) => Promise<void> | void;
-  /**
    * Augment the React Router AppLoadContext
    *
    * Don't forget to declare the AppLoadContext in your app, next to where you create the Hono server
@@ -48,11 +44,41 @@ export interface HonoServerOptionsBase<E extends Env> {
     }
   ) => Promise<AppLoadContext> | AppLoadContext;
   /**
-   * Hono constructor options
-   *
    * @deprecated Use `app` instead
-   *
-   * {@link HonoOptions}
    */
   honoOptions?: HonoOptions<E>;
+}
+
+export interface WithWebsocket<E extends Env> {
+  /**
+   * Enable WebSockets support in `configure`
+   *
+   * For `bun` and `cloudflare` we will use the `@hono/node-ws`'s `injectWebSocket` on dev (only),
+   *
+   * Defaults to `false`
+   */
+  useWebSocket: true;
+  /**
+   * Customize the Hono server, for example, adding middleware
+   *
+   * It is applied after the default middleware and before the React Router middleware
+   */
+  configure: (app: Hono<E>, options: { upgradeWebSocket: UpgradeWebSocket }) => Promise<void> | void;
+}
+
+export interface WithoutWebsocket<E extends Env> {
+  /**
+   * Enable WebSockets support in `configure`
+   *
+   * For `bun` and `cloudflare` we will use the `@hono/node-ws`'s `injectWebSocket` on dev (only),
+   *
+   * Defaults to `false`
+   */
+  useWebSocket?: false | undefined;
+  /**
+   * Customize the Hono server, for example, adding middleware
+   *
+   * It is applied after the default middleware and before the React Router middleware
+   */
+  configure?: (app: Hono<E>) => Promise<void> | void;
 }
