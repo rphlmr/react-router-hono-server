@@ -6,32 +6,56 @@ import { logger } from "hono/logger";
 import type { BlankEnv } from "hono/types";
 import { type ServerBuild, createRequestHandler } from "react-router";
 import { cache } from "../middleware";
-import type { HonoServerOptionsBase } from "../types/hono-server-options-base";
+import type { HonoServerOptionsBase, WithWebsocket, WithoutWebsocket } from "../types/hono-server-options-base";
+import { cleanUpgradeListeners, createWebSocket, patchUpgradeListener } from "../utils";
 
-export interface HonoServerOptions<E extends Env = BlankEnv> extends HonoServerOptionsBase<E> {
+type CustomBunServer = Serve &
+  ServeOptions & {
+    websocket?: unknown;
+  };
+
+interface HonoBunServerOptions<E extends Env = BlankEnv> extends HonoServerOptionsBase<E> {
   /**
    * Customize the bun server
    *
    * {@link https://bun.sh/docs/api/http#start-a-server-bun-serve}
    */
-  customBunServer?: Serve & ServeOptions;
+  customBunServer?: Partial<CustomBunServer>;
 }
+
+type HonoServerOptionsWithWebSocket<E extends Env = BlankEnv> = HonoBunServerOptions<E> & WithWebsocket<E>;
+
+type HonoServerOptionsWithoutWebSocket<E extends Env = BlankEnv> = HonoBunServerOptions<E> & WithoutWebsocket<E>;
+
+export type HonoServerOptions<E extends Env = BlankEnv> =
+  | HonoServerOptionsWithWebSocket<E>
+  | HonoServerOptionsWithoutWebSocket<E>;
 
 /**
  * Create a Hono server
  *
  * @param HonoServerOptions options {@link HonoServerOptions} - The configuration options for the server
  */
-export async function createHonoServer<E extends Env = BlankEnv>(options: HonoServerOptions<E> = {}) {
-  const mergedOptions = {
+export async function createHonoServer<E extends Env = BlankEnv>(
+  options?: HonoServerOptionsWithoutWebSocket<E>
+): Promise<CustomBunServer | undefined>;
+export async function createHonoServer<E extends Env = BlankEnv>(
+  options?: HonoServerOptionsWithWebSocket<E>
+): Promise<CustomBunServer | undefined>;
+export async function createHonoServer<E extends Env = BlankEnv>(options?: HonoServerOptions<E>) {
+  const mergedOptions: HonoServerOptions<E> = {
     ...options,
-    port: options.port || Number(options.customBunServer?.port) || Number(process.env.PORT) || 3000,
-    defaultLogger: options.defaultLogger ?? true,
-  } satisfies HonoServerOptions<E>;
+    port: options?.port || Number(options?.customBunServer?.port) || Number(process.env.PORT) || 3000,
+    defaultLogger: options?.defaultLogger ?? true,
+  };
   const mode = import.meta.env.MODE;
   const PRODUCTION = mode === "production";
   const app = new Hono<E>(mergedOptions.honoOptions || mergedOptions.app);
   const clientBuildPath = `${import.meta.env.REACT_ROUTER_HONO_SERVER_BUILD_DIRECTORY}/client`;
+  const { upgradeWebSocket, injectWebSocket } = await createWebSocket({
+    app,
+    runtime: mergedOptions.useWebSocket ? (PRODUCTION ? "bun" : "node") : undefined,
+  });
 
   /**
    * Serve assets files from build/client/assets
@@ -58,7 +82,11 @@ export async function createHonoServer<E extends Env = BlankEnv>(options: HonoSe
    * Add optional middleware
    */
   if (mergedOptions.configure) {
-    await mergedOptions.configure(app);
+    if (mergedOptions.useWebSocket) {
+      await mergedOptions.configure(app, { upgradeWebSocket });
+    } else {
+      await mergedOptions.configure(app);
+    }
   }
 
   /**
@@ -77,14 +105,36 @@ export async function createHonoServer<E extends Env = BlankEnv>(options: HonoSe
     })(c, next);
   });
 
-  if (!PRODUCTION) {
-    console.log("🚧 Running in development mode");
-  }
-
-  return {
+  const server = {
     ...mergedOptions.customBunServer,
     fetch: app.fetch,
     port: mergedOptions.port,
     development: !PRODUCTION,
-  } satisfies Serve;
+  };
+
+  if (PRODUCTION) {
+    injectWebSocket(server);
+  } else {
+    // You wonder why I'm doing this?
+    // It is to make the dev server work with `hono/node-ws`
+    const viteDevServer = globalThis.__viteDevServer;
+
+    if (!viteDevServer?.httpServer) {
+      return;
+    }
+
+    // // Remove all user-defined upgrade listeners except HMR
+    cleanUpgradeListeners(viteDevServer.httpServer);
+
+    console.log("injecting", viteDevServer.httpServer);
+    // Bind `hono/node-ws` for you so you don't have to do it manually in `onServe`
+    injectWebSocket(viteDevServer.httpServer);
+
+    // // Prevent user-defined upgrade listeners from upgrading `vite-hmr`
+    patchUpgradeListener(viteDevServer.httpServer);
+
+    console.log("🚧 Running in development mode");
+  }
+
+  return server;
 }

@@ -1,17 +1,15 @@
 import type { AddressInfo } from "node:net";
 import { type ServerType, serve } from "@hono/node-server";
 import { serveStatic } from "@hono/node-server/serve-static";
-import { createNodeWebSocket } from "@hono/node-ws";
 import { type Env, Hono } from "hono";
 import { createMiddleware } from "hono/factory";
 import { logger } from "hono/logger";
 import type { BlankEnv } from "hono/types";
-import type { UpgradeWebSocket } from "hono/ws";
 import { type ServerBuild, createRequestHandler } from "react-router";
 import { cache } from "../middleware";
 import type { HonoServerOptionsBase, WithWebsocket, WithoutWebsocket } from "../types/hono-server-options-base";
 import type { CreateNodeServerOptions } from "../types/node.https";
-import { cleanUpgradeListeners, patchUpgradeListener } from "../utils";
+import { cleanUpgradeListeners, createWebSocket, patchUpgradeListener } from "../utils";
 
 interface HonoNodeServerOptions<E extends Env = BlankEnv> extends HonoServerOptionsBase<E> {
   /**
@@ -67,9 +65,13 @@ export async function createHonoServer<E extends Env = BlankEnv>(options?: HonoS
   const PRODUCTION = mode === "production";
   const app = new Hono<E>(mergedOptions.honoOptions || mergedOptions.app);
   const clientBuildPath = `${import.meta.env?.REACT_ROUTER_HONO_SERVER_BUILD_DIRECTORY}/client`;
-  const { upgradeWebSocket: upgradeNodeWebSocket, injectWebSocket } = mergedOptions.useWebSocket
-    ? createNodeWebSocket({ app: app as unknown as Hono })
-    : { upgradeWebSocket: Function.prototype as UpgradeWebSocket };
+  // const { upgradeWebSocket, injectWebSocket } = mergedOptions.useWebSocket
+  //   ? createNodeWebSocket({ app: app as unknown as Hono })
+  //   : { upgradeWebSocket: Function.prototype as UpgradeWebSocket, injectWebSocket: Function.prototype };
+  const { upgradeWebSocket, injectWebSocket } = await createWebSocket({
+    app,
+    runtime: mergedOptions.useWebSocket ? "node" : undefined,
+  });
 
   /**
    * Serve assets files from build/client/assets
@@ -97,7 +99,7 @@ export async function createHonoServer<E extends Env = BlankEnv>(options?: HonoS
    */
   if (mergedOptions.configure) {
     if (mergedOptions.useWebSocket) {
-      await mergedOptions.configure(app, { upgradeWebSocket: upgradeNodeWebSocket });
+      await mergedOptions.configure(app, { upgradeWebSocket });
     } else {
       await mergedOptions.configure(app);
     }
@@ -135,7 +137,7 @@ export async function createHonoServer<E extends Env = BlankEnv>(options?: HonoS
     mergedOptions.onServe?.(server);
 
     // Bind `hono/node-ws` for you so you don't have to do it manually in `onServe`
-    injectWebSocket?.(server);
+    injectWebSocket(server);
   } else {
     // You wonder why I'm doing this?
     // It is to make the dev server work with `hono/node-ws`
@@ -152,7 +154,7 @@ export async function createHonoServer<E extends Env = BlankEnv>(options?: HonoS
     mergedOptions.onServe?.(viteDevServer.httpServer);
 
     // Bind `hono/node-ws` for you so you don't have to do it manually in `onServe`
-    injectWebSocket?.(viteDevServer.httpServer);
+    injectWebSocket(viteDevServer.httpServer);
 
     // Prevent user-defined upgrade listeners from upgrading `vite-hmr`
     patchUpgradeListener(viteDevServer.httpServer);

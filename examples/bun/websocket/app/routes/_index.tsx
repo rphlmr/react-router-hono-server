@@ -4,7 +4,7 @@ import type { Route } from "./+types/_index";
 
 export function loader() {
   return {
-    isDev: process.env.NODE_ENV === "development",
+    isProduction: process.env.NODE_ENV === "production",
   };
 }
 
@@ -19,18 +19,18 @@ export default function Index({ loaderData }: Route.ComponentProps) {
   }, []);
 
   if (isHydrated) {
-    return <Client isDev={loaderData.isDev} />;
+    return <Client isProduction={loaderData.isProduction} />;
   } else {
     return <div>Loading...</div>;
   }
 }
 
-function Client({ isDev }: { isDev: boolean }) {
+function Client({ isProduction }: { isProduction: boolean }) {
   const [messageHistory, setMessageHistory] = useState<MessageEvent<any>[]>([]);
   const [message, setMessage] = useState("");
 
   // Adapt the port based on some env.
-  const { sendMessage, lastMessage, readyState } = useWebSocket(`ws://localhost:${isDev ? 5173 : 3000}/ws`);
+  const { sendMessage, lastMessage, readyState } = useWebSocket(`ws://localhost:${isProduction ? 3000 : 5173}/ws`);
 
   useEffect(() => {
     if (lastMessage !== null) {

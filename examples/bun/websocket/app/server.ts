@@ -1,5 +1,5 @@
-import type { WSContext } from "hono/ws";
-import { createHonoServer } from "react-router-hono-server/node";
+import { WSContext } from "hono/ws";
+import { createHonoServer } from "react-router-hono-server/bun";
 
 console.log("loading server");
 
@@ -8,13 +8,14 @@ const clients = new Set<WSContext>();
 
 export default await createHonoServer({
   useWebSocket: true,
-  configure: (app, { upgradeWebSocket }) => {
+  // 👆 Unlock this 👇 from @hono/node-ws in dev, hono/bun in prod
+  configure(app, { upgradeWebSocket }) {
     app.get(
       "/ws",
       upgradeWebSocket(() => ({
         // https://hono.dev/helpers/websocket
         onOpen(_, ws) {
-          console.log("New connection ⬆️");
+          console.log("New connection 🔥");
           clients.add(ws);
         },
         onMessage(event, ws) {

@@ -5,15 +5,15 @@ import type { BlankEnv } from "hono/types";
 import { type ServerBuild, createRequestHandler } from "react-router";
 import type { HonoServerOptionsBase } from "../types/hono-server-options-base";
 
-export interface HonoServerOptions<E extends Env = BlankEnv> extends Omit<HonoServerOptionsBase<E>, "port"> {}
+export type HonoServerOptions<E extends Env = BlankEnv> = Omit<HonoServerOptionsBase<E>, "port">;
 
 /**
  * Create a Hono server
  *
  * @param config {@link HonoServerOptions} - The configuration options for the server
  */
-export async function createHonoServer<E extends Env = BlankEnv>(options: HonoServerOptions<E> = {}) {
-  const mergedOptions: HonoServerOptions<E> = {
+export async function createHonoServer<E extends Env = BlankEnv>(options: Partial<HonoServerOptions<E>> = {}) {
+  const mergedOptions = {
     ...options,
     defaultLogger: options.defaultLogger ?? true,
   };
@@ -31,9 +31,10 @@ export async function createHonoServer<E extends Env = BlankEnv>(options: HonoSe
   /**
    * Add optional middleware
    */
-  if (mergedOptions.configure) {
-    await mergedOptions.configure(app);
-  }
+  // if (mergedOptions.configure) {
+  //   // @ts-ignore
+  //   await mergedOptions.configure(app);
+  // }
 
   /**
    * Add React Router middleware to Hono server

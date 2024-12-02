@@ -5,9 +5,8 @@ import bunAdapter from "@hono/vite-dev-server/bun";
 import cloudflareAdapter from "@hono/vite-dev-server/cloudflare";
 import type { Config as ReactRouterConfig } from "@react-router/dev/config";
 import type { Plugin, UserConfig } from "vite";
+import type { Runtime } from "./types/runtime";
 import type { MetaEnv } from "./utils";
-
-type Runtime = "node" | "bun" | "cloudflare";
 
 type ReactRouterHonoServerPluginOptions = {
   /**
