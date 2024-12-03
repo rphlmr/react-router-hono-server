@@ -12,13 +12,15 @@ export default await createHonoServer({
   configure(app, { upgradeWebSocket }) {
     app.get(
       "/ws",
-      upgradeWebSocket(() => ({
+      upgradeWebSocket((c) => ({
         // https://hono.dev/helpers/websocket
         onOpen(_, ws) {
           console.log("New connection 🔥");
           clients.add(ws);
         },
         onMessage(event, ws) {
+          console.log("Context", c.req.header("Cookie"));
+          console.log("Event", event);
           console.log(`Message from client: ${event.data}`);
           // Broadcast to all clients except sender
           clients.forEach((client) => {

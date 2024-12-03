@@ -17,9 +17,12 @@ interface WebSocket {
   injectWebSocket: <Server extends AnyServer>(server: Server) => Server;
 }
 
-type RuntimeOrDisabled = Runtime | undefined;
+const defaultWebSocket = {
+  upgradeWebSocket: () => async () => {},
+  injectWebSocket: (server) => server,
+} satisfies WebSocket;
 
-type Config<R extends RuntimeOrDisabled> = { app: Hono<any>; runtime: R };
+type Config<R extends Runtime> = { app: Hono<any>; runtime: R; enabled: boolean };
 
 /**
  * Create WebSocket factory
@@ -30,7 +33,11 @@ type Config<R extends RuntimeOrDisabled> = { app: Hono<any>; runtime: R };
  *
  * This is the secret sauce!
  */
-export async function createWebSocket({ app, runtime }: Config<RuntimeOrDisabled>): Promise<WebSocket> {
+export async function createWebSocket({ app, runtime, enabled }: Config<Runtime>): Promise<WebSocket> {
+  if (!enabled) {
+    return defaultWebSocket;
+  }
+
   switch (runtime) {
     case "node": {
       const { createNodeWebSocket } = await import("@hono/node-ws");
@@ -67,10 +74,7 @@ export async function createWebSocket({ app, runtime }: Config<RuntimeOrDisabled
       };
     }
     default: {
-      return {
-        upgradeWebSocket: () => async () => {},
-        injectWebSocket: (server) => server,
-      };
+      return defaultWebSocket;
     }
   }
 }
