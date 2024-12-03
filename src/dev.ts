@@ -6,7 +6,10 @@ import cloudflareAdapter from "@hono/vite-dev-server/cloudflare";
 import type { Config as ReactRouterConfig } from "@react-router/dev/config";
 import type { Plugin, UserConfig } from "vite";
 import type { Runtime } from "./types/runtime";
-import type { MetaEnv } from "./utils";
+
+type MetaEnv<T> = {
+  [K in keyof T as `import.meta.env.${string & K}`]: T[K];
+};
 
 type ReactRouterHonoServerPluginOptions = {
   /**
