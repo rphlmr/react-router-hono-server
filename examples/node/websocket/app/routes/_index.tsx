@@ -72,6 +72,9 @@ function Client({ isDev }: { isDev: boolean }) {
               <span className="text-sm text-gray-600">
                 Status: <span className="font-medium">{connectionStatus}</span>
               </span>
+              <span className="text-sm text-gray-600">
+                Port: <span className="font-medium">{isDev ? 5173 : 3000}</span>
+              </span>
             </div>
           </div>
 

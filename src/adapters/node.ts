@@ -61,13 +61,10 @@ export async function createHonoServer<E extends Env = BlankEnv>(options?: HonoS
     port: options?.port || Number(process.env.PORT) || 3000,
     defaultLogger: options?.defaultLogger ?? true,
   };
-  const mode = import.meta.env?.MODE;
+  const mode = import.meta.env.MODE || "production";
   const PRODUCTION = mode === "production";
   const app = new Hono<E>(mergedOptions.honoOptions || mergedOptions.app);
-  const clientBuildPath = `${import.meta.env?.REACT_ROUTER_HONO_SERVER_BUILD_DIRECTORY}/client`;
-  // const { upgradeWebSocket, injectWebSocket } = mergedOptions.useWebSocket
-  //   ? createNodeWebSocket({ app: app as unknown as Hono })
-  //   : { upgradeWebSocket: Function.prototype as UpgradeWebSocket, injectWebSocket: Function.prototype };
+  const clientBuildPath = `${import.meta.env.REACT_ROUTER_HONO_SERVER_BUILD_DIRECTORY}/client`;
   const { upgradeWebSocket, injectWebSocket } = await createWebSocket({
     app,
     runtime: mergedOptions.useWebSocket ? "node" : undefined,
@@ -77,7 +74,7 @@ export async function createHonoServer<E extends Env = BlankEnv>(options?: HonoS
    * Serve assets files from build/client/assets
    */
   app.use(
-    `/${import.meta.env?.REACT_ROUTER_HONO_SERVER_ASSETS_DIR}/*`,
+    `/${import.meta.env.REACT_ROUTER_HONO_SERVER_ASSETS_DIR}/*`,
     cache(60 * 60 * 24 * 365), // 1 year
     serveStatic({ root: clientBuildPath })
   );

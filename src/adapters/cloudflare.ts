@@ -17,7 +17,7 @@ export async function createHonoServer<E extends Env = BlankEnv>(options: Partia
     ...options,
     defaultLogger: options.defaultLogger ?? true,
   };
-  const mode = import.meta.env.MODE;
+  const mode = import.meta.env.MODE || "production";
   const PRODUCTION = mode === "production";
   const app = new Hono<E>(mergedOptions.honoOptions || mergedOptions.app);
 

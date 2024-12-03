@@ -4,7 +4,7 @@ import type { Route } from "./+types/_index";
 
 export function loader() {
   return {
-    isProduction: process.env.NODE_ENV === "production",
+    isDev: process.env.NODE_ENV === "development",
   };
 }
 
@@ -19,18 +19,18 @@ export default function Index({ loaderData }: Route.ComponentProps) {
   }, []);
 
   if (isHydrated) {
-    return <Client isProduction={loaderData.isProduction} />;
+    return <Client isDev={loaderData.isDev} />;
   } else {
     return <div>Loading...</div>;
   }
 }
 
-function Client({ isProduction }: { isProduction: boolean }) {
+function Client({ isDev }: { isDev: boolean }) {
   const [messageHistory, setMessageHistory] = useState<MessageEvent<any>[]>([]);
   const [message, setMessage] = useState("");
 
   // Adapt the port based on some env.
-  const { sendMessage, lastMessage, readyState } = useWebSocket(`ws://localhost:${isProduction ? 3000 : 5173}/ws`);
+  const { sendMessage, lastMessage, readyState } = useWebSocket(`ws://localhost:${isDev ? 5173 : 3000}/ws`);
 
   useEffect(() => {
     if (lastMessage !== null) {
@@ -71,6 +71,9 @@ function Client({ isProduction }: { isProduction: boolean }) {
               />
               <span className="text-sm text-gray-600">
                 Status: <span className="font-medium">{connectionStatus}</span>
+              </span>
+              <span className="text-sm text-gray-600">
+                Port: <span className="font-medium">{isDev ? 5173 : 3000}</span>
               </span>
             </div>
           </div>

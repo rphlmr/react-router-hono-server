@@ -139,10 +139,12 @@ export async function createWebSocket({ app, runtime }: Config<RuntimeOrDisabled
 
       return {
         upgradeWebSocket,
-        injectWebSocket: (server) => ({
-          ...server,
-          websocket,
-        }),
+        injectWebSocket: (server) => {
+          return {
+            ...server,
+            websocket,
+          };
+        },
       };
     }
     case "cloudflare": {

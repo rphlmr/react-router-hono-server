@@ -48,7 +48,7 @@ export async function createHonoServer<E extends Env = BlankEnv>(options?: HonoS
     port: options?.port || Number(options?.customBunServer?.port) || Number(process.env.PORT) || 3000,
     defaultLogger: options?.defaultLogger ?? true,
   };
-  const mode = import.meta.env.MODE;
+  const mode = import.meta.env.MODE || "production";
   const PRODUCTION = mode === "production";
   const app = new Hono<E>(mergedOptions.honoOptions || mergedOptions.app);
   const clientBuildPath = `${import.meta.env.REACT_ROUTER_HONO_SERVER_BUILD_DIRECTORY}/client`;
@@ -105,7 +105,7 @@ export async function createHonoServer<E extends Env = BlankEnv>(options?: HonoS
     })(c, next);
   });
 
-  const server = {
+  let server = {
     ...mergedOptions.customBunServer,
     fetch: app.fetch,
     port: mergedOptions.port,
@@ -113,7 +113,7 @@ export async function createHonoServer<E extends Env = BlankEnv>(options?: HonoS
   };
 
   if (PRODUCTION) {
-    injectWebSocket(server);
+    server = injectWebSocket(server);
   } else {
     // You wonder why I'm doing this?
     // It is to make the dev server work with `hono/node-ws`
@@ -126,7 +126,6 @@ export async function createHonoServer<E extends Env = BlankEnv>(options?: HonoS
     // // Remove all user-defined upgrade listeners except HMR
     cleanUpgradeListeners(viteDevServer.httpServer);
 
-    console.log("injecting", viteDevServer.httpServer);
     // Bind `hono/node-ws` for you so you don't have to do it manually in `onServe`
     injectWebSocket(viteDevServer.httpServer);
 
