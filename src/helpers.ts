@@ -70,7 +70,7 @@ export async function createWebSocket({ app, runtime, enabled }: Config<Runtime>
 
       return {
         upgradeWebSocket,
-        injectWebSocket: (server) => server,
+        injectWebSocket: defaultWebSocket.injectWebSocket,
       };
     }
     default: {

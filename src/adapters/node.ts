@@ -47,10 +47,10 @@ export type HonoServerOptions<E extends Env = BlankEnv> =
  */
 export async function createHonoServer<E extends Env = BlankEnv>(
   options?: HonoServerOptionsWithoutWebSocket<E>
-): Promise<Hono<E> | undefined>;
+): Promise<Hono<E>>;
 export async function createHonoServer<E extends Env = BlankEnv>(
   options?: HonoServerOptionsWithWebSocket<E>
-): Promise<Hono<E> | undefined>;
+): Promise<Hono<E>>;
 export async function createHonoServer<E extends Env = BlankEnv>(options?: HonoServerOptions<E>) {
   const mergedOptions: HonoServerOptions<E> = {
     ...options,
@@ -136,26 +136,22 @@ export async function createHonoServer<E extends Env = BlankEnv>(options?: HonoS
 
     // Bind `hono/node-ws` for you so you don't have to do it manually in `onServe`
     injectWebSocket(server);
-  } else {
+  } else if (globalThis.__viteDevServer?.httpServer) {
     // You wonder why I'm doing this?
     // It is to make the dev server work with `hono/node-ws`
-    const viteDevServer = globalThis.__viteDevServer;
-
-    if (!viteDevServer?.httpServer) {
-      return;
-    }
+    const httpServer = globalThis.__viteDevServer.httpServer;
 
     // Remove all user-defined upgrade listeners except HMR
-    cleanUpgradeListeners(viteDevServer.httpServer);
+    cleanUpgradeListeners(httpServer);
 
     // Execute your onServe callback. Use case: socket.io binding
-    mergedOptions.onServe?.(viteDevServer.httpServer);
+    mergedOptions.onServe?.(httpServer);
 
     // Bind `hono/node-ws` for you so you don't have to do it manually in `onServe`
-    injectWebSocket(viteDevServer.httpServer);
+    injectWebSocket(httpServer);
 
     // Prevent user-defined upgrade listeners from upgrading `vite-hmr`
-    patchUpgradeListener(viteDevServer.httpServer);
+    patchUpgradeListener(httpServer);
 
     console.log("🚧 Dev server started");
   }
