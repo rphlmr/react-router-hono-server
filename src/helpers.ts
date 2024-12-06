@@ -22,61 +22,56 @@ const defaultWebSocket = {
   injectWebSocket: (server) => server,
 } satisfies WebSocket;
 
-type Config<R extends Runtime> = { app: Hono<any>; runtime: R; enabled: boolean };
+type Config = { app: Hono<any>; enabled: boolean };
 
 /**
  * Create WebSocket factory
  *
  * It harmonizes the WebSocket implementation between `node`, `bun` and `cloudflare`
  *
- * For `bun` and `cloudflare`, in dev (which uses a node server), we hot-swap their native implementation with `@hono/node-ws`.
+ * For `bun` and `cloudflare`, in dev (which uses a node server), we hot-swap their native implementation with `@hono/node-ws`. This is the secret sauce!
  *
- * This is the secret sauce!
+ * **Implementation details: It will strip unused code from other runtimes at build time**
+ *
+ * We do that to avoid issues on platforms that don't support node or bun APIs (like Cloudflare)
  */
-export async function createWebSocket({ app, runtime, enabled }: Config<Runtime>): Promise<WebSocket> {
+export async function createWebSocket({ app, enabled }: Config): Promise<WebSocket> {
   if (!enabled) {
     return defaultWebSocket;
   }
+  const mode = import.meta.env.MODE;
+  const DEV = mode === "development";
+  const runtime = import.meta.env.REACT_ROUTER_HONO_SERVER_RUNTIME as Runtime;
 
-  switch (runtime) {
-    case "node": {
-      const { createNodeWebSocket } = await import("@hono/node-ws");
-      const { injectWebSocket, upgradeWebSocket } = createNodeWebSocket({ app });
+  if (DEV || runtime === "node") {
+    const { createNodeWebSocket } = await import("@hono/node-ws");
+    const { injectWebSocket, upgradeWebSocket } = createNodeWebSocket({ app });
 
-      return {
-        upgradeWebSocket,
-        injectWebSocket(server) {
-          injectWebSocket(server as NodeServer);
-          return server;
-        },
-      };
-    }
-    case "bun": {
-      const { createBunWebSocket } = await import("hono/bun");
-      const { upgradeWebSocket, websocket } = createBunWebSocket();
-
-      return {
-        upgradeWebSocket,
-        injectWebSocket: (server) => {
-          return {
-            ...server,
-            websocket,
-          };
-        },
-      };
-    }
-    case "cloudflare": {
-      const { upgradeWebSocket } = await import("hono/cloudflare-workers");
-
-      return {
-        upgradeWebSocket,
-        injectWebSocket: defaultWebSocket.injectWebSocket,
-      };
-    }
-    default: {
-      return defaultWebSocket;
-    }
+    return {
+      upgradeWebSocket,
+      injectWebSocket(server) {
+        injectWebSocket(server as NodeServer);
+        return server;
+      },
+    };
   }
+
+  if (runtime === "bun") {
+    const { createBunWebSocket } = await import("hono/bun");
+    const { upgradeWebSocket, websocket } = createBunWebSocket();
+
+    return {
+      upgradeWebSocket,
+      injectWebSocket: (server) => {
+        return {
+          ...server,
+          websocket,
+        };
+      },
+    };
+  }
+
+  return defaultWebSocket;
 }
 
 /**

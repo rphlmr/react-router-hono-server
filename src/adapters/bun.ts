@@ -54,7 +54,6 @@ export async function createHonoServer<E extends Env = BlankEnv>(options?: HonoS
   const clientBuildPath = `${import.meta.env.REACT_ROUTER_HONO_SERVER_BUILD_DIRECTORY}/client`;
   const { upgradeWebSocket, injectWebSocket } = await createWebSocket({
     app,
-    runtime: PRODUCTION ? "bun" : "node",
     enabled: mergedOptions.useWebSocket ?? false,
   });
 
@@ -82,12 +81,10 @@ export async function createHonoServer<E extends Env = BlankEnv>(options?: HonoS
   /**
    * Add optional middleware
    */
-  if (mergedOptions.configure) {
-    if (mergedOptions.useWebSocket) {
-      await mergedOptions.configure(app, { upgradeWebSocket });
-    } else {
-      await mergedOptions.configure(app);
-    }
+  if (mergedOptions.useWebSocket) {
+    await mergedOptions.configure(app, { upgradeWebSocket });
+  } else {
+    await mergedOptions.configure?.(app);
   }
 
   /**

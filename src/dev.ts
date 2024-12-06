@@ -79,7 +79,7 @@ export function reactRouterHonoServer(options: ReactRouterHonoServerPluginOption
         runtime === "cloudflare" &&
         !config.plugins?.find((p) => p && "name" in p && p.name === "react-router-cloudflare-vite-dev-proxy")
       ) {
-        console.error(
+        console.warn(
           `\x1b[31mMissing cloudflareDevProxy() in your vite.config.ts.\nPlease add it to your plugins: import { cloudflareDevProxy } from "@react-router/dev/vite/cloudflare";\x1b[0m\n`
         );
         throw new Error("Missing mandatory plugin cloudflareDevProxy() in vite.config.ts");
@@ -90,6 +90,7 @@ export function reactRouterHonoServer(options: ReactRouterHonoServerPluginOption
         define: {
           "import.meta.env.REACT_ROUTER_HONO_SERVER_BUILD_DIRECTORY": JSON.stringify(pluginConfig.buildDirectory),
           "import.meta.env.REACT_ROUTER_HONO_SERVER_ASSETS_DIR": JSON.stringify(pluginConfig.assetsDir),
+          "import.meta.env.REACT_ROUTER_HONO_SERVER_RUNTIME": JSON.stringify(runtime),
         } satisfies MetaEnv<ReactRouterHonoServerEnv>,
         ssr: {
           target: runtime === "cloudflare" ? "webworker" : undefined,
@@ -105,10 +106,12 @@ export function reactRouterHonoServer(options: ReactRouterHonoServerPluginOption
 
       return {
         ...baseConfig,
+
         build: {
           target: "esnext",
           rollupOptions: {
             input: pluginConfig.serverEntryPoint,
+            external: ["cloudflare:email", "cloudflare:sockets", "cloudflare:workers"],
           },
         },
       };
