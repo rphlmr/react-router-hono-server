@@ -10,6 +10,22 @@ interface HonoCloudflareOptions<E extends Env = BlankEnv> extends HonoServerOpti
 export type HonoServerOptions<E extends Env = BlankEnv> = HonoCloudflareOptions<E> &
   Omit<WithoutWebsocket<E>, "useWebSocket">;
 
+export function cache(seconds: number) {
+  return createMiddleware(async (c, next) => {
+    if (!c.req.path.match(/\.[a-zA-Z0-9]+$/) || c.req.path.endsWith(".data")) {
+      return next();
+    }
+
+    await next();
+
+    if (!c.res.ok) {
+      return;
+    }
+
+    c.res.headers.set("cache-control", `public, max-age=${seconds}`);
+  });
+}
+
 /**
  * Create a Hono server
  *
@@ -21,8 +37,16 @@ export async function createHonoServer<E extends Env = BlankEnv>(options?: HonoS
     defaultLogger: options?.defaultLogger ?? true,
   };
   const mode = import.meta.env.MODE || "production";
-  const PRODUCTION = mode === "production";
+  const DEV = mode === "development";
   const app = new Hono<E>(mergedOptions.honoOptions || mergedOptions.app);
+
+  /**
+   * Serve public files
+   */
+  if (DEV) {
+    const { serveStatic } = await import("@hono/node-server/serve-static");
+    app.use("*", cache(60 * 60), serveStatic({ root: "./public" })); // 1 hour
+  }
 
   /**
    * Add logger middleware
@@ -52,7 +76,7 @@ export async function createHonoServer<E extends Env = BlankEnv>(options?: HonoS
     })(c, next);
   });
 
-  if (!PRODUCTION) {
+  if (DEV) {
     console.log("🚧 Running in development mode");
   }
 
