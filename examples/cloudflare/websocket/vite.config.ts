@@ -7,10 +7,10 @@ import tsconfigPaths from "vite-tsconfig-paths";
 export default defineConfig({
   plugins: [
     cloudflareDevProxy(),
+    reactRouter(),
     reactRouterHonoServer({
       runtime: "cloudflare",
     }),
-    reactRouter(),
     tsconfigPaths(),
   ],
 });

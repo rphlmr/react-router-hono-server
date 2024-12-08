@@ -53,5 +53,9 @@
   "[css]": {
     "editor.defaultFormatter": "biomejs.biome"
   },
-  "deno.enable": false
+  "deno.enable": false,
+  "[toml]": {
+    "editor.defaultFormatter": "tamasfe.even-better-toml"
+  },
+  "typescript.tsdk": "node_modules/typescript/lib"
 }

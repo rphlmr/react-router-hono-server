@@ -25,7 +25,7 @@ type ReactRouterHonoServerPluginOptions = {
    *
    * Defaults to `${appDirectory}/server[.ts | /index.ts]` if present.
    *
-   * Fallback to a virtual module `virtual:react-router-hono-server/server`.
+   * Fallback to a virtual module `virtual:react-router-hono-server/server`.`
    */
   serverEntryPoint?: string;
   /**
@@ -82,7 +82,7 @@ export function reactRouterHonoServer(options: ReactRouterHonoServerPluginOption
         console.warn(
           `\x1b[31mMissing cloudflareDevProxy() in your vite.config.ts.\nPlease add it to your plugins: import { cloudflareDevProxy } from "@react-router/dev/vite/cloudflare";\x1b[0m\n`
         );
-        throw new Error("Missing mandatory plugin cloudflareDevProxy() in vite.config.ts");
+        // throw new Error("Missing mandatory plugin cloudflareDevProxy() in vite.config.ts");
       }
 
       const baseConfig = {
@@ -106,12 +106,10 @@ export function reactRouterHonoServer(options: ReactRouterHonoServerPluginOption
 
       return {
         ...baseConfig,
-
         build: {
           target: "esnext",
           rollupOptions: {
             input: pluginConfig.serverEntryPoint,
-            external: ["cloudflare:email", "cloudflare:sockets", "cloudflare:workers"],
           },
         },
       };

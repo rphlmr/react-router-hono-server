@@ -3,28 +3,13 @@ import { createMiddleware } from "hono/factory";
 import { logger } from "hono/logger";
 import type { BlankEnv } from "hono/types";
 import { type ServerBuild, createRequestHandler } from "react-router";
+import { cache } from "../middleware";
 import type { HonoServerOptionsBase, WithoutWebsocket } from "../types/hono-server-options-base";
 
 interface HonoCloudflareOptions<E extends Env = BlankEnv> extends HonoServerOptionsBase<E> {}
 
 export type HonoServerOptions<E extends Env = BlankEnv> = HonoCloudflareOptions<E> &
   Omit<WithoutWebsocket<E>, "useWebSocket">;
-
-export function cache(seconds: number) {
-  return createMiddleware(async (c, next) => {
-    if (!c.req.path.match(/\.[a-zA-Z0-9]+$/) || c.req.path.endsWith(".data")) {
-      return next();
-    }
-
-    await next();
-
-    if (!c.res.ok) {
-      return;
-    }
-
-    c.res.headers.set("cache-control", `public, max-age=${seconds}`);
-  });
-}
 
 /**
  * Create a Hono server

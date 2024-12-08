@@ -29,7 +29,7 @@ export default defineConfig([
     format: ["esm"],
     onSuccess: async () => {
       const banner = "#!/usr/bin/env node\n";
-      const cliFilePath = "dist/cli.mjs";
+      const cliFilePath = "dist/cli.js";
       const originalContent = fs.readFileSync(cliFilePath, "utf-8");
       fs.writeFileSync(cliFilePath, banner + originalContent);
       fs.chmodSync(cliFilePath, "755");
