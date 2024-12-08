@@ -8,6 +8,7 @@ const clients = new Set<WSContext>();
 
 export default await createHonoServer({
   useWebSocket: true,
+  // 👆 Unlock this 👇 from @hono/node-ws
   configure: (app, { upgradeWebSocket }) => {
     app.get(
       "/ws",

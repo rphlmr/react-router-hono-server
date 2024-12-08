@@ -541,39 +541,35 @@ export default await createHonoServer({
 });
 ```
 
-### Using WebSockets with Node
-You can use `@hono/node-ws` with this package!
+### Using WebSockets
+#### Node
+This package has a built-in helper to use `@hono/node-ws`
 
 > [!TIP]
 > Check this [example](./examples/node/websocket/) to see how to use it.
 
 ```ts
-import { createNodeWebSocket } from "@hono/node-ws";
-import { Hono } from "hono";
-import { WSContext } from "hono/ws";
+import type { WSContext } from "hono/ws";
 import { createHonoServer } from "react-router-hono-server/node";
-
-const app = new Hono();
-const { injectWebSocket, upgradeWebSocket } = createNodeWebSocket({ app });
 
 // Store connected clients
 const clients = new Set<WSContext>();
 
 export default await createHonoServer({
-  app,
-  onServe(server) {
-    injectWebSocket(server);
-  },
-  configure(app) {
+  useWebSocket: true,
+  // 👆 Unlock this 👇 from @hono/node-ws
+  configure: (app, { upgradeWebSocket }) => {
     app.get(
       "/ws",
-      upgradeWebSocket(() => ({
+      upgradeWebSocket((c) => ({
         // https://hono.dev/helpers/websocket
         onOpen(_, ws) {
-          console.log("New connection ");
+          console.log("New connection ⬆️");
           clients.add(ws);
         },
         onMessage(event, ws) {
+          console.log("Context", c.req.header("Cookie"));
+          console.log("Event", event);
           console.log(`Message from client: ${event.data}`);
           // Broadcast to all clients except sender
           clients.forEach((client) => {
@@ -591,6 +587,63 @@ export default await createHonoServer({
   },
 });
 ```
+
+#### Bun
+This package has a built-in helper to use `hono/bun` in prod and `@hono/node-ws` in dev
+
+> [!TIP]
+> Check this [example](./examples/bun/websocket/) to see how to use it.
+
+```ts
+import { WSContext } from "hono/ws";
+import { createHonoServer } from "react-router-hono-server/bun";
+
+// Store connected clients
+const clients = new Set<WSContext>();
+
+export default await createHonoServer({
+  useWebSocket: true,
+  // 👆 Unlock this 👇 from @hono/node-ws in dev, hono/bun in prod
+  configure(app, { upgradeWebSocket }) {
+    app.get(
+      "/ws",
+      upgradeWebSocket((c) => ({
+        // https://hono.dev/helpers/websocket
+        onOpen(_, ws) {
+          console.log("New connection 🔥");
+          clients.add(ws);
+        },
+        onMessage(event, ws) {
+          console.log("Context", c.req.header("Cookie"));
+          console.log("Event", event);
+          console.log(`Message from client: ${event.data}`);
+          // Broadcast to all clients except sender
+          clients.forEach((client) => {
+            if (client.readyState === 1) {
+              client.send(`${event.data}`);
+            }
+          });
+        },
+        onClose(_, ws) {
+          console.log("Connection closed");
+          clients.delete(ws);
+        },
+      }))
+    );
+  },
+});
+```
+
+#### Cloudflare Workers
+Cloudflare requires a different approach to WebSockets, based on Durable Objects.
+
+> [!TIP]
+> Check this [example](./examples/cloudflare/websocket/) to see how to use it.
+
+> [!IMPORTANT]
+> For now, HMR is not supported in Cloudflare Workers. Will try to come back to it later.
+>
+> Work in progress on Cloudflare team: https://github.com/flarelabs-net/vite-plugin-cloudflare
 
 ### Migrate from v1
 _You should not expect any breaking changes._
