@@ -5,9 +5,11 @@ import bunAdapter from "@hono/vite-dev-server/bun";
 import cloudflareAdapter from "@hono/vite-dev-server/cloudflare";
 import type { Config as ReactRouterConfig } from "@react-router/dev/config";
 import type { Plugin, UserConfig } from "vite";
-import type { MetaEnv } from "./utils";
+import type { Runtime } from "./types/runtime";
 
-type Runtime = "node" | "bun" | "cloudflare";
+type MetaEnv<T> = {
+  [K in keyof T as `import.meta.env.${string & K}`]: T[K];
+};
 
 type ReactRouterHonoServerPluginOptions = {
   /**
@@ -23,7 +25,7 @@ type ReactRouterHonoServerPluginOptions = {
    *
    * Defaults to `${appDirectory}/server[.ts | /index.ts]` if present.
    *
-   * Fallback to a virtual module `virtual:react-router-hono-server/server`.
+   * Fallback to a virtual module `virtual:react-router-hono-server/server`.`
    */
   serverEntryPoint?: string;
   /**
@@ -77,10 +79,10 @@ export function reactRouterHonoServer(options: ReactRouterHonoServerPluginOption
         runtime === "cloudflare" &&
         !config.plugins?.find((p) => p && "name" in p && p.name === "react-router-cloudflare-vite-dev-proxy")
       ) {
-        console.error(
+        console.warn(
           `\x1b[31mMissing cloudflareDevProxy() in your vite.config.ts.\nPlease add it to your plugins: import { cloudflareDevProxy } from "@react-router/dev/vite/cloudflare";\x1b[0m\n`
         );
-        throw new Error("Missing mandatory plugin cloudflareDevProxy() in vite.config.ts");
+        // throw new Error("Missing mandatory plugin cloudflareDevProxy() in vite.config.ts");
       }
 
       const baseConfig = {
@@ -88,6 +90,7 @@ export function reactRouterHonoServer(options: ReactRouterHonoServerPluginOption
         define: {
           "import.meta.env.REACT_ROUTER_HONO_SERVER_BUILD_DIRECTORY": JSON.stringify(pluginConfig.buildDirectory),
           "import.meta.env.REACT_ROUTER_HONO_SERVER_ASSETS_DIR": JSON.stringify(pluginConfig.assetsDir),
+          "import.meta.env.REACT_ROUTER_HONO_SERVER_RUNTIME": JSON.stringify(runtime),
         } satisfies MetaEnv<ReactRouterHonoServerEnv>,
         ssr: {
           target: runtime === "cloudflare" ? "webworker" : undefined,
@@ -111,7 +114,10 @@ export function reactRouterHonoServer(options: ReactRouterHonoServerPluginOption
         },
       };
     },
-    configureServer(server) {
+    async configureServer(server) {
+      // bind viteDevServer to global 🤫
+      globalThis.__viteDevServer = server;
+
       if (!pluginConfig) {
         return;
       }

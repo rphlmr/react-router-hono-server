@@ -3,42 +3,52 @@ import { createMiddleware } from "hono/factory";
 import { logger } from "hono/logger";
 import type { BlankEnv } from "hono/types";
 import { type ServerBuild, createRequestHandler } from "react-router";
-import type { HonoServerOptionsBase } from "../types/hono-server-options-base";
+import { cache } from "../middleware";
+import type { HonoServerOptionsBase, WithoutWebsocket } from "../types/hono-server-options-base";
 
-export interface HonoServerOptions<E extends Env = BlankEnv> extends Omit<HonoServerOptionsBase<E>, "port"> {}
+interface HonoCloudflareOptions<E extends Env = BlankEnv> extends HonoServerOptionsBase<E> {}
+
+export type HonoServerOptions<E extends Env = BlankEnv> = HonoCloudflareOptions<E> &
+  Omit<WithoutWebsocket<E>, "useWebSocket">;
 
 /**
  * Create a Hono server
  *
  * @param config {@link HonoServerOptions} - The configuration options for the server
  */
-export async function createHonoServer<E extends Env = BlankEnv>(options: HonoServerOptions<E> = {}) {
+export async function createHonoServer<E extends Env = BlankEnv>(options?: HonoServerOptions<E>) {
   const mergedOptions: HonoServerOptions<E> = {
     ...options,
-    defaultLogger: options.defaultLogger ?? true,
+    defaultLogger: options?.defaultLogger ?? true,
   };
-  const mode = import.meta.env.MODE;
-  const PRODUCTION = mode === "production";
-  const server = new Hono<E>(mergedOptions.honoOptions);
+  const mode = import.meta.env.MODE || "production";
+  const DEV = mode === "development";
+  const app = new Hono<E>(mergedOptions.honoOptions || mergedOptions.app);
+
+  /**
+   * Serve public files
+   */
+  if (DEV) {
+    const { serveStatic } = await import("@hono/node-server/serve-static");
+    app.use("*", cache(60 * 60), serveStatic({ root: "./public" })); // 1 hour
+  }
 
   /**
    * Add logger middleware
    */
   if (mergedOptions.defaultLogger) {
-    server.use("*", logger());
+    app.use("*", logger());
   }
 
   /**
    * Add optional middleware
    */
-  if (mergedOptions.configure) {
-    await mergedOptions.configure(server);
-  }
+  await mergedOptions.configure?.(app);
 
   /**
    * Add React Router middleware to Hono server
    */
-  server.use(async (c, next) => {
+  app.use(async (c, next) => {
     const build: ServerBuild = (await import(
       // @ts-expect-error - Virtual module provided by React Router at build time
       "virtual:react-router/server-build"
@@ -51,9 +61,9 @@ export async function createHonoServer<E extends Env = BlankEnv>(options: HonoSe
     })(c, next);
   });
 
-  if (!PRODUCTION) {
+  if (DEV) {
     console.log("🚧 Running in development mode");
   }
 
-  return server;
+  return app;
 }

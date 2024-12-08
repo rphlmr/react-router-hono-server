@@ -101,7 +101,7 @@ Ok, by default it works, but you may want to customize the server and use some m
 
 #### Node
 > [!TIP]
-> Check this [example](./examples/react-router) to see how to use it.
+> Check this [example](./examples/node/simple/) to see how to use it.
 
 ```ts
 // vite.config.ts
@@ -121,7 +121,7 @@ export default defineConfig({
 
 #### Bun
 > [!TIP]
-> Check this [example](./examples/react-router-bun) to see how to use it.
+> Check this [example](./examples/bun/simple/) to see how to use it.
 
 ```ts
 // vite.config.ts
@@ -141,7 +141,7 @@ export default defineConfig({
 
 #### Cloudflare Workers
 > [!TIP]
-> Check this [example](./examples/react-router-cloudflare) to see how to use it.
+> Check this [example](./examples/cloudflare/simple/) to see how to use it.
 
 > [!IMPORTANT]
 > You need to add the `cloudflareDevProxy` plugin to use the Cloudflare Workers runtime on dev.
@@ -313,6 +313,12 @@ type ReactRouterHonoServerPluginOptions = {
 ##### All adapters
 ```ts
 export type HonoServerOptions<E extends Env = BlankEnv> = {
+    /**
+   * Hono app to use
+   *
+   * {@link Hono}
+   */
+  app?: Hono<E>;
   /**
    * Enable the default logger
    *
@@ -360,12 +366,6 @@ export type HonoServerOptions<E extends Env = BlankEnv> = {
    * Defaults log the port
    */
   listeningListener?: (info: AddressInfo) => void;
-  /**
-   * Hono constructor options
-   *
-   * {@link HonoOptions}
-   */
-  honoOptions?: HonoOptions<E>;
 };
 ```
 
@@ -434,6 +434,14 @@ export interface HonoServerOptions<E extends Env = BlankEnv> extends HonoServerO
    * {@link https://hono.dev/docs/getting-started/nodejs#http2}
    */
   customNodeServer?: CreateNodeServerOptions;
+  /**
+   * Callback executed just after `serve` from `@hono/node-server`
+   *
+   * **Only applied to production mode**
+   *
+   * For example, you can use this to bind `@hono/node-ws`'s `injectWebSocket`
+   */
+  onServe?: (server: ServerType) => void;
 }
 ```
 
@@ -533,6 +541,110 @@ export default await createHonoServer({
 });
 ```
 
+### Using WebSockets
+#### Node
+This package has a built-in helper to use `@hono/node-ws`
+
+> [!TIP]
+> Check this [example](./examples/node/websocket/) to see how to use it.
+
+```ts
+import type { WSContext } from "hono/ws";
+import { createHonoServer } from "react-router-hono-server/node";
+
+// Store connected clients
+const clients = new Set<WSContext>();
+
+export default await createHonoServer({
+  useWebSocket: true,
+  // 👆 Unlock this 👇 from @hono/node-ws
+  configure: (app, { upgradeWebSocket }) => {
+    app.get(
+      "/ws",
+      upgradeWebSocket((c) => ({
+        // https://hono.dev/helpers/websocket
+        onOpen(_, ws) {
+          console.log("New connection ⬆️");
+          clients.add(ws);
+        },
+        onMessage(event, ws) {
+          console.log("Context", c.req.header("Cookie"));
+          console.log("Event", event);
+          console.log(`Message from client: ${event.data}`);
+          // Broadcast to all clients except sender
+          clients.forEach((client) => {
+            if (client.readyState === 1) {
+              client.send(`${event.data}`);
+            }
+          });
+        },
+        onClose(_, ws) {
+          console.log("Connection closed");
+          clients.delete(ws);
+        },
+      }))
+    );
+  },
+});
+```
+
+#### Bun
+This package has a built-in helper to use `hono/bun` in prod and `@hono/node-ws` in dev
+
+> [!TIP]
+> Check this [example](./examples/bun/websocket/) to see how to use it.
+
+```ts
+import { WSContext } from "hono/ws";
+import { createHonoServer } from "react-router-hono-server/bun";
+
+// Store connected clients
+const clients = new Set<WSContext>();
+
+export default await createHonoServer({
+  useWebSocket: true,
+  // 👆 Unlock this 👇 from @hono/node-ws in dev, hono/bun in prod
+  configure(app, { upgradeWebSocket }) {
+    app.get(
+      "/ws",
+      upgradeWebSocket((c) => ({
+        // https://hono.dev/helpers/websocket
+        onOpen(_, ws) {
+          console.log("New connection 🔥");
+          clients.add(ws);
+        },
+        onMessage(event, ws) {
+          console.log("Context", c.req.header("Cookie"));
+          console.log("Event", event);
+          console.log(`Message from client: ${event.data}`);
+          // Broadcast to all clients except sender
+          clients.forEach((client) => {
+            if (client.readyState === 1) {
+              client.send(`${event.data}`);
+            }
+          });
+        },
+        onClose(_, ws) {
+          console.log("Connection closed");
+          clients.delete(ws);
+        },
+      }))
+    );
+  },
+});
+```
+
+#### Cloudflare Workers
+Cloudflare requires a different approach to WebSockets, based on Durable Objects.
+
+> [!TIP]
+> Check this [example](./examples/cloudflare/websocket/) to see how to use it.
+
+> [!IMPORTANT]
+> For now, HMR is not supported in Cloudflare Workers. Will try to come back to it later.
+>
+> Work in progress on Cloudflare team: https://github.com/flarelabs-net/vite-plugin-cloudflare
+
 ### Migrate from v1
 _You should not expect any breaking changes._
 
@@ -594,9 +706,9 @@ Many options are gone or have changed.
 ##### You used `buildEnd` from `remix()` plugin or a custom `buildDirectory` option
 You may know that it has been moved to `react-router.config.ts` (see [here](https://reactrouter.com/upgrading/remix#5-add-a-react-router-config) for more information).
 
-If you used this hook for Sentry, check this [example](./examples/react-router-sentry/react-router.config.ts) to see how to migrate.
+If you used this hook for Sentry, check this [example](./examples/node/with-sentry/react-router.config.ts) to see how to migrate.
 
-If you used a custom `buildDirectory` option, check this [example](./examples/react-router-custom-build/react-router.config.ts) to see how to migrate.
+If you used a custom `buildDirectory` option, check this [example](./examples/node/custom-build/react-router.config.ts) to see how to migrate.
 
 #### Update your package.json scripts
 ```json

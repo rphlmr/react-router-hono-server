@@ -1,0 +1,18 @@
+workers_dev = true
+name = "my-worker"
+compatibility_date = "2024-11-18"
+main = "./build/server/index.js"
+assets = { directory = "./build/client/" }
+
+[[queues.producers]]
+  queue = "my-queue"
+  binding = "ERROR_QUEUE"
+
+[[queues.consumers]]
+  queue = "my-queue"
+  max_batch_size = 100
+  max_batch_timeout = 30
+
+[[r2_buckets]]
+  bucket_name = "my-bucket"
+  binding = "ERROR_BUCKET"

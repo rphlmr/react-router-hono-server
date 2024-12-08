@@ -1,0 +1,27 @@
+workers_dev = true
+name = "my-worker"
+compatibility_date = "2024-11-18"
+main = "./build/server/index.js"
+assets = { directory = "./build/client/" }
+
+[build]
+watch_dir = "./build/server"
+
+[[durable_objects.bindings]]
+name = "WEBSOCKET_MANAGER"
+class_name = "WebSocketManager"
+script_name = "my-worker"
+
+[[migrations]]
+tag = "v1"
+new_classes = ["WebSocketManager"]
+
+[env.development]
+
+[[env.development.durable_objects.bindings]]
+name = "WEBSOCKET_MANAGER"
+class_name = "WebSocketManager"
+
+[[env.development.migrations]]
+tag = "v1"
+new_classes = ["WebSocketManager"]

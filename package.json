@@ -1,41 +1,42 @@
 {
   "name": "react-router-hono-server",
-  "version": "2.1.2",
+  "version": "2.2.0",
+  "type": "module",
   "description": "The Vite plugin you need to create a Hono server for your React Router app in less than 10 seconds.",
   "exports": {
     "./node": {
       "import": {
-        "import": "./dist/adapters/node.mjs",
-        "types": "./dist/adapters/node.d.mts",
-        "default": "./dist/adapters/node.mjs"
+        "import": "./dist/adapters/node.js",
+        "types": "./dist/adapters/node.d.ts",
+        "default": "./dist/adapters/node.js"
       }
     },
     "./bun": {
       "import": {
-        "import": "./dist/adapters/bun.mjs",
-        "types": "./dist/adapters/bun.d.mts",
-        "default": "./dist/adapters/bun.mjs"
+        "import": "./dist/adapters/bun.js",
+        "types": "./dist/adapters/bun.d.ts",
+        "default": "./dist/adapters/bun.js"
       }
     },
     "./cloudflare": {
       "import": {
-        "import": "./dist/adapters/cloudflare.mjs",
-        "types": "./dist/adapters/cloudflare.d.mts",
-        "default": "./dist/adapters/cloudflare.mjs"
+        "import": "./dist/adapters/cloudflare.js",
+        "types": "./dist/adapters/cloudflare.d.ts",
+        "default": "./dist/adapters/cloudflare.js"
       }
     },
     "./dev": {
       "import": {
-        "import": "./dist/dev.mjs",
-        "types": "./dist/dev.d.mts",
-        "default": "./dist/dev.mjs"
+        "import": "./dist/dev.js",
+        "types": "./dist/dev.d.ts",
+        "default": "./dist/dev.js"
       }
     },
     "./middlewares": {
       "import": {
-        "import": "./dist/middlewares.mjs",
-        "types": "./dist/middlewares.d.mts",
-        "default": "./dist/middlewares.mjs"
+        "import": "./dist/middlewares.js",
+        "types": "./dist/middlewares.d.ts",
+        "default": "./dist/middlewares.js"
       }
     }
   },
@@ -62,19 +63,20 @@
     "url": "https://github.com/rphlmr/react-router-hono-server/issues"
   },
   "bin": {
-    "react-router-hono-server": "dist/cli.mjs"
+    "react-router-hono-server": "dist/cli.js"
   },
   "files": ["dist"],
-  "workspaces": [".", "examples/*"],
+  "workspaces": [".", "examples/**/*"],
   "homepage": "https://github.com/rphlmr/react-router-hono-server#readme",
   "dependencies": {
     "@drizzle-team/brocli": "^0.11.0",
     "@hono/node-server": "^1.13.7",
+    "@hono/node-ws": "^1.0.4",
     "@hono/vite-dev-server": "^0.17.0",
     "hono": "^4.6.11"
   },
   "optionalDependencies": {
-    "miniflare": "^3.20241106.1",
+    "miniflare": "^3.20241205.0",
     "wrangler": "^3.91.0"
   },
   "devDependencies": {
