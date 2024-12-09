@@ -54,10 +54,12 @@ export async function createHonoServer<E extends Env = BlankEnv>(
 export async function createHonoServer<E extends Env = BlankEnv>(options?: HonoServerOptions<E>) {
   const mergedOptions: HonoServerOptions<E> = {
     ...options,
-    listeningListener: (info) => {
-      console.log(`🚀 Server started on port ${info.port}`);
-      console.log(`🌍 http://127.0.0.1:${info.port}`);
-    },
+    listeningListener:
+      options?.listeningListener ||
+      ((info) => {
+        console.log(`🚀 Server started on port ${info.port}`);
+        console.log(`🌍 http://127.0.0.1:${info.port}`);
+      }),
     port: options?.port || Number(process.env.PORT) || 3000,
     defaultLogger: options?.defaultLogger ?? true,
   };
