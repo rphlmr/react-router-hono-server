@@ -1,6 +1,6 @@
 {
   "name": "react-router-hono-server",
-  "version": "2.2.1",
+  "version": "2.3.0",
   "type": "module",
   "description": "The Vite plugin you need to create a Hono server for your React Router app in less than 10 seconds.",
   "exports": {
@@ -45,8 +45,6 @@
     "test:cov": "vitest run --coverage",
     "build": "tsup",
     "build:watch": "npm run build -- --watch",
-    "example:dev": "npm run dev -w react-router-example",
-    "dev": "npm-run-all -s build -p example:dev build:watch",
     "prepublishOnly": "npm run build",
     "check": "biome check .",
     "check:fix": "biome check --fix .",

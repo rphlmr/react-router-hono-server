@@ -104,12 +104,27 @@ export function reactRouterHonoServer(options: ReactRouterHonoServerPluginOption
         return baseConfig;
       }
 
+      let reactRouterBuildFile = pluginConfig.serverBuildFile;
+
+      if (reactRouterBuildFile === "index.js") {
+        reactRouterBuildFile = "assets/server-build.js";
+      }
+
       return {
         ...baseConfig,
         build: {
           target: "esnext",
           rollupOptions: {
             input: pluginConfig.serverEntryPoint,
+            output: {
+              entryFileNames: "index.js",
+              chunkFileNames: (chunk) => {
+                if (chunk.name === "server-build") {
+                  return reactRouterBuildFile;
+                }
+                return "assets/[name]-[hash].js";
+              },
+            },
           },
         },
       };
@@ -183,6 +198,7 @@ function resolvePluginConfig(config: UserConfig, options: ReactRouterHonoServerP
   const isSsrBuild = reactRouterConfig.isSsrBuild;
   const assetsDir = config.build?.assetsDir || "assets";
   const serverEntryPoint = options.serverEntryPoint || findDefaultServerEntry(appDirectory);
+  const serverBuildFile = reactRouterConfig.reactRouterConfig.serverBuildFile;
 
   return {
     rootDirectory,
@@ -192,6 +208,7 @@ function resolvePluginConfig(config: UserConfig, options: ReactRouterHonoServerP
     assetsDir,
     serverEntryPoint,
     dev: options.dev,
+    serverBuildFile,
   };
 }
 

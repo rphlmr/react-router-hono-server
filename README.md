@@ -645,17 +645,39 @@ Cloudflare requires a different approach to WebSockets, based on Durable Objects
 >
 > Work in progress on Cloudflare team: https://github.com/flarelabs-net/vite-plugin-cloudflare
 
-### Migrate from v1
+## Pre-rendering
+You should be able to use pre-rendering with this package.
+
+> [!TIP]
+> Check this [example](./examples/node/with-pre-render/) to see how to use it.
+
+> [!IMPORTANT]
+> You need to add the `serverBuildFile` option to your `react-router.config.ts` file.
+>
+> The file path is fixed to `assets/server-build.js`.
+
+Add the prerender option to your `react-router.config.ts`
+
+```ts
+import type { Config } from "@react-router/dev/config";
+
+export default {
+  serverBuildFile: "assets/server-build.js", // 🚨 Dont forget this
+  prerender: ["/"],
+} satisfies Config;
+```
+
+## Migrate from v1
 _You should not expect any breaking changes._
 
-#### Install the latest version
+### Install the latest version
 
 ```bash
 npm install react-router-hono-server@latest
 ```
 
-#### Create the server file
-##### Option 1 - You previously had all your server code in `app/entry.server.tsx`
+### Create the server file
+#### Option 1 - You previously had all your server code in `app/entry.server.tsx`
 ```bash
 touch app/server.ts
 ```
@@ -664,7 +686,7 @@ or
 npx react-router-hono-server reveal file
 ```
 
-##### Option 2 - You previously had your server code in a `server` folder
+#### Option 2 - You previously had your server code in a `server` folder
 ```bash
 mkdir app/server
 touch app/server/index.ts
@@ -674,7 +696,7 @@ or
 npx react-router-hono-server reveal folder
 ```
 
-#### Move your server code
+### Move your server code
 Move your previous server code to the new file you created in the previous step.
 
 > [!NOTE]
@@ -693,7 +715,7 @@ We now use the Vite virtual import `virtual:react-router/server-build` to load t
 > export default await createHonoServer({/* other options */});
 > ```
 
-#### Update your `vite.config.ts`
+### Update your `vite.config.ts`
 
 > [!IMPORTANT]
 > `devServer` is now `reactRouterHonoServer`.
@@ -710,7 +732,7 @@ If you used this hook for Sentry, check this [example](./examples/node/with-sent
 
 If you used a custom `buildDirectory` option, check this [example](./examples/node/custom-build/react-router.config.ts) to see how to migrate.
 
-#### Update your package.json scripts
+### Update your package.json scripts
 ```json
   "scripts": {
     "build": "react-router build",
