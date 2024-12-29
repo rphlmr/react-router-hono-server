@@ -3,6 +3,7 @@ import { createMiddleware } from "hono/factory";
 import { logger } from "hono/logger";
 import type { BlankEnv } from "hono/types";
 import { type ServerBuild, createRequestHandler } from "react-router";
+import { bindIncomingRequestSocketInfo } from "../helpers";
 import { cache } from "../middleware";
 import type { HonoServerOptionsBase, WithoutWebsocket } from "../types/hono-server-options-base";
 
@@ -31,6 +32,7 @@ export async function createHonoServer<E extends Env = BlankEnv>(options?: HonoS
   if (DEV) {
     const { serveStatic } = await import("@hono/node-server/serve-static");
     app.use("*", cache(60 * 60), serveStatic({ root: "./public" })); // 1 hour
+    app.use(bindIncomingRequestSocketInfo());
   }
 
   /**

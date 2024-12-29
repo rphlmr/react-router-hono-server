@@ -5,7 +5,12 @@ import { createMiddleware } from "hono/factory";
 import { logger } from "hono/logger";
 import type { BlankEnv } from "hono/types";
 import { type ServerBuild, createRequestHandler } from "react-router";
-import { cleanUpgradeListeners, createWebSocket, patchUpgradeListener } from "../helpers";
+import {
+  bindIncomingRequestSocketInfo,
+  cleanUpgradeListeners,
+  createWebSocket,
+  patchUpgradeListener,
+} from "../helpers";
 import { cache } from "../middleware";
 import type { HonoServerOptionsBase, WithWebsocket, WithoutWebsocket } from "../types/hono-server-options-base";
 
@@ -56,6 +61,10 @@ export async function createHonoServer<E extends Env = BlankEnv>(options?: HonoS
     app,
     enabled: mergedOptions.useWebSocket ?? false,
   });
+
+  if (!PRODUCTION) {
+    app.use(bindIncomingRequestSocketInfo());
+  }
 
   /**
    * Serve assets files from build/client/assets

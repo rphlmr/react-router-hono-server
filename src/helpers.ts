@@ -1,8 +1,9 @@
-import type { Server } from "node:http";
+import type { IncomingMessage, Server } from "node:http";
 import type { Http2SecureServer, Http2Server } from "node:http2";
 import type { ServerType } from "@hono/node-server";
 import type { Serve } from "bun";
 import type { Hono } from "hono";
+import { createMiddleware } from "hono/factory";
 import type { UpgradeWebSocket } from "hono/ws";
 import type { Runtime } from "./types/runtime";
 
@@ -122,4 +123,27 @@ export function patchUpgradeListener(httpServer: ServerType) {
       return listener(request, ...rest);
     });
   }
+}
+
+type SocketInfo = Partial<IncomingMessage["socket"]>;
+
+/**
+ * Bind socket info from the headers to the Hono context
+ *
+ * Unlock the usage of https://hono.dev/docs/helpers/conninfo in dev
+ */
+export function bindIncomingRequestSocketInfo() {
+  return createMiddleware(async (c, next) => {
+    c.env.server = {
+      incoming: {
+        socket: {
+          remoteAddress: c.req.raw.headers.get("x-remote-address") || undefined,
+          remotePort: Number(c.req.raw.headers.get("x-remote-port")) || undefined,
+          remoteFamily: c.req.raw.headers.get("x-remote-family") || undefined,
+        } satisfies SocketInfo,
+      },
+    };
+
+    return next();
+  });
 }

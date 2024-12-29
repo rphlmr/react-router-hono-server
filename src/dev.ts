@@ -1,8 +1,10 @@
 import fs from "node:fs";
+import type { IncomingMessage, ServerResponse } from "node:http";
 import path from "node:path";
 import honoDevServer, { type DevServerOptions } from "@hono/vite-dev-server";
 import bunAdapter from "@hono/vite-dev-server/bun";
 import cloudflareAdapter from "@hono/vite-dev-server/cloudflare";
+import nodeAdapter from "@hono/vite-dev-server/node";
 import type { Config as ReactRouterConfig } from "@react-router/dev/config";
 import type { Plugin, UserConfig } from "vite";
 import type { Runtime } from "./types/runtime";
@@ -141,7 +143,7 @@ export function reactRouterHonoServer(options: ReactRouterHonoServerPluginOption
         return;
       }
 
-      let adapter: DevServerOptions["adapter"];
+      let adapter: DevServerOptions["adapter"] = nodeAdapter;
 
       if (runtime === "bun") {
         adapter = bunAdapter;
@@ -165,6 +167,15 @@ export function reactRouterHonoServer(options: ReactRouterHonoServerPluginOption
           /\?import$/,
           ...(pluginConfig.dev?.exclude || []),
         ],
+      });
+
+      // Bind socket info to the request headers
+      server.middlewares.use((req: IncomingMessage, _res: ServerResponse, next: () => void) => {
+        req.rawHeaders.push("x-remote-address", req.socket.remoteAddress || "unknown");
+        req.rawHeaders.push("x-remote-port", String(req.socket.remotePort || "unknown"));
+        req.rawHeaders.push("x-remote-family", req.socket.remoteFamily || "unknown");
+
+        next();
       });
 
       // Apply the dev server plugin's configureServer hook if it exists
