@@ -484,7 +484,8 @@ export interface HonoServerOptions<E extends Env = BlankEnv> extends Omit<HonoSe
 
 ## Middleware
 
-> [!IMPORTANT] 🚨 Redirecting from a middleware
+🚨 Redirecting from a middleware
+> [!IMPORTANT]
 > You **have to** use the `reactRouterRedirect` helper to redirect from a middleware.
 >
 > It returns a single-fetch-like response.
