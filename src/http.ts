@@ -9,6 +9,11 @@ interface ReactRouterRedirectOptions {
   reload: boolean;
 }
 
+/**
+ * Redirect to a new location in a way that React Router can handle.
+ *
+ * It follows the Single Fetch Redirect protocol.
+ */
 export function reactRouterRedirect(location: string, { reload }: { reload: boolean } = { reload: false }) {
   return new Response(
     new ReadableStream({
