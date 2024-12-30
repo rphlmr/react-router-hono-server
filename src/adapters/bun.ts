@@ -67,6 +67,11 @@ export async function createHonoServer<E extends Env = BlankEnv>(options?: HonoS
   }
 
   /**
+   * Add optional middleware that runs before any built-in middleware, including assets serving.
+   */
+  await mergedOptions.beforeAll?.(app);
+
+  /**
    * Serve assets files from build/client/assets
    */
   app.use(

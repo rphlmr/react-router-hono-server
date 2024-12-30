@@ -35,6 +35,14 @@ interface HonoNodeServerOptions<E extends Env = BlankEnv> extends HonoServerOpti
    * Callback executed just after `serve` from `@hono/node-server`
    */
   onServe?: (server: ServerType) => void;
+  /**
+   * The Node.js Adapter rewrites the global Request/Response and uses a lightweight Request/Response to improve performance.
+   *
+   * If you don't want to do that, set `false`.
+   *
+   * {@link https://github.com/honojs/node-server?tab=readme-ov-file#overrideglobalobjects}
+   */
+  overrideGlobalObjects?: boolean;
 }
 
 type HonoServerOptionsWithWebSocket<E extends Env = BlankEnv> = HonoNodeServerOptions<E> & WithWebsocket<E>;
@@ -80,6 +88,11 @@ export async function createHonoServer<E extends Env = BlankEnv>(options?: HonoS
   if (!PRODUCTION) {
     app.use(bindIncomingRequestSocketInfo());
   }
+
+  /**
+   * Add optional middleware that runs before any built-in middleware, including assets serving.
+   */
+  await mergedOptions.beforeAll?.(app);
 
   /**
    * Serve assets files from build/client/assets
@@ -136,6 +149,7 @@ export async function createHonoServer<E extends Env = BlankEnv>(options?: HonoS
         ...app,
         ...mergedOptions.customNodeServer,
         port: mergedOptions.port,
+        overrideGlobalObjects: mergedOptions.overrideGlobalObjects,
       },
       mergedOptions.listeningListener
     );

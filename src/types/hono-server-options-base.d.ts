@@ -47,6 +47,12 @@ export interface HonoServerOptionsBase<E extends Env> {
    * @deprecated Use `app` instead
    */
   honoOptions?: HonoOptions<E>;
+  /**
+   * Hook to add middleware that runs before any built-in middleware, including assets serving.
+   *
+   * You can use it to add protection middleware, for example.
+   */
+  beforeAll?: (app: Hono<E>) => Promise<void> | void;
 }
 
 export interface WithWebsocket<E extends Env> {

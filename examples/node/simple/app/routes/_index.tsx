@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { useRevalidator } from "react-router";
+import { Link, NavLink, useRevalidator } from "react-router";
 import { Input } from "~/components/input";
 import { getPublic } from "~/utils/.client/public";
 import { getCommon } from "~/utils/.common/common";
@@ -37,6 +37,11 @@ export default function Index({ loaderData: data }: Route.ComponentProps) {
       </button>
       <input />
       <Input value={value} onChange={(e) => setValue(e.target.value)} />
+      <NavLink to="/protected">You can't see me</NavLink>
+      <figure>
+        <img src="/protected/secret.jpeg" alt="Secret image" />
+        <figcaption>To see this image, comment the "beforeAll" option in server.ts</figcaption>
+      </figure>
       <div className="mt-8 w-full max-w-4xl overflow-x-auto">
         <table className="w-full border-collapse bg-gray-100 shadow-md rounded-lg">
           <thead>

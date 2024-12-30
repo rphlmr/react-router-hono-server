@@ -7,7 +7,8 @@ import { bindIncomingRequestSocketInfo } from "../helpers";
 import { cache } from "../middleware";
 import type { HonoServerOptionsBase, WithoutWebsocket } from "../types/hono-server-options-base";
 
-interface HonoCloudflareOptions<E extends Env = BlankEnv> extends HonoServerOptionsBase<E> {}
+interface HonoCloudflareOptions<E extends Env = BlankEnv>
+  extends Omit<HonoServerOptionsBase<E>, "port" | "beforeAll"> {}
 
 export type HonoServerOptions<E extends Env = BlankEnv> = HonoCloudflareOptions<E> &
   Omit<WithoutWebsocket<E>, "useWebSocket">;

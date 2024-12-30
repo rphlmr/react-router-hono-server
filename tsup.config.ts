@@ -10,6 +10,7 @@ export default defineConfig([
       "src/adapters/cloudflare.ts",
       "src/dev.ts",
       "src/middleware.ts",
+      "src/http.ts",
     ],
     outDir: "dist",
     format: ["esm"],
