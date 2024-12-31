@@ -38,9 +38,13 @@ interface HonoNodeServerOptions<E extends Env = BlankEnv> extends HonoServerOpti
   /**
    * The Node.js Adapter rewrites the global Request/Response and uses a lightweight Request/Response to improve performance.
    *
-   * If you don't want to do that, set `false`.
+   * If you this behavior, set it to `true`
+   *
+   * 🚨 Setting this to `true` can break `request.clone()` if you later check `instanceof Request`.
    *
    * {@link https://github.com/honojs/node-server?tab=readme-ov-file#overrideglobalobjects}
+   *
+   * @default false
    */
   overrideGlobalObjects?: boolean;
 }
@@ -75,6 +79,7 @@ export async function createHonoServer<E extends Env = BlankEnv>(options?: HonoS
       }),
     port: options?.port || Number(process.env.PORT) || 3000,
     defaultLogger: options?.defaultLogger ?? true,
+    overrideGlobalObjects: options?.overrideGlobalObjects ?? false,
   };
   const mode = import.meta.env.MODE || "production";
   const PRODUCTION = mode === "production";
