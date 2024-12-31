@@ -1,20 +1,9 @@
-interface ReactRouterRedirectOptions {
-  /**
-   * Reload the page after redirecting
-   *
-   * It will trigger a document reload and re-fetch all the assets
-   *
-   * @default false
-   */
-  reload: boolean;
-}
-
 /**
  * Redirect to a new location in a way that React Router can handle.
  *
  * It follows the Single Fetch Redirect protocol.
  */
-export function reactRouterRedirect(location: string, { reload }: { reload: boolean } = { reload: false }) {
+export function reactRouterRedirect(location: string) {
   return new Response(
     new ReadableStream({
       start(controller) {
@@ -35,7 +24,7 @@ export function reactRouterRedirect(location: string, { reload }: { reload: bool
             "revalidate",
             false,
             "reload",
-            reload,
+            true,
             "replace",
           ])
         );
@@ -46,7 +35,7 @@ export function reactRouterRedirect(location: string, { reload }: { reload: bool
       status: 202,
       headers: {
         Location: location,
-        "X-Remix-Reload-Document": String(reload),
+        "X-Remix-Reload-Document": "yes",
         "X-Remix-Response": "yes",
         "Content-Type": "text/x-script",
       },
