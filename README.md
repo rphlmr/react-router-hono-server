@@ -445,7 +445,7 @@ export interface HonoServerOptions<E extends Env = BlankEnv> extends HonoServerO
   /**
    * The Node.js Adapter rewrites the global Request/Response and uses a lightweight Request/Response to improve performance.
    *
-   * If you this behavior, set it to `true`
+   * If you want this behavior, set it to `true`
    * 
    * 🚨 Setting this to `true` can break `request.clone()` if you later check `instanceof Request`.
    *
