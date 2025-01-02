@@ -1,0 +1,11 @@
+workers_dev = true
+name = "my-worker"
+compatibility_date = "2024-11-18"
+main = "./build/server/index.js"
+assets = { directory = "./build/client/" }
+
+[[d1_databases]]
+binding = "DB"
+database_name = "your_database_name"
+database_id = "your_database_id"
+migrations_dir = "drizzle"
