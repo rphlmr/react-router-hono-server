@@ -442,6 +442,24 @@ export interface HonoServerOptions<E extends Env = BlankEnv> extends HonoServerO
    * For example, you can use this to bind `@hono/node-ws`'s `injectWebSocket`
    */
   onServe?: (server: ServerType) => void;
+  /**
+   * The Node.js Adapter rewrites the global Request/Response and uses a lightweight Request/Response to improve performance.
+   *
+   * If you want this behavior, set it to `true`
+   * 
+   * 🚨 Setting this to `true` can break `request.clone()` if you later check `instanceof Request`.
+   *
+   * {@link https://github.com/honojs/node-server?tab=readme-ov-file#overrideglobalobjects}
+   *
+   * @default false
+   */
+  overrideGlobalObjects?: boolean;
+  /**
+   * Hook to add middleware that runs before any built-in middleware, including assets serving.
+   *
+   * You can use it to add protection middleware, for example.
+   */
+  beforeAll?: (app: Hono<E>) => Promise<void> | void;
 }
 ```
 
@@ -454,15 +472,33 @@ export interface HonoServerOptions<E extends Env = BlankEnv> extends HonoServerO
    * {@link https://bun.sh/docs/api/http#start-a-server-bun-serve}
    */
   customBunServer?: Serve & ServeOptions;
+  /**
+   * Hook to add middleware that runs before any built-in middleware, including assets serving.
+   *
+   * You can use it to add protection middleware, for example.
+   */
+  beforeAll?: (app: Hono<E>) => Promise<void> | void;
 }
 ```
 
 ##### Cloudflare Workers
 ```ts
-export interface HonoServerOptions<E extends Env = BlankEnv> extends Omit<HonoServerOptionsBase<E>, "port"> {}
+export interface HonoServerOptions<E extends Env = BlankEnv> extends Omit<HonoServerOptionsBase<E>, "port" | "beforeAll"> {}
 ```
 
 ## Middleware
+
+🚨 Redirecting from a middleware
+> [!IMPORTANT]
+> You **have to** use the `reactRouterRedirect` helper to redirect from a middleware.
+>
+> It returns a single-fetch-like response.
+>
+> If you use `c.redirect`, it will not work as expected and you will get a `Unable to decode turbo-stream response` error.
+>
+>```ts
+> import { reactRouterRedirect } from "react-router-hono-server/http";
+>```
 
 Middleware are functions that are called before React Router calls your loader/action.
 
@@ -476,6 +512,31 @@ See how [Shelf.nu](https://github.com/Shelf-nu/shelf.nu/blob/main/server/middlew
 
 > [!TIP]
 > This lib exports one middleware `cache` (`react-router-hono-server/middleware`) that you can use to cache your responses.
+
+### `beforeAll`
+You can use the `beforeAll` option to add middleware that runs before any built-in middleware, including assets serving.
+
+You can use it to add protection middleware, for example.
+
+> [!TIP]
+> When you check the path to protect, don't forget to use `c.req.path.includes("")` to handle `.data` requests (`loader`)!
+
+```ts
+import { reactRouterRedirect } from "react-router-hono-server/http";
+import { createHonoServer } from "react-router-hono-server/node";
+
+export default await createHonoServer({
+  beforeAll(app) {
+    app.use(async (c, next) => {
+      if (c.req.path.includes("/protected") && !c.req.header("Authorization")) {
+        return reactRouterRedirect("/login");
+      }
+
+      return next();
+    });
+  },
+});
+```
 
 ### Using remix-hono middleware
 

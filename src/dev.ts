@@ -115,6 +115,8 @@ export function reactRouterHonoServer(options: ReactRouterHonoServerPluginOption
       return {
         ...baseConfig,
         build: {
+          // https://vite.dev/config/build-options#build-target
+          cssTarget: ["es2020", "edge88", "firefox78", "chrome87", "safari14"],
           target: "esnext",
           rollupOptions: {
             input: pluginConfig.serverEntryPoint,

@@ -7,7 +7,8 @@ import { bindIncomingRequestSocketInfo } from "../helpers";
 import { cache } from "../middleware";
 import type { HonoServerOptionsBase, WithoutWebsocket } from "../types/hono-server-options-base";
 
-interface HonoCloudflareOptions<E extends Env = BlankEnv> extends HonoServerOptionsBase<E> {}
+interface HonoCloudflareOptions<E extends Env = BlankEnv>
+  extends Omit<HonoServerOptionsBase<E>, "port" | "beforeAll"> {}
 
 export type HonoServerOptions<E extends Env = BlankEnv> = HonoCloudflareOptions<E> &
   Omit<WithoutWebsocket<E>, "useWebSocket">;
@@ -50,12 +51,13 @@ export async function createHonoServer<E extends Env = BlankEnv>(options?: HonoS
   /**
    * Add React Router middleware to Hono server
    */
-  app.use(async (c, next) => {
-    const build: ServerBuild = (await import(
-      // @ts-expect-error - Virtual module provided by React Router at build time
-      "virtual:react-router/server-build"
-    )) as ServerBuild;
 
+  const build = (await import(
+    // @ts-expect-error - Virtual module provided by React Router at build time
+    "virtual:react-router/server-build"
+  )) as ServerBuild;
+
+  app.use(async (c, next) => {
     return createMiddleware(async (c) => {
       const requestHandler = createRequestHandler(build, mode);
       const loadContext = mergedOptions.getLoadContext?.(c, { build, mode });

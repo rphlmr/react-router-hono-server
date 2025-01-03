@@ -35,6 +35,18 @@ interface HonoNodeServerOptions<E extends Env = BlankEnv> extends HonoServerOpti
    * Callback executed just after `serve` from `@hono/node-server`
    */
   onServe?: (server: ServerType) => void;
+  /**
+   * The Node.js Adapter rewrites the global Request/Response and uses a lightweight Request/Response to improve performance.
+   *
+   * If you this behavior, set it to `true`
+   *
+   * 🚨 Setting this to `true` can break `request.clone()` if you later check `instanceof Request`.
+   *
+   * {@link https://github.com/honojs/node-server?tab=readme-ov-file#overrideglobalobjects}
+   *
+   * @default false
+   */
+  overrideGlobalObjects?: boolean;
 }
 
 type HonoServerOptionsWithWebSocket<E extends Env = BlankEnv> = HonoNodeServerOptions<E> & WithWebsocket<E>;
@@ -67,6 +79,7 @@ export async function createHonoServer<E extends Env = BlankEnv>(options?: HonoS
       }),
     port: options?.port || Number(process.env.PORT) || 3000,
     defaultLogger: options?.defaultLogger ?? true,
+    overrideGlobalObjects: options?.overrideGlobalObjects ?? false,
   };
   const mode = import.meta.env.MODE || "production";
   const PRODUCTION = mode === "production";
@@ -80,6 +93,11 @@ export async function createHonoServer<E extends Env = BlankEnv>(options?: HonoS
   if (!PRODUCTION) {
     app.use(bindIncomingRequestSocketInfo());
   }
+
+  /**
+   * Add optional middleware that runs before any built-in middleware, including assets serving.
+   */
+  await mergedOptions.beforeAll?.(app);
 
   /**
    * Serve assets files from build/client/assets
@@ -114,12 +132,13 @@ export async function createHonoServer<E extends Env = BlankEnv>(options?: HonoS
   /**
    * Add React Router middleware to Hono server
    */
-  app.use(async (c, next) => {
-    const build: ServerBuild = (await import(
-      // @ts-expect-error - Virtual module provided by React Router at build time
-      "virtual:react-router/server-build"
-    )) as ServerBuild;
 
+  const build = (await import(
+    // @ts-expect-error - Virtual module provided by React Router at build time
+    "virtual:react-router/server-build"
+  )) as ServerBuild;
+
+  app.use(async (c, next) => {
     return createMiddleware(async (c) => {
       const requestHandler = createRequestHandler(build, mode);
       const loadContext = mergedOptions.getLoadContext?.(c, { build, mode });
@@ -136,6 +155,7 @@ export async function createHonoServer<E extends Env = BlankEnv>(options?: HonoS
         ...app,
         ...mergedOptions.customNodeServer,
         port: mergedOptions.port,
+        overrideGlobalObjects: mergedOptions.overrideGlobalObjects,
       },
       mergedOptions.listeningListener
     );
