@@ -2,8 +2,8 @@ import { type Env, Hono } from "hono";
 import { createMiddleware } from "hono/factory";
 import { logger } from "hono/logger";
 import type { BlankEnv } from "hono/types";
-import { type ServerBuild, createRequestHandler } from "react-router";
-import { bindIncomingRequestSocketInfo } from "../helpers";
+import { createRequestHandler } from "react-router";
+import { bindIncomingRequestSocketInfo, importBuild } from "../helpers";
 import { cache } from "../middleware";
 import type { HonoServerOptionsBase, WithoutWebsocket } from "../types/hono-server-options-base";
 
@@ -52,10 +52,7 @@ export async function createHonoServer<E extends Env = BlankEnv>(options?: HonoS
    * Add React Router middleware to Hono server
    */
   app.use(async (c, next) => {
-    const build = (await import(
-      // @ts-expect-error - Virtual module provided by React Router at build time
-      "virtual:react-router/server-build"
-    )) as ServerBuild;
+    const build = await importBuild();
 
     return createMiddleware(async (c) => {
       const requestHandler = createRequestHandler(build, mode);

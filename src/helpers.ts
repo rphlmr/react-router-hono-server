@@ -5,6 +5,7 @@ import type { Serve } from "bun";
 import type { Hono } from "hono";
 import { createMiddleware } from "hono/factory";
 import type { UpgradeWebSocket } from "hono/ws";
+import type { ServerBuild } from "react-router";
 import type { Runtime } from "./types/runtime";
 
 type NodeServer = Server | Http2Server | Http2SecureServer;
@@ -146,4 +147,14 @@ export function bindIncomingRequestSocketInfo() {
 
     return next();
   });
+}
+
+/**
+ * Import React Router server build
+ */
+export async function importBuild(): Promise<ServerBuild> {
+  return import(
+    // @ts-expect-error - Virtual module provided by React Router at build time
+    "virtual:react-router/server-build"
+  );
 }
