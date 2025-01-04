@@ -51,13 +51,12 @@ export async function createHonoServer<E extends Env = BlankEnv>(options?: HonoS
   /**
    * Add React Router middleware to Hono server
    */
-
-  const build = (await import(
-    // @ts-expect-error - Virtual module provided by React Router at build time
-    "virtual:react-router/server-build"
-  )) as ServerBuild;
-
   app.use(async (c, next) => {
+    const build = (await import(
+      // @ts-expect-error - Virtual module provided by React Router at build time
+      "virtual:react-router/server-build"
+    )) as ServerBuild;
+
     return createMiddleware(async (c) => {
       const requestHandler = createRequestHandler(build, mode);
       const loadContext = mergedOptions.getLoadContext?.(c, { build, mode });
