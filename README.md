@@ -724,6 +724,11 @@ Cloudflare requires a different approach to WebSockets, based on Durable Objects
 
 ## Basename and Hono sub apps
 
+> [!NOTE]
+> By default, the React Router app is mounted at `/` (default `basename` value).
+>
+> You may not need to use this option. It's for advanced use cases.
+
 > [!TIP]
 > Check this [example](./examples/node/custom-mount/) to see how to use it.
 
