@@ -9,6 +9,7 @@ import { createRequestHandler } from "react-router";
 import {
   bindIncomingRequestSocketInfo,
   cleanUpgradeListeners,
+  createGetLoadContext,
   createWebSocket,
   importBuild,
   patchUpgradeListener,
@@ -16,6 +17,8 @@ import {
 import { cache } from "../middleware";
 import type { HonoServerOptionsBase, WithWebsocket, WithoutWebsocket } from "../types/hono-server-options-base";
 import type { CreateNodeServerOptions } from "../types/node.https";
+
+export { createGetLoadContext };
 
 interface HonoNodeServerOptions<E extends Env = BlankEnv> extends HonoServerOptionsBase<E> {
   /**
@@ -70,6 +73,7 @@ export async function createHonoServer<E extends Env = BlankEnv>(
   options?: HonoServerOptionsWithWebSocket<E>
 ): Promise<Hono<E>>;
 export async function createHonoServer<E extends Env = BlankEnv>(options?: HonoServerOptions<E>) {
+  const basename = import.meta.env.REACT_ROUTER_HONO_SERVER_BASENAME;
   const mergedOptions: HonoServerOptions<E> = {
     ...options,
     listeningListener:
@@ -77,6 +81,10 @@ export async function createHonoServer<E extends Env = BlankEnv>(options?: HonoS
       ((info) => {
         console.log(`🚀 Server started on port ${info.port}`);
         console.log(`🌍 http://127.0.0.1:${info.port}`);
+
+        if (basename !== "/") {
+          console.log(`🔗 http://127.0.0.1:${info.port}${basename}`);
+        }
       }),
     port: options?.port || Number(process.env.PORT) || 3000,
     defaultLogger: options?.defaultLogger ?? true,
@@ -84,8 +92,8 @@ export async function createHonoServer<E extends Env = BlankEnv>(options?: HonoS
   };
   const mode = import.meta.env.MODE || "production";
   const PRODUCTION = mode === "production";
-  const app = new Hono<E>(mergedOptions.honoOptions || mergedOptions.app);
   const clientBuildPath = `${import.meta.env.REACT_ROUTER_HONO_SERVER_BUILD_DIRECTORY}/client`;
+  const app = new Hono<E>(mergedOptions.app);
   const { upgradeWebSocket, injectWebSocket } = await createWebSocket({
     app,
     enabled: mergedOptions.useWebSocket ?? false,
@@ -131,9 +139,13 @@ export async function createHonoServer<E extends Env = BlankEnv>(options?: HonoS
   }
 
   /**
-   * Add React Router middleware to Hono server
+   * Create a React Router Hono app and bind it to the root Hono server using the React Router basename
    */
-  app.use(async (c, next) => {
+  const reactRouterApp = new Hono<E>({
+    strict: false,
+  });
+
+  reactRouterApp.use(async (c, next) => {
     const build = await importBuild();
 
     return createMiddleware(async (c) => {
@@ -142,6 +154,13 @@ export async function createHonoServer<E extends Env = BlankEnv>(options?: HonoS
       return requestHandler(c.req.raw, loadContext instanceof Promise ? await loadContext : loadContext);
     })(c, next);
   });
+
+  app.route(`${basename}`, reactRouterApp);
+
+  // Patch https://github.com/remix-run/react-router/issues/12295
+  if (basename) {
+    app.route(`${basename}.data`, reactRouterApp);
+  }
 
   /**
    * Start the production server

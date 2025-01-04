@@ -722,6 +722,50 @@ Cloudflare requires a different approach to WebSockets, based on Durable Objects
 >
 > Work in progress on Cloudflare team: https://github.com/flarelabs-net/vite-plugin-cloudflare
 
+## Basename and Hono sub apps
+
+> [!TIP]
+> Check this [example](./examples/node/custom-mount/) to see how to use it.
+
+You can use the `basename` option in your React Router config (`react-router.config.ts`) to mount your React Router app on a subpath.
+
+It will automatically mount the app on the subpath.
+
+```ts
+// react-router.config.ts
+import type { Config } from "@react-router/dev/config";
+
+export default {
+  basename: "/app", // Now the React Router app will be mounted on /app
+} satisfies Config;
+```
+
+Then, you can use the `app` option in `createHonoServer` to pass your "root" Hono app. This will be used to mount the React Router app on the `basename` path.
+
+```ts
+import { Hono } from "hono";
+import { createHonoServer } from "react-router-hono-server/node";
+import { API_BASENAME, api } from "./api";
+import { getLoadContext } from "./context";
+
+// Create a root Hono app
+const app = new Hono();
+
+// Mount the API app at /api
+app.route(API_BASENAME, api);
+
+export default await createHonoServer({
+  // Pass the root Hono app to the server.
+  // It will be used to mount the React Router app on the `basename` defined in react-router.config.ts
+  app,
+  getLoadContext,
+});
+```
+> [!NOTE]
+> You now have two entry points!
+> - `/api` - for your API
+> - `/app` - for your React Router app
+
 ## Pre-rendering
 You should be able to use pre-rendering with this package.
 

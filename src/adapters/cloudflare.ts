@@ -3,9 +3,11 @@ import { createMiddleware } from "hono/factory";
 import { logger } from "hono/logger";
 import type { BlankEnv } from "hono/types";
 import { createRequestHandler } from "react-router";
-import { bindIncomingRequestSocketInfo, importBuild } from "../helpers";
+import { bindIncomingRequestSocketInfo, createGetLoadContext, importBuild } from "../helpers";
 import { cache } from "../middleware";
 import type { HonoServerOptionsBase, WithoutWebsocket } from "../types/hono-server-options-base";
+
+export { createGetLoadContext };
 
 interface HonoCloudflareOptions<E extends Env = BlankEnv>
   extends Omit<HonoServerOptionsBase<E>, "port" | "beforeAll"> {}
@@ -19,13 +21,14 @@ export type HonoServerOptions<E extends Env = BlankEnv> = HonoCloudflareOptions<
  * @param config {@link HonoServerOptions} - The configuration options for the server
  */
 export async function createHonoServer<E extends Env = BlankEnv>(options?: HonoServerOptions<E>) {
+  const basename = import.meta.env.REACT_ROUTER_HONO_SERVER_BASENAME;
   const mergedOptions: HonoServerOptions<E> = {
     ...options,
     defaultLogger: options?.defaultLogger ?? true,
   };
   const mode = import.meta.env.MODE || "production";
   const DEV = mode === "development";
-  const app = new Hono<E>(mergedOptions.honoOptions || mergedOptions.app);
+  const app = new Hono<E>(mergedOptions.app);
 
   /**
    * Serve public files
@@ -49,9 +52,13 @@ export async function createHonoServer<E extends Env = BlankEnv>(options?: HonoS
   await mergedOptions.configure?.(app);
 
   /**
-   * Add React Router middleware to Hono server
+   * Create a React Router Hono app and bind it to the root Hono server using the React Router basename
    */
-  app.use(async (c, next) => {
+  const reactRouterApp = new Hono<E>({
+    strict: false,
+  });
+
+  reactRouterApp.use(async (c, next) => {
     const build = await importBuild();
 
     return createMiddleware(async (c) => {
@@ -60,6 +67,13 @@ export async function createHonoServer<E extends Env = BlankEnv>(options?: HonoS
       return requestHandler(c.req.raw, loadContext instanceof Promise ? await loadContext : loadContext);
     })(c, next);
   });
+
+  app.route(`${basename}`, reactRouterApp);
+
+  // Patch https://github.com/remix-run/react-router/issues/12295
+  if (basename) {
+    app.route(`${basename}.data`, reactRouterApp);
+  }
 
   if (DEV) {
     console.log("🚧 Running in development mode");
