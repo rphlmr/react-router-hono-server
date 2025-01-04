@@ -93,6 +93,7 @@ export function reactRouterHonoServer(options: ReactRouterHonoServerPluginOption
           "import.meta.env.REACT_ROUTER_HONO_SERVER_BUILD_DIRECTORY": JSON.stringify(pluginConfig.buildDirectory),
           "import.meta.env.REACT_ROUTER_HONO_SERVER_ASSETS_DIR": JSON.stringify(pluginConfig.assetsDir),
           "import.meta.env.REACT_ROUTER_HONO_SERVER_RUNTIME": JSON.stringify(runtime),
+          "import.meta.env.REACT_ROUTER_HONO_SERVER_BASENAME": JSON.stringify(pluginConfig.basename),
         } satisfies MetaEnv<ReactRouterHonoServerEnv>,
         ssr: {
           target: runtime === "cloudflare" ? "webworker" : undefined,
@@ -162,8 +163,8 @@ export function reactRouterHonoServer(options: ReactRouterHonoServerPluginOption
         entry: pluginConfig.serverEntryPoint,
         export: "default",
         exclude: [
-          `/${pluginConfig.appDirectory}/**/*`,
-          `/${pluginConfig.appDirectory}/**/.*/**`,
+          `/${pluginConfig.appDirectory}/**/*.*`,
+          `/${pluginConfig.appDirectory}/**/.*/**.*`,
           /^\/@.+$/,
           /^\/node_modules\/.*/,
           /\?import$/,
@@ -212,6 +213,7 @@ function resolvePluginConfig(config: UserConfig, options: ReactRouterHonoServerP
   const assetsDir = config.build?.assetsDir || "assets";
   const serverEntryPoint = options.serverEntryPoint || findDefaultServerEntry(appDirectory);
   const serverBuildFile = reactRouterConfig.reactRouterConfig.serverBuildFile;
+  const basename = reactRouterConfig.reactRouterConfig.basename;
 
   return {
     rootDirectory,
@@ -222,6 +224,7 @@ function resolvePluginConfig(config: UserConfig, options: ReactRouterHonoServerP
     serverEntryPoint,
     dev: options.dev,
     serverBuildFile,
+    basename,
   };
 }
 
