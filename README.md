@@ -313,8 +313,11 @@ type ReactRouterHonoServerPluginOptions = {
 ##### All adapters
 ```ts
 export type HonoServerOptions<E extends Env = BlankEnv> = {
-    /**
-   * Hono app to use
+  /**
+   * The base Hono app to use
+   *
+   * It will be used to mount the React Router server on the `basename` path
+   * defined in the [React Router config](https://api.reactrouter.com/v7/types/_react_router_dev.config.Config.html)
    *
    * {@link Hono}
    */
@@ -416,6 +419,19 @@ export async function loader({ context }: Route.LoaderArgs) {
   return { appVersion: context.appVersion }
 }
 ```
+
+> [!TIP]
+> If you declare your `getLoadContext` function in a separate file, you can use the helper `createGetLoadContext` from `react-router-hono-server/{adapter}`
+> ```ts
+> import { createGetLoadContext } from "react-router-hono-server/node";
+>
+> export const getLoadContext = createGetLoadContext((c, { mode, build }) => {
+>   const isProductionMode = mode === "production";
+>   return {
+>     appVersion: isProductionMode ? build.assets.version : "dev",
+>   };
+> });
+> ```
 
 ##### Node
 ```ts
