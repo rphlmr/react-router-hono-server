@@ -163,7 +163,7 @@ export function reactRouterHonoServer(options: ReactRouterHonoServerPluginOption
         entry: pluginConfig.serverEntryPoint,
         export: "default",
         exclude: [
-          /.*\.(ts|js|tsx|jsx|css)(\?.*)?$/,
+          /.*\.(ts|js|tsx|jsx|css|svg)(\?.*)?$/,
           /\?import(\?.*)?$/,
           /^\/@.+$/,
           /^\/node_modules\/.*/,
