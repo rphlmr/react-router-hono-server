@@ -258,6 +258,9 @@ assets = { directory = "./build/client/" }
 You can set Cloudflare `experimental_serve_directly` and delegate assets serving to Hono, like for Node and Bun.
 
 > [!TIP]
+> Check https://developers.cloudflare.com/workers/static-assets/binding/#experimental_serve_directly
+
+> [!TIP]
 > Check this [example](./examples/cloudflare/simple/) to see how to use it.
 
 ```toml
