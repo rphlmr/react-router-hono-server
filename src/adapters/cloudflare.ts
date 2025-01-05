@@ -42,7 +42,7 @@ export async function createHonoServer<E extends Env = BlankEnv>(options?: HonoS
     // https://developers.cloudflare.com/workers/static-assets/binding/#experimental_serve_directly
     `/${import.meta.env.REACT_ROUTER_HONO_SERVER_ASSETS_DIR}/*`,
     cache(60 * 60 * 24 * 365), // 1 year
-    staticAssets()
+    serveCloudflareAssets()
   );
 
   /**
@@ -53,7 +53,7 @@ export async function createHonoServer<E extends Env = BlankEnv>(options?: HonoS
       // https://developers.cloudflare.com/workers/static-assets/binding/#experimental_serve_directly
       "*",
       cache(60 * 60), // 1 hour
-      staticAssets()
+      serveCloudflareAssets()
     );
   } else {
     const { serveStatic } = await import("@hono/node-server/serve-static");
@@ -115,7 +115,7 @@ let warned = false;
  *
  * https://github.com/sergiodxa/remix-hono/blob/main/src/cloudflare.ts
  */
-function staticAssets() {
+function serveCloudflareAssets() {
   return createMiddleware(async (c, next) => {
     const binding = c.env?.ASSETS as Fetcher | undefined;
 
