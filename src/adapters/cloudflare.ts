@@ -1,3 +1,4 @@
+import type { Fetcher, RequestInit } from "@cloudflare/workers-types";
 import { type Env, Hono } from "hono";
 import { createMiddleware } from "hono/factory";
 import { logger } from "hono/logger";
@@ -9,8 +10,7 @@ import type { HonoServerOptionsBase, WithoutWebsocket } from "../types/hono-serv
 
 export { createGetLoadContext };
 
-interface HonoCloudflareOptions<E extends Env = BlankEnv>
-  extends Omit<HonoServerOptionsBase<E>, "port" | "beforeAll"> {}
+interface HonoCloudflareOptions<E extends Env = BlankEnv> extends Omit<HonoServerOptionsBase<E>, "port"> {}
 
 export type HonoServerOptions<E extends Env = BlankEnv> = HonoCloudflareOptions<E> &
   Omit<WithoutWebsocket<E>, "useWebSocket">;
@@ -27,15 +27,41 @@ export async function createHonoServer<E extends Env = BlankEnv>(options?: HonoS
     defaultLogger: options?.defaultLogger ?? true,
   };
   const mode = import.meta.env.MODE || "production";
-  const DEV = mode === "development";
+  const PRODUCTION = mode === "production";
   const app = new Hono<E>(mergedOptions.app);
+
+  /**
+   * Add optional middleware that runs before any built-in middleware, including assets serving.
+   */
+  await mergedOptions.beforeAll?.(app);
+
+  /**
+   * Serve assets files from build/client/assets
+   */
+  app.use(
+    // https://developers.cloudflare.com/workers/static-assets/binding/#experimental_serve_directly
+    `/${import.meta.env.REACT_ROUTER_HONO_SERVER_ASSETS_DIR}/*`,
+    cache(60 * 60 * 24 * 365), // 1 year
+    staticAssets()
+  );
 
   /**
    * Serve public files
    */
-  if (DEV) {
+  if (PRODUCTION) {
+    app.use(
+      // https://developers.cloudflare.com/workers/static-assets/binding/#experimental_serve_directly
+      "*",
+      cache(60 * 60), // 1 hour
+      staticAssets()
+    );
+  } else {
     const { serveStatic } = await import("@hono/node-server/serve-static");
-    app.use("*", cache(60 * 60), serveStatic({ root: "./public" })); // 1 hour
+    app.use(
+      "*",
+      cache(60 * 60), // 1 hour
+      serveStatic({ root: "./public" })
+    );
     app.use(bindIncomingRequestSocketInfo());
   }
 
@@ -75,9 +101,49 @@ export async function createHonoServer<E extends Env = BlankEnv>(options?: HonoS
     app.route(`${basename}.data`, reactRouterApp);
   }
 
-  if (DEV) {
+  if (!PRODUCTION) {
     console.log("🚧 Running in development mode");
   }
 
   return app;
+}
+
+let warned = false;
+/**
+ * Serve static assets
+ *
+ * https://github.com/sergiodxa/remix-hono/blob/main/src/cloudflare.ts
+ */
+function staticAssets() {
+  return createMiddleware(async (c, next) => {
+    const binding = c.env?.ASSETS as Fetcher | undefined;
+
+    if (!binding) {
+      if (!warned) {
+        console.info(
+          "\x1b[33m\nThe binding ASSETS is not set. Falling back to Cloudflare serving.\nhttps://developers.cloudflare.com/workers/static-assets/binding/#binding\n\x1b[0m"
+        );
+      }
+      warned = true;
+      return next();
+    }
+
+    try {
+      let response = (await binding.fetch(
+        c.req.url,
+        c.req.raw.clone() as unknown as RequestInit
+      )) as unknown as globalThis.Response;
+
+      // If the request failed, we just call the next middleware
+      if (response.status >= 400) {
+        return next();
+      }
+
+      response = new Response(response.body, response);
+
+      return response;
+    } catch {
+      return next();
+    }
+  });
 }

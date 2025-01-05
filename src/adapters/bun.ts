@@ -88,7 +88,11 @@ export async function createHonoServer<E extends Env = BlankEnv>(options?: HonoS
   /**
    * Serve public files
    */
-  app.use("*", cache(60 * 60), serveStatic({ root: PRODUCTION ? clientBuildPath : "./public" })); // 1 hour
+  app.use(
+    "*",
+    cache(60 * 60), // 1 hour
+    serveStatic({ root: PRODUCTION ? clientBuildPath : "./public" })
+  );
 
   /**
    * Add logger middleware

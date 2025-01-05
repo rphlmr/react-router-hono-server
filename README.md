@@ -254,6 +254,19 @@ main = "./build/server/index.js"
 assets = { directory = "./build/client/" }
 ```
 
+##### Custom assets serving
+You can set Cloudflare `experimental_serve_directly` and delegate assets serving to Hono, like for Node and Bun.
+
+> [!TIP]
+> Check this [example](./examples/cloudflare/simple/) to see how to use it.
+
+```toml
+[assets]
+directory = "./build/client/"
+binding = "ASSETS"
+experimental_serve_directly = false
+```
+
 ## How it works
 
 This helper works differently depending on the environment.
@@ -362,13 +375,11 @@ export type HonoServerOptions<E extends Env = BlankEnv> = {
     }
   ) => Promise<AppLoadContext> | AppLoadContext;
   /**
-   * Listening listener (production mode only)
+   * Hook to add middleware that runs before any built-in middleware, including assets serving.
    *
-   * It is called when the server is listening
-   *
-   * Defaults log the port
+   * You can use it to add protection middleware, for example.
    */
-  listeningListener?: (info: AddressInfo) => void;
+  beforeAll?: (app: Hono<E>) => Promise<void> | void;
 };
 ```
 
@@ -470,12 +481,6 @@ export interface HonoServerOptions<E extends Env = BlankEnv> extends HonoServerO
    * @default false
    */
   overrideGlobalObjects?: boolean;
-  /**
-   * Hook to add middleware that runs before any built-in middleware, including assets serving.
-   *
-   * You can use it to add protection middleware, for example.
-   */
-  beforeAll?: (app: Hono<E>) => Promise<void> | void;
 }
 ```
 
@@ -488,18 +493,12 @@ export interface HonoServerOptions<E extends Env = BlankEnv> extends HonoServerO
    * {@link https://bun.sh/docs/api/http#start-a-server-bun-serve}
    */
   customBunServer?: Serve & ServeOptions;
-  /**
-   * Hook to add middleware that runs before any built-in middleware, including assets serving.
-   *
-   * You can use it to add protection middleware, for example.
-   */
-  beforeAll?: (app: Hono<E>) => Promise<void> | void;
 }
 ```
 
 ##### Cloudflare Workers
 ```ts
-export interface HonoServerOptions<E extends Env = BlankEnv> extends Omit<HonoServerOptionsBase<E>, "port" | "beforeAll"> {}
+export interface HonoServerOptions<E extends Env = BlankEnv> extends Omit<HonoServerOptionsBase<E>, "port"> {}
 ```
 
 ## Middleware
