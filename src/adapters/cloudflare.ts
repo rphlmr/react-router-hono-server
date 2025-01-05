@@ -109,6 +109,7 @@ export async function createHonoServer<E extends Env = BlankEnv>(options?: HonoS
 }
 
 let warned = false;
+
 /**
  * Serve static assets
  *
