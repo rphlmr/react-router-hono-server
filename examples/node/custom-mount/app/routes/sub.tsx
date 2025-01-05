@@ -37,6 +37,7 @@ export default function Index({ loaderData: data }: Route.ComponentProps) {
       </button>
       <input />
       <Input value={value} onChange={(e) => setValue(e.target.value)} />
+      <img src="/images/database.svg" alt="Database2" className="w-10" />
       <div className="mt-8 w-full max-w-4xl overflow-x-auto">
         <table className="w-full border-collapse bg-gray-100 shadow-md rounded-lg">
           <thead>
