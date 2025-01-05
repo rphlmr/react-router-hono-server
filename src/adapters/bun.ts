@@ -4,15 +4,19 @@ import { serveStatic } from "hono/bun";
 import { createMiddleware } from "hono/factory";
 import { logger } from "hono/logger";
 import type { BlankEnv } from "hono/types";
-import { type ServerBuild, createRequestHandler } from "react-router";
+import { createRequestHandler } from "react-router";
 import {
   bindIncomingRequestSocketInfo,
   cleanUpgradeListeners,
+  createGetLoadContext,
   createWebSocket,
+  importBuild,
   patchUpgradeListener,
 } from "../helpers";
 import { cache } from "../middleware";
 import type { HonoServerOptionsBase, WithWebsocket, WithoutWebsocket } from "../types/hono-server-options-base";
+
+export { createGetLoadContext };
 
 type CustomBunServer = Serve &
   ServeOptions & {
@@ -48,6 +52,7 @@ export async function createHonoServer<E extends Env = BlankEnv>(
   options?: HonoServerOptionsWithWebSocket<E>
 ): Promise<CustomBunServer>;
 export async function createHonoServer<E extends Env = BlankEnv>(options?: HonoServerOptions<E>) {
+  const basename = import.meta.env.REACT_ROUTER_HONO_SERVER_BASENAME;
   const mergedOptions: HonoServerOptions<E> = {
     ...options,
     port: options?.port || Number(options?.customBunServer?.port) || Number(process.env.PORT) || 3000,
@@ -55,8 +60,8 @@ export async function createHonoServer<E extends Env = BlankEnv>(options?: HonoS
   };
   const mode = import.meta.env.MODE || "production";
   const PRODUCTION = mode === "production";
-  const app = new Hono<E>(mergedOptions.honoOptions || mergedOptions.app);
   const clientBuildPath = `${import.meta.env.REACT_ROUTER_HONO_SERVER_BUILD_DIRECTORY}/client`;
+  const app = new Hono<E>(mergedOptions.app);
   const { upgradeWebSocket, injectWebSocket } = await createWebSocket({
     app,
     enabled: mergedOptions.useWebSocket ?? false,
@@ -83,7 +88,11 @@ export async function createHonoServer<E extends Env = BlankEnv>(options?: HonoS
   /**
    * Serve public files
    */
-  app.use("*", cache(60 * 60), serveStatic({ root: PRODUCTION ? clientBuildPath : "./public" })); // 1 hour
+  app.use(
+    "*",
+    cache(60 * 60), // 1 hour
+    serveStatic({ root: PRODUCTION ? clientBuildPath : "./public" })
+  );
 
   /**
    * Add logger middleware
@@ -102,21 +111,28 @@ export async function createHonoServer<E extends Env = BlankEnv>(options?: HonoS
   }
 
   /**
-   * Add React Router middleware to Hono server
+   * Create a React Router Hono app and bind it to the root Hono server using the React Router basename
    */
+  const reactRouterApp = new Hono<E>({
+    strict: false,
+  });
 
-  const build = (await import(
-    // @ts-expect-error - Virtual module provided by React Router at build time
-    "virtual:react-router/server-build"
-  )) as ServerBuild;
+  reactRouterApp.use(async (c, next) => {
+    const build = await importBuild();
 
-  app.use(async (c, next) => {
     return createMiddleware(async (c) => {
       const requestHandler = createRequestHandler(build, mode);
       const loadContext = mergedOptions.getLoadContext?.(c, { build, mode });
       return requestHandler(c.req.raw, loadContext instanceof Promise ? await loadContext : loadContext);
     })(c, next);
   });
+
+  app.route(`${basename}`, reactRouterApp);
+
+  // Patch https://github.com/remix-run/react-router/issues/12295
+  if (basename) {
+    app.route(`${basename}.data`, reactRouterApp);
+  }
 
   let server = {
     ...mergedOptions.customBunServer,

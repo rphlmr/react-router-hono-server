@@ -254,6 +254,22 @@ main = "./build/server/index.js"
 assets = { directory = "./build/client/" }
 ```
 
+##### Custom assets serving
+You can set Cloudflare `experimental_serve_directly` and delegate assets serving to Hono, like for Node and Bun.
+
+> [!TIP]
+> Check https://developers.cloudflare.com/workers/static-assets/binding/#experimental_serve_directly
+
+> [!TIP]
+> Check this [example](./examples/cloudflare/simple/) to see how to use it.
+
+```toml
+[assets]
+directory = "./build/client/"
+binding = "ASSETS"
+experimental_serve_directly = false
+```
+
 ## How it works
 
 This helper works differently depending on the environment.
@@ -313,8 +329,11 @@ type ReactRouterHonoServerPluginOptions = {
 ##### All adapters
 ```ts
 export type HonoServerOptions<E extends Env = BlankEnv> = {
-    /**
-   * Hono app to use
+  /**
+   * The base Hono app to use
+   *
+   * It will be used to mount the React Router server on the `basename` path
+   * defined in the [React Router config](https://api.reactrouter.com/v7/types/_react_router_dev.config.Config.html)
    *
    * {@link Hono}
    */
@@ -359,13 +378,11 @@ export type HonoServerOptions<E extends Env = BlankEnv> = {
     }
   ) => Promise<AppLoadContext> | AppLoadContext;
   /**
-   * Listening listener (production mode only)
+   * Hook to add middleware that runs before any built-in middleware, including assets serving.
    *
-   * It is called when the server is listening
-   *
-   * Defaults log the port
+   * You can use it to add protection middleware, for example.
    */
-  listeningListener?: (info: AddressInfo) => void;
+  beforeAll?: (app: Hono<E>) => Promise<void> | void;
 };
 ```
 
@@ -417,6 +434,19 @@ export async function loader({ context }: Route.LoaderArgs) {
 }
 ```
 
+> [!TIP]
+> If you declare your `getLoadContext` function in a separate file, you can use the helper `createGetLoadContext` from `react-router-hono-server/{adapter}`
+> ```ts
+> import { createGetLoadContext } from "react-router-hono-server/node";
+>
+> export const getLoadContext = createGetLoadContext((c, { mode, build }) => {
+>   const isProductionMode = mode === "production";
+>   return {
+>     appVersion: isProductionMode ? build.assets.version : "dev",
+>   };
+> });
+> ```
+
 ##### Node
 ```ts
 export interface HonoServerOptions<E extends Env = BlankEnv> extends HonoServerOptionsBase<E> {
@@ -454,12 +484,6 @@ export interface HonoServerOptions<E extends Env = BlankEnv> extends HonoServerO
    * @default false
    */
   overrideGlobalObjects?: boolean;
-  /**
-   * Hook to add middleware that runs before any built-in middleware, including assets serving.
-   *
-   * You can use it to add protection middleware, for example.
-   */
-  beforeAll?: (app: Hono<E>) => Promise<void> | void;
 }
 ```
 
@@ -472,18 +496,12 @@ export interface HonoServerOptions<E extends Env = BlankEnv> extends HonoServerO
    * {@link https://bun.sh/docs/api/http#start-a-server-bun-serve}
    */
   customBunServer?: Serve & ServeOptions;
-  /**
-   * Hook to add middleware that runs before any built-in middleware, including assets serving.
-   *
-   * You can use it to add protection middleware, for example.
-   */
-  beforeAll?: (app: Hono<E>) => Promise<void> | void;
 }
 ```
 
 ##### Cloudflare Workers
 ```ts
-export interface HonoServerOptions<E extends Env = BlankEnv> extends Omit<HonoServerOptionsBase<E>, "port" | "beforeAll"> {}
+export interface HonoServerOptions<E extends Env = BlankEnv> extends Omit<HonoServerOptionsBase<E>, "port"> {}
 ```
 
 ## Middleware
@@ -705,6 +723,55 @@ Cloudflare requires a different approach to WebSockets, based on Durable Objects
 > For now, HMR is not supported in Cloudflare Workers. Will try to come back to it later.
 >
 > Work in progress on Cloudflare team: https://github.com/flarelabs-net/vite-plugin-cloudflare
+
+## Basename and Hono sub apps
+
+> [!NOTE]
+> By default, the React Router app is mounted at `/` (default `basename` value).
+>
+> You may not need to use this option. It's for advanced use cases.
+
+> [!TIP]
+> Check this [example](./examples/node/custom-mount/) to see how to use it.
+
+You can use the `basename` option in your React Router config (`react-router.config.ts`) to mount your React Router app on a subpath.
+
+It will automatically mount the app on the subpath.
+
+```ts
+// react-router.config.ts
+import type { Config } from "@react-router/dev/config";
+
+export default {
+  basename: "/app", // Now the React Router app will be mounted on /app
+} satisfies Config;
+```
+
+Then, you can use the `app` option in `createHonoServer` to pass your "root" Hono app. This will be used to mount the React Router app on the `basename` path.
+
+```ts
+import { Hono } from "hono";
+import { createHonoServer } from "react-router-hono-server/node";
+import { API_BASENAME, api } from "./api";
+import { getLoadContext } from "./context";
+
+// Create a root Hono app
+const app = new Hono();
+
+// Mount the API app at /api
+app.route(API_BASENAME, api);
+
+export default await createHonoServer({
+  // Pass the root Hono app to the server.
+  // It will be used to mount the React Router app on the `basename` defined in react-router.config.ts
+  app,
+  getLoadContext,
+});
+```
+> [!NOTE]
+> You now have two entry points!
+> - `/api` - for your API
+> - `/app` - for your React Router app
 
 ## Pre-rendering
 You should be able to use pre-rendering with this package.

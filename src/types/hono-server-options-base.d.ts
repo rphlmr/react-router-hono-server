@@ -1,11 +1,13 @@
 import type { Context, Env, Hono } from "hono";
-import type { HonoOptions } from "hono/hono-base";
 import type { UpgradeWebSocket } from "hono/ws";
 import type { AppLoadContext, ServerBuild } from "react-router";
 
 export interface HonoServerOptionsBase<E extends Env> {
   /**
-   * Hono app to use
+   * The base Hono app to use as a replacement for the default one created automatically
+   *
+   * It will be used to mount the React Router server on the `basename` path
+   * defined in the [React Router config](https://api.reactrouter.com/v7/types/_react_router_dev.config.Config.html)
    *
    * {@link Hono}
    */
@@ -43,10 +45,6 @@ export interface HonoServerOptionsBase<E extends Env> {
       mode: string;
     }
   ) => Promise<AppLoadContext> | AppLoadContext;
-  /**
-   * @deprecated Use `app` instead
-   */
-  honoOptions?: HonoOptions<E>;
   /**
    * Hook to add middleware that runs before any built-in middleware, including assets serving.
    *
