@@ -508,7 +508,11 @@ export interface HonoServerOptions<E extends Env = BlankEnv> extends Omit<HonoSe
 
 🚨 Redirecting from a middleware
 > [!IMPORTANT]
-> You **have to** use the `reactRouterRedirect` helper to redirect from a middleware.
+> TLDR: If you encounter a `Error: Unable to decode turbo-stream response` after a redirect from your middleware, try to use `reactRouterRedirect` instead of `c.redirect`.
+> 
+> If the next handler is a Hono middleware (ex: https://github.com/rphlmr/react-router-hono-server/discussions/56), you can use `c.redirect` as usual.
+>
+> You **have to** use the `reactRouterRedirect` helper to redirect from a middleware if the next handler that will receive this redirect is a React Router route.
 >
 > It returns a single-fetch-like response.
 >
@@ -517,6 +521,8 @@ export interface HonoServerOptions<E extends Env = BlankEnv> extends Omit<HonoSe
 >```ts
 > import { reactRouterRedirect } from "react-router-hono-server/http";
 >```
+>
+> I'm sorry for this inconvenience, I hope it can be "fixed" in future React Router versions.
 
 Middleware are functions that are called before React Router calls your loader/action.
 
