@@ -1,6 +1,6 @@
 import { getConnInfo } from "@hono/node-server/conninfo";
 import { createMiddleware } from "hono/factory";
-import { reactRouterRedirect } from "react-router-hono-server/http";
+import { redirect } from "react-router-hono-server/http";
 import { createHonoServer } from "react-router-hono-server/node";
 
 console.log("loading server");
@@ -17,7 +17,7 @@ const protectRoutes = createMiddleware(async (c, next) => {
   console.log("Checking path:", c.req.path);
 
   if (c.req.path.includes("/protected")) {
-    return reactRouterRedirect("/");
+    return redirect(c, "/");
   }
 
   return next();
