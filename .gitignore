@@ -132,4 +132,5 @@ dist
 .history
 .react-router
 /build
+build
 .wrangler

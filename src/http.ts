@@ -65,6 +65,6 @@ export function redirect(c: Context, location: string) {
  *
  * If the path ends with `.data` (React Router Single Fetch query), it will be removed.
  */
-function getPath(c: Context) {
+export function getPath(c: Context) {
   return c.req.path.replace(".data", "");
 }
