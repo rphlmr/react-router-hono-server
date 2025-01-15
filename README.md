@@ -784,6 +784,7 @@ export default await createHonoServer({
 ## Pre-rendering
 You should be able to use pre-rendering with this package.
 
+### Node and Bun
 > [!TIP]
 > Check this [example](./examples/node/with-pre-render/) to see how to use it.
 
@@ -792,7 +793,7 @@ You should be able to use pre-rendering with this package.
 >
 > The file path is fixed to `assets/server-build.js`.
 
-Add the prerender option to your `react-router.config.ts`
+Add the pre-render option to your `react-router.config.ts`
 
 ```ts
 import type { Config } from "@react-router/dev/config";
@@ -802,6 +803,21 @@ export default {
   prerender: ["/"],
 } satisfies Config;
 ```
+
+### Cloudflare
+> [!TIP]
+> Check this [example](./examples/cloudflare/with-pre-render/) to see how to use it.
+
+Add the pre-render option to your `react-router.config.ts`
+
+```ts
+import type { Config } from "@react-router/dev/config";
+
+export default {
+  prerender: ["/"],
+} satisfies Config;
+```
+
 
 ## Migrate from v1
 _You should not expect any breaking changes._
