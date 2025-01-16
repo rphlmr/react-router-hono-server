@@ -1,0 +1,155 @@
+{
+  "encodings": [
+    "app/entry.server.tsx",
+    "handleRequest",
+    [12, 15, 63, 1],
+    [28, 51, 28, 109],
+    "app/root.tsx",
+    "App",
+    [26, 15, 28, 1],
+    [27, 9, 27, 19],
+    "app/routes/app_.sub.tsx",
+    "Index",
+    [27, 15, 60, 1],
+    [27, 30, 27, 72],
+    [28, 28, 28, 40],
+    [31, 25, 31, 41],
+    [31, 10, 31, 20],
+    [33, 4, 58, 10],
+    [34, 6, 37, 15],
+    [34, 37, 34, 47],
+    [35, 8, 35, 43],
+    [38, 6, 38, 15],
+    [39, 6, 39, 72],
+    [40, 6, 57, 12],
+    [41, 8, 56, 16],
+    [42, 10, 47, 18],
+    [43, 12, 46, 17],
+    [44, 14, 44, 117],
+    [45, 14, 45, 119],
+    [48, 10, 55, 18],
+    [50, 14, 53, 19],
+    [51, 16, 51, 104],
+    [52, 16, 52, 101],
+    "app/components/input.tsx",
+    "Input",
+    [1, 7, 3, 1],
+    [1, 22, 1, 68],
+    [2, 9, 2, 61],
+    "app/routes/_index.tsx"
+  ],
+  "reactData": {
+    "app/entry.server.tsx": {
+      "components": {
+        "handleRequest": {
+          "loc": [12, 15, 63, 1],
+          "nameLoc": [12, 24, 12, 37],
+          "captures": [{ "loc": [28, 51, 28, 109], "kind": 16 }]
+        }
+      },
+      "externals": [
+        { "kind": "import", "loc": [1, 0, 1, 42] },
+        { "kind": "import", "loc": [3, 0, 3, 70] },
+        { "kind": "import", "loc": [4, 0, 4, 30] },
+        { "kind": "import", "loc": [5, 0, 5, 70] },
+        { "kind": "import", "loc": [6, 0, 6, 58] },
+        { "kind": "import", "loc": [7, 0, 7, 65] },
+        { "kind": "import", "loc": [8, 0, 8, 44] },
+        { "kind": "export", "loc": [10, 0, 10, 35] },
+        { "kind": "export", "loc": [12, 0, 63, 1] }
+      ]
+    },
+    "app/root.tsx": {
+      "components": {
+        "App": {
+          "loc": [26, 15, 28, 1],
+          "nameLoc": [26, 24, 26, 27],
+          "captures": [{ "loc": [26, 15, 28, 1], "kind": 512 }]
+        }
+      },
+      "externals": [
+        { "kind": "import", "loc": [1, 0, 1, 50] },
+        { "kind": "import", "loc": [2, 0, 2, 79] },
+        { "kind": "import", "loc": [3, 0, 3, 47] },
+        { "kind": "export", "loc": [5, 0, 5, 80] },
+        { "kind": "export", "loc": [7, 0, 24, 1] },
+        { "kind": "export", "loc": [26, 0, 28, 1] }
+      ]
+    },
+    "app/routes/app_.sub.tsx": {
+      "components": {
+        "Index": {
+          "loc": [27, 15, 60, 1],
+          "nameLoc": [27, 24, 27, 29],
+          "captures": [
+            { "loc": [27, 15, 60, 1], "kind": 512 },
+            { "loc": [27, 30, 27, 72], "kind": 2 },
+            { "loc": [28, 28, 28, 40], "kind": 4 },
+            { "loc": [31, 25, 31, 41], "kind": 4 },
+            { "loc": [34, 37, 34, 47], "kind": 128 },
+            { "loc": [39, 6, 39, 72], "kind": 16 }
+          ]
+        }
+      },
+      "externals": [
+        { "kind": "import", "loc": [1, 0, 1, 33] },
+        { "kind": "import", "loc": [2, 0, 2, 46] },
+        { "kind": "import", "loc": [3, 0, 3, 43] },
+        { "kind": "import", "loc": [4, 0, 4, 51] },
+        { "kind": "import", "loc": [5, 0, 5, 51] },
+        { "kind": "import", "loc": [6, 0, 6, 51] },
+        { "kind": "import", "loc": [7, 0, 7, 44] },
+        { "kind": "import", "loc": [8, 0, 8, 42] },
+        { "kind": "import", "loc": [9, 0, 9, 47] },
+        { "kind": "export", "loc": [11, 0, 16, 1] },
+        { "kind": "export", "loc": [18, 0, 23, 1] },
+        { "kind": "export", "loc": [27, 0, 60, 1] }
+      ]
+    },
+    "app/components/input.tsx": {
+      "components": {
+        "Input": {
+          "loc": [1, 7, 3, 1],
+          "nameLoc": [1, 16, 1, 21],
+          "captures": [{ "loc": [1, 7, 3, 1], "kind": 512 }, { "loc": [1, 22, 1, 68], "kind": 2 }]
+        }
+      },
+      "externals": [{ "kind": "export", "loc": [1, 0, 3, 1] }]
+    },
+    "app/routes/_index.tsx": {
+      "components": {
+        "Index": {
+          "loc": [27, 15, 60, 1],
+          "nameLoc": [27, 24, 27, 29],
+          "captures": [
+            { "loc": [27, 15, 60, 1], "kind": 512 },
+            { "loc": [27, 30, 27, 72], "kind": 2 },
+            { "loc": [28, 28, 28, 40], "kind": 4 },
+            { "loc": [31, 25, 31, 41], "kind": 4 },
+            { "loc": [34, 37, 34, 47], "kind": 128 },
+            { "loc": [39, 6, 39, 72], "kind": 16 }
+          ]
+        }
+      },
+      "externals": [
+        { "kind": "import", "loc": [1, 0, 1, 33] },
+        { "kind": "import", "loc": [2, 0, 2, 46] },
+        { "kind": "import", "loc": [3, 0, 3, 43] },
+        { "kind": "import", "loc": [4, 0, 4, 51] },
+        { "kind": "import", "loc": [5, 0, 5, 51] },
+        { "kind": "import", "loc": [6, 0, 6, 51] },
+        { "kind": "import", "loc": [7, 0, 7, 44] },
+        { "kind": "import", "loc": [8, 0, 8, 42] },
+        { "kind": "import", "loc": [9, 0, 9, 45] },
+        { "kind": "export", "loc": [11, 0, 16, 1] },
+        { "kind": "export", "loc": [18, 0, 23, 1] },
+        { "kind": "export", "loc": [27, 0, 60, 1] }
+      ]
+    }
+  },
+  "unusedFiles": [
+    "/Users/rphlmr/workspaces/rphlmr/react-router-hono-server/examples/node/with-million/app/routes/defer.tsx",
+    "/Users/rphlmr/workspaces/rphlmr/react-router-hono-server/examples/node/with-million/app/entry.client.tsx"
+  ],
+  "mtime": null
+}
