@@ -1,1 +1,1 @@
-export type Runtime = "node" | "bun" | "cloudflare";
+export type Runtime = "node" | "bun" | "cloudflare" | "aws";
