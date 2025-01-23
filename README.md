@@ -263,16 +263,6 @@ It is not an error, you can keep the React Router defaults for `build` and `dev`
   },
 ```
 
-### AWS Lambda
-It is not an error, you can keep the React Router defaults for `build` and `dev`!
-```json
-  "scripts": {
-    "build": "react-router build",
-    "dev": "react-router dev",
-    "start": "I don't know how to start it in production mode 😅",
-  },
-```
-
 #### Wrangler
 Add a file named `wrangler.toml` at the root of your project (close to `package.json`).
 
@@ -299,6 +289,16 @@ You can set Cloudflare `experimental_serve_directly` and delegate assets serving
 directory = "./build/client/"
 binding = "ASSETS"
 experimental_serve_directly = false
+```
+
+### AWS Lambda
+It is not an error, you can keep the React Router defaults for `build` and `dev`!
+```json
+  "scripts": {
+    "build": "react-router build",
+    "dev": "react-router dev",
+    "start": "I don't know how to start it in production mode 😅",
+  },
 ```
 
 ## How it works
