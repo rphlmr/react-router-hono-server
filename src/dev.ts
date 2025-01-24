@@ -3,7 +3,6 @@ import type { IncomingMessage, ServerResponse } from "node:http";
 import path from "node:path";
 import honoDevServer, { type DevServerOptions } from "@hono/vite-dev-server";
 import bunAdapter from "@hono/vite-dev-server/bun";
-import cloudflareAdapter from "@hono/vite-dev-server/cloudflare";
 import nodeAdapter from "@hono/vite-dev-server/node";
 import type { Config as ReactRouterConfig } from "@react-router/dev/config";
 import type { Plugin, UserConfig } from "vite";
@@ -159,6 +158,7 @@ export function reactRouterHonoServer(options: ReactRouterHonoServerPluginOption
       }
 
       if (runtime === "cloudflare") {
+        const { cloudflareAdapter } = await import("@hono/vite-dev-server/cloudflare");
         adapter = cloudflareAdapter;
       }
 
