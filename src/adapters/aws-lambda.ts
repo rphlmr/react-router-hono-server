@@ -54,22 +54,27 @@ export async function createHonoServer<E extends Env = BlankEnv>(options?: HonoS
   await mergedOptions.beforeAll?.(app);
 
   /**
-   * Serve assets files from build/client/assets
+   * In production, you may use CloudFront or any other AWS services to serve assets
    */
-  app.use(
-    `/${import.meta.env.REACT_ROUTER_HONO_SERVER_ASSETS_DIR}/*`,
-    cache(60 * 60 * 24 * 365), // 1 year
-    serveStatic({ root: clientBuildPath })
-  );
+  if (!PRODUCTION) {
+    /**
+     * Serve assets files from build/client/assets
+     */
+    app.use(
+      `/${import.meta.env.REACT_ROUTER_HONO_SERVER_ASSETS_DIR}/*`,
+      cache(60 * 60 * 24 * 365), // 1 year
+      serveStatic({ root: clientBuildPath })
+    );
 
-  /**
-   * Serve public files
-   */
-  app.use(
-    "*",
-    cache(60 * 60), // 1 hour
-    serveStatic({ root: PRODUCTION ? clientBuildPath : "./public" })
-  );
+    /**
+     * Serve public files
+     */
+    app.use(
+      "*",
+      cache(60 * 60), // 1 hour
+      serveStatic({ root: PRODUCTION ? clientBuildPath : "./public" })
+    );
+  }
 
   /**
    * Add logger middleware
