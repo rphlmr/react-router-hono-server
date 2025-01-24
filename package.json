@@ -80,10 +80,6 @@
     "@hono/vite-dev-server": "^0.17.0",
     "hono": "^4.6.11"
   },
-  "optionalDependencies": {
-    "miniflare": "^3.20241205.0",
-    "wrangler": "^3.91.0"
-  },
   "devDependencies": {
     "@biomejs/biome": "^1.9.4",
     "@types/bun": "^1.1.14",
