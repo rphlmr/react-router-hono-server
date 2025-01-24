@@ -25,6 +25,13 @@
         "default": "./dist/adapters/cloudflare.js"
       }
     },
+    "./aws-lambda": {
+      "import": {
+        "import": "./dist/adapters/aws-lambda.js",
+        "types": "./dist/adapters/aws-lambda.d.ts",
+        "default": "./dist/adapters/aws-lambda.js"
+      }
+    },
     "./dev": {
       "import": {
         "import": "./dist/dev.js",

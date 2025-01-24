@@ -41,6 +41,12 @@ type ReactRouterHonoServerPluginOptions = {
      * Defaults include `appDirectory` content.
      */
     exclude?: DevServerOptions["exclude"];
+    /**
+     * The name of the export to use for the server.
+     *
+     * Defaults to `default`.
+     */
+    export?: DevServerOptions["export"];
   };
 };
 
@@ -161,7 +167,7 @@ export function reactRouterHonoServer(options: ReactRouterHonoServerPluginOption
         adapter,
         injectClientScript: false,
         entry: pluginConfig.serverEntryPoint,
-        export: "default",
+        export: options.dev?.export || "default",
         exclude: [
           new RegExp(
             `^(?=\\/${pluginConfig.appDirectory.replaceAll("/", "")}\\/)((?!.*\\.data(\\?|$)).*\\..*(\\\?.*)?$)`

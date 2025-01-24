@@ -32,7 +32,7 @@ It presets a default Hono server config that you can [customize](#options)
 >
 > Only works with **Vite**
 >
-> Only **Node**, **Bun** and **Cloudflare Workers** are supported
+> Only **Node**, **Bun**, **Cloudflare Workers** and **AWS Lambda** (experimental) are supported
 
 > [!TIP]
 > 👨‍🏫 There is some examples in the [examples](./examples) folder. I hope they will help you.
@@ -165,6 +165,27 @@ export default defineConfig({
 });
 ```
 
+#### AWS Lambda
+> [!TIP]
+> AWS shares the same runtime as Node.
+<!-- > Check this [example](./examples/node/simple/) to see how to use it. -->
+
+```ts
+// vite.config.ts
+import { reactRouter } from "@react-router/dev/vite";
+import { reactRouterHonoServer } from "react-router-hono-server/dev"; // add this
+import { defineConfig } from "vite";
+import tsconfigPaths from "vite-tsconfig-paths";
+
+export default defineConfig({
+  plugins: [
+    reactRouterHonoServer({ runtime: "aws", dev: { export: "handler" } }), // add this
+    reactRouter(),
+    tsconfigPaths()
+  ],
+});
+```
+
 ### Create the server
 > [!TIP]
 > You can use the CLI to create the server file for you.
@@ -270,6 +291,16 @@ binding = "ASSETS"
 experimental_serve_directly = false
 ```
 
+### AWS Lambda
+It is not an error, you can keep the React Router defaults for `build` and `dev`!
+```json
+  "scripts": {
+    "build": "react-router build",
+    "dev": "react-router dev",
+    "start": "I don't know how to start it in production mode 😅",
+  },
+```
+
 ## How it works
 
 This helper works differently depending on the environment.
@@ -290,7 +321,7 @@ That's all!
 
 #### `reactRouterHonoServer` (Vite Plugin)
 ```ts
-type Runtime = "node" | "bun" | "cloudflare";
+type Runtime = "node" | "bun" | "cloudflare" | "aws";
 
 type ReactRouterHonoServerPluginOptions = {
   /**
@@ -321,6 +352,12 @@ type ReactRouterHonoServerPluginOptions = {
      * Defaults include `appDirectory` content.
      */
     exclude?: (string | RegExp)[];
+    /**
+     * The name of the export to use for the server.
+     *
+     * Defaults to `default`.
+     */
+    export?: string;
   };
 };
 ```
@@ -502,6 +539,22 @@ export interface HonoServerOptions<E extends Env = BlankEnv> extends HonoServerO
 ##### Cloudflare Workers
 ```ts
 export interface HonoServerOptions<E extends Env = BlankEnv> extends Omit<HonoServerOptionsBase<E>, "port"> {}
+```
+
+##### AWS Lambda
+```ts
+type InvokeMode = "default" | "stream";
+
+interface HonoAWSServerOptions<E extends Env = BlankEnv> extends Omit<HonoServerOptionsBase<E>, "port"> {
+  /**
+   * The invoke mode to use
+   *
+   * Defaults to `default`
+   *
+   * {@link https://hono.dev/docs/getting-started/aws-lambda#lambda-response-streaming}
+   */
+  invokeMode: InvokeMode;
+}
 ```
 
 ## Middleware
@@ -731,6 +784,9 @@ Cloudflare requires a different approach to WebSockets, based on Durable Objects
 > For now, HMR is not supported in Cloudflare Workers. Will try to come back to it later.
 >
 > Work in progress on Cloudflare team: https://github.com/flarelabs-net/vite-plugin-cloudflare
+
+#### AWS
+Not supported.
 
 ## Basename and Hono sub apps
 
