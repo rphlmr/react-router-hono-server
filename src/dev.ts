@@ -3,7 +3,6 @@ import type { IncomingMessage, ServerResponse } from "node:http";
 import path from "node:path";
 import honoDevServer, { type DevServerOptions } from "@hono/vite-dev-server";
 import bunAdapter from "@hono/vite-dev-server/bun";
-import cloudflareAdapter from "@hono/vite-dev-server/cloudflare";
 import nodeAdapter from "@hono/vite-dev-server/node";
 import type { Config as ReactRouterConfig } from "@react-router/dev/config";
 import type { Plugin, UserConfig } from "vite";
@@ -42,6 +41,12 @@ type ReactRouterHonoServerPluginOptions = {
      * Defaults include `appDirectory` content.
      */
     exclude?: DevServerOptions["exclude"];
+    /**
+     * The name of the export to use for the server.
+     *
+     * Defaults to `default`.
+     */
+    export?: DevServerOptions["export"];
   };
 };
 
@@ -178,6 +183,7 @@ export function reactRouterHonoServer(options: ReactRouterHonoServerPluginOption
       }
 
       if (runtime === "cloudflare") {
+        const { cloudflareAdapter } = await import("@hono/vite-dev-server/cloudflare");
         adapter = cloudflareAdapter;
       }
 
@@ -186,10 +192,10 @@ export function reactRouterHonoServer(options: ReactRouterHonoServerPluginOption
         adapter,
         injectClientScript: false,
         entry: pluginConfig.serverEntryPoint,
-        export: "default",
+        export: options.dev?.export || "default",
         exclude: [
           new RegExp(
-            `^(?=\\/${pluginConfig.appDirectory.replaceAll("/", "")}\\/)((?!.*\\.data(\\?|$)).*\\..*(\\\?.*)?$)`
+            `^(?=\\/${pluginConfig.appDirectory.replace(/^\/+|\/+$/g, "").replaceAll("/", "\\/")}\\/)((?!.*\\.data(\\?|$)).*\\..*(\\?.*)?$)`
           ),
           /\?import(\?.*)?$/,
           /^\/@.+$/,

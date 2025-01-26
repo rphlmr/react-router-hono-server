@@ -1,6 +1,6 @@
 {
   "name": "react-router-hono-server",
-  "version": "2.8.0",
+  "version": "2.8.1",
   "type": "module",
   "description": "The Vite plugin you need to create a Hono server for your React Router app in less than 10 seconds.",
   "exports": {
@@ -23,6 +23,13 @@
         "import": "./dist/adapters/cloudflare.js",
         "types": "./dist/adapters/cloudflare.d.ts",
         "default": "./dist/adapters/cloudflare.js"
+      }
+    },
+    "./aws-lambda": {
+      "import": {
+        "import": "./dist/adapters/aws-lambda.js",
+        "types": "./dist/adapters/aws-lambda.d.ts",
+        "default": "./dist/adapters/aws-lambda.js"
       }
     },
     "./dev": {
@@ -80,10 +87,6 @@
     "@hono/vite-dev-server": "^0.17.0",
     "hono": "^4.6.11"
   },
-  "optionalDependencies": {
-    "miniflare": "^3.20241205.0",
-    "wrangler": "^3.91.0"
-  },
   "devDependencies": {
     "@biomejs/biome": "^1.9.4",
     "@types/bun": "^1.1.14",
@@ -96,8 +99,18 @@
     "vitest": "^2.1.5"
   },
   "peerDependencies": {
+    "miniflare": "^3.20241205.0",
     "react-router": "^7.1.0",
-    "vite": "^5.1.0 || ^6.0.0"
+    "vite": "^5.1.0 || ^6.0.0",
+    "wrangler": "^3.91.0"
+  },
+  "peerDependenciesMeta": {
+    "miniflare": {
+      "optional": true
+    },
+    "wrangler": {
+      "optional": true
+    }
   },
   "engines": {
     "node": ">=22.12.0"
