@@ -51,6 +51,8 @@ type ReactRouterHonoServerPluginOptions = {
 };
 
 const virtualModuleId = "\0virtual:react-router-hono-server/server";
+const reactRouterExport =
+  "export {serverManifest as assets, assetsBuildDirectory, basename, entry, future, isSpaMode, publicPath, routes };";
 
 export function reactRouterHonoServer(options: ReactRouterHonoServerPluginOptions = {}): Plugin {
   const runtime: Runtime = options.runtime || "node";
@@ -120,6 +122,14 @@ export function reactRouterHonoServer(options: ReactRouterHonoServerPluginOption
 
       return {
         ...baseConfig,
+        resolve: {
+          alias:
+            runtime === "cloudflare"
+              ? {
+                  "react-dom/server": "react-dom/server.browser",
+                }
+              : undefined,
+        },
         build: {
           // https://vite.dev/config/build-options#build-target
           cssTarget: ["es2020", "edge88", "firefox78", "chrome87", "safari14"],
@@ -134,10 +144,25 @@ export function reactRouterHonoServer(options: ReactRouterHonoServerPluginOption
                 }
                 return "assets/[name]-[hash].js";
               },
+              footer: runtime === "cloudflare" ? reactRouterExport : undefined,
             },
           },
         },
       };
+    },
+    async closeBundle() {
+      if (!pluginConfig || !pluginConfig.isSsrBuild || runtime !== "cloudflare") {
+        return;
+      }
+
+      console.log("Cleaning up server exports...");
+
+      const buildPath = path.join(pluginConfig.rootDirectory, pluginConfig.buildDirectory, "server", "index.js");
+      let content = await fs.promises.readFile(buildPath, "utf-8");
+      content = content.replace(reactRouterExport, "");
+      await fs.promises.writeFile(buildPath, content);
+
+      console.log("\x1b[32mAll done!\x1b[0m");
     },
     async configureServer(server) {
       // bind viteDevServer to global 🤫
