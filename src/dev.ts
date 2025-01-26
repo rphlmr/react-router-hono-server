@@ -170,7 +170,7 @@ export function reactRouterHonoServer(options: ReactRouterHonoServerPluginOption
         export: options.dev?.export || "default",
         exclude: [
           new RegExp(
-            `^(?=\\/${pluginConfig.appDirectory.replaceAll("/", "")}\\/)((?!.*\\.data(\\?|$)).*\\..*(\\\?.*)?$)`
+            `^(?=\\/${pluginConfig.appDirectory.replace(/^\/+|\/+$/g, "").replaceAll("/", "\\/")}\\/)((?!.*\\.data(\\?|$)).*\\..*(\\?.*)?$)`
           ),
           /\?import(\?.*)?$/,
           /^\/@.+$/,
