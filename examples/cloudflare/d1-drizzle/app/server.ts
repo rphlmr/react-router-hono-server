@@ -8,12 +8,12 @@ type Bindings = {
   db: DrizzleD1Database<typeof schema>;
 };
 
-const app = new Hono<{ Bindings: Bindings }>();
+const app = new Hono<{ Bindings: Bindings; Variables: Env }>();
 
 export default await createHonoServer({
   app,
   getLoadContext(c) {
-    const db = drizzle(c.env.DB, { schema });
+    const db = drizzle(c.var.DB, { schema });
     return { db };
   },
 });
