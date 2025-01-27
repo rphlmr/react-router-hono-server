@@ -39,7 +39,7 @@ export interface HonoServerOptionsBase<E extends Env> {
    * ```
    */
   getLoadContext?: (
-    c: Context,
+    c: Context<E>,
     options: {
       build: ServerBuild;
       mode: string;
