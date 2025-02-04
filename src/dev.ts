@@ -77,7 +77,7 @@ export function reactRouterHonoServer(options: ReactRouterHonoServerPluginOption
         `;
       }
     },
-    config(config) {
+    async config(config) {
       pluginConfig = resolvePluginConfig(config, options);
 
       if (!pluginConfig) {
@@ -120,13 +120,17 @@ export function reactRouterHonoServer(options: ReactRouterHonoServerPluginOption
         reactRouterBuildFile = "assets/server-build.js";
       }
 
+      const reactVersion = await import("react");
+
+      const isUseReact19 = parseInt(reactVersion?.version?.split(".")?.[0] || '18', 10) >= 19;
+
       return {
         ...baseConfig,
         resolve: {
           alias:
             runtime === "cloudflare"
               ? {
-                  "react-dom/server": "react-dom/server.browser",
+                  "react-dom/server": isUseReact19 ? "react-dom/server.edge": "react-dom/server.browser",
                 }
               : undefined,
         },
