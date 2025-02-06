@@ -166,6 +166,12 @@ export function reactRouterHonoServer(options: ReactRouterHonoServerPluginOption
       const buildPath = path.join(pluginConfig.rootDirectory, pluginConfig.buildDirectory, "server", "index.js");
       let content = await fs.promises.readFile(buildPath, "utf-8");
       content = content.replace(reactRouterExport, "");
+
+      // Patch cloudflare server build for react 19
+      if ((await getReactVersion()) >= 19) {
+        content = content.replace(/react-dom\/server\.browser/g, "react-dom/server.edge");
+      }
+
       await fs.promises.writeFile(buildPath, content);
 
       console.log("\x1b[32mAll done!\x1b[0m");
