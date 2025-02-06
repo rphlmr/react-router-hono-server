@@ -6,6 +6,7 @@ import bunAdapter from "@hono/vite-dev-server/bun";
 import nodeAdapter from "@hono/vite-dev-server/node";
 import type { Config as ReactRouterConfig } from "@react-router/dev/config";
 import type { Plugin, UserConfig } from "vite";
+import { getReactVersion } from "./helpers";
 import type { Runtime } from "./types/runtime";
 
 type MetaEnv<T> = {
@@ -120,19 +121,20 @@ export function reactRouterHonoServer(options: ReactRouterHonoServerPluginOption
         reactRouterBuildFile = "assets/server-build.js";
       }
 
-      const reactVersion = await import("react");
+      let alias = undefined;
 
-      const isUseReact19 = parseInt(reactVersion?.version?.split(".")?.[0] || '18', 10) >= 19;
+      if (runtime === "cloudflare") {
+        const reactVersion = await getReactVersion();
+
+        alias = {
+          "react-dom/server": reactVersion >= 19 ? "react-dom/server.edge" : "react-dom/server.browser",
+        };
+      }
 
       return {
         ...baseConfig,
         resolve: {
-          alias:
-            runtime === "cloudflare"
-              ? {
-                  "react-dom/server": isUseReact19 ? "react-dom/server.edge": "react-dom/server.browser",
-                }
-              : undefined,
+          alias,
         },
         build: {
           // https://vite.dev/config/build-options#build-target
