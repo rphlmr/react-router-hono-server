@@ -6,4 +6,4 @@ main = "./build/server/index.js"
 [assets]
 directory = "./build/client/"
 binding = "ASSETS"
-experimental_serve_directly = false
+run_worker_first = false
