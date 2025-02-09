@@ -20,6 +20,7 @@ export default defineConfig([
     external: [
       // virtual module provided by React Router at build time
       "virtual:react-router/server-build",
+      "react",
     ],
     onSuccess: async () => {
       setupExamples();
@@ -62,7 +63,7 @@ function setupExamples() {
 
       fs.rmSync(moduleDir, { recursive: true, force: true });
       fs.mkdirSync(moduleDir, { recursive: true });
-      fs.symlinkSync(path.resolve("dist"), path.join(moduleDir, "dist"), "junction");
+      fs.cpSync(path.resolve("dist"), path.join(moduleDir, "dist"), { recursive: true });
 
       // Copy package.json
       fs.copyFileSync("package.json", path.join(moduleDir, "package.json"));
