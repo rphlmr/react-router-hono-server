@@ -239,10 +239,10 @@ export function reactRouterHonoServer(options: ReactRouterHonoServerPluginOption
 
 type ReactRouterPluginContext = {
   reactRouterConfig: Required<ReactRouterConfig>;
+  environmentBuildContext: { name: "client" | "ssr" } | null;
   rootDirectory: string;
   entryClientFilePath: string;
   entryServerFilePath: string;
-  isSsrBuild: true;
 };
 
 function resolvePluginConfig(config: UserConfig, options: ReactRouterHonoServerPluginOptions) {
@@ -250,15 +250,15 @@ function resolvePluginConfig(config: UserConfig, options: ReactRouterHonoServerP
     return null;
   }
 
-  const reactRouterConfig = config.__reactRouterPluginContext as ReactRouterPluginContext;
-  const rootDirectory = reactRouterConfig.rootDirectory;
-  const buildDirectory = path.relative(rootDirectory, reactRouterConfig.reactRouterConfig.buildDirectory);
-  const appDirectory = path.relative(rootDirectory, reactRouterConfig.reactRouterConfig.appDirectory);
-  const isSsrBuild = reactRouterConfig.isSsrBuild;
+  const { reactRouterConfig, environmentBuildContext, rootDirectory } =
+    config.__reactRouterPluginContext as ReactRouterPluginContext;
+  const buildDirectory = path.relative(rootDirectory, reactRouterConfig.buildDirectory);
+  const appDirectory = path.relative(rootDirectory, reactRouterConfig.appDirectory);
+  const isSsrBuild = environmentBuildContext?.name === "ssr";
   const assetsDir = config.build?.assetsDir || "assets";
   const serverEntryPoint = options.serverEntryPoint || findDefaultServerEntry(appDirectory);
-  const serverBuildFile = reactRouterConfig.reactRouterConfig.serverBuildFile;
-  const basename = reactRouterConfig.reactRouterConfig.basename;
+  const serverBuildFile = reactRouterConfig.serverBuildFile;
+  const basename = reactRouterConfig.basename;
 
   return {
     rootDirectory,
