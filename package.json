@@ -1,6 +1,6 @@
 {
   "name": "react-router-hono-server",
-  "version": "2.8.5",
+  "version": "2.9.0",
   "type": "module",
   "description": "The Vite plugin you need to create a Hono server for your React Router app in less than 10 seconds.",
   "exports": {
@@ -101,9 +101,9 @@
   "peerDependencies": {
     "@cloudflare/workers-types": "^4.20241112.0",
     "@types/react": "^18.3.10 || ^19.0.0",
-    "@react-router/dev": "^7.0.0",
+    "@react-router/dev": "^7.2.0",
     "miniflare": "^3.20241205.0",
-    "react-router": "^7.1.0",
+    "react-router": "^7.2.0",
     "vite": "^5.1.0 || ^6.0.0",
     "wrangler": "^3.91.0"
   },
