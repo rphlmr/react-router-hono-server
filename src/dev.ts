@@ -111,9 +111,9 @@ export function reactRouterHonoServer(options: ReactRouterHonoServerPluginOption
         },
       } satisfies UserConfig;
 
-      if (!pluginConfig.isSsrBuild) {
-        return baseConfig;
-      }
+      // if (!pluginConfig.isSsrBuild) {
+      //   return baseConfig;
+      // }
 
       let reactRouterBuildFile = pluginConfig.serverBuildFile;
 
@@ -133,28 +133,58 @@ export function reactRouterHonoServer(options: ReactRouterHonoServerPluginOption
 
       return {
         ...baseConfig,
-        resolve: {
-          alias,
-        },
-        build: {
-          // https://vite.dev/config/build-options#build-target
-          cssTarget: ["es2020", "edge88", "firefox78", "chrome87", "safari14"],
-          target: "esnext",
-          rollupOptions: {
-            input: pluginConfig.serverEntryPoint,
-            output: {
-              entryFileNames: "index.js",
-              chunkFileNames: (chunk) => {
-                if (chunk.name === "server-build") {
-                  return reactRouterBuildFile;
-                }
-                return "assets/[name]-[hash].js";
+        environments: {
+          ssr: {
+            resolve: {
+              alias,
+            },
+            build: {
+              // https://vite.dev/config/build-options#build-target
+              cssTarget: ["es2020", "edge88", "firefox78", "chrome87", "safari14"],
+              target: "esnext",
+              rollupOptions: {
+                input: pluginConfig.serverEntryPoint,
+                output: {
+                  entryFileNames: "index.js",
+                  // @ts-expect-error
+                  chunkFileNames: (chunk) => {
+                    if (chunk.name === "server-build") {
+                      return reactRouterBuildFile;
+                    }
+                    return "assets/[name]-[hash].js";
+                  },
+                  footer: runtime === "cloudflare" ? reactRouterExport : undefined,
+                },
               },
-              footer: runtime === "cloudflare" ? reactRouterExport : undefined,
             },
           },
         },
       };
+
+      // return {
+      //   ...baseConfig,
+      //   resolve: {
+      //     alias,
+      //   },
+      //   build: {
+      //     // https://vite.dev/config/build-options#build-target
+      //     cssTarget: ["es2020", "edge88", "firefox78", "chrome87", "safari14"],
+      //     target: "esnext",
+      //     rollupOptions: {
+      //       input: pluginConfig.serverEntryPoint,
+      //       output: {
+      //         entryFileNames: "index.js",
+      //         chunkFileNames: (chunk) => {
+      //           if (chunk.name === "server-build") {
+      //             return reactRouterBuildFile;
+      //           }
+      //           return "assets/[name]-[hash].js";
+      //         },
+      //         footer: runtime === "cloudflare" ? reactRouterExport : undefined,
+      //       },
+      //     },
+      //   },
+      // };
     },
     async closeBundle() {
       if (!pluginConfig || !pluginConfig.isSsrBuild || runtime !== "cloudflare") {
