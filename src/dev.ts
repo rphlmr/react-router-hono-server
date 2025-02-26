@@ -85,6 +85,12 @@ export function reactRouterHonoServer(options: ReactRouterHonoServerPluginOption
         return;
       }
 
+      if (pluginConfig.future.unstable_viteEnvironmentApi) {
+        console.warn(
+          "\x1b[33mThe unstable_viteEnvironmentApi is enabled.\nThis is experimental and may break your build.\x1b[0m\n"
+        );
+      }
+
       if (
         runtime === "cloudflare" &&
         !config.plugins?.find((p) => p && "name" in p && p.name === "react-router-cloudflare-vite-dev-proxy")
@@ -111,9 +117,9 @@ export function reactRouterHonoServer(options: ReactRouterHonoServerPluginOption
         },
       } satisfies UserConfig;
 
-      // if (!pluginConfig.isSsrBuild) {
-      //   return baseConfig;
-      // }
+      if (!pluginConfig.future.unstable_viteEnvironmentApi && !pluginConfig.isSsrBuild) {
+        return baseConfig;
+      }
 
       let reactRouterBuildFile = pluginConfig.serverBuildFile;
 
@@ -131,60 +137,43 @@ export function reactRouterHonoServer(options: ReactRouterHonoServerPluginOption
         };
       }
 
-      return {
-        ...baseConfig,
-        environments: {
-          ssr: {
-            resolve: {
-              alias,
-            },
-            build: {
-              // https://vite.dev/config/build-options#build-target
-              cssTarget: ["es2020", "edge88", "firefox78", "chrome87", "safari14"],
-              target: "esnext",
-              rollupOptions: {
-                input: pluginConfig.serverEntryPoint,
-                output: {
-                  entryFileNames: "index.js",
-                  // @ts-expect-error
-                  chunkFileNames: (chunk) => {
-                    if (chunk.name === "server-build") {
-                      return reactRouterBuildFile;
-                    }
-                    return "assets/[name]-[hash].js";
-                  },
-                  footer: runtime === "cloudflare" ? reactRouterExport : undefined,
-                },
+      const ssrConfig = {
+        resolve: {
+          alias,
+        },
+        build: {
+          // https://vite.dev/config/build-options#build-target
+          cssTarget: ["es2020", "edge88", "firefox78", "chrome87", "safari14"],
+          target: "esnext",
+          rollupOptions: {
+            input: pluginConfig.serverEntryPoint,
+            output: {
+              entryFileNames: "index.js",
+              chunkFileNames: (chunk) => {
+                if (chunk.name === "server-build") {
+                  return reactRouterBuildFile;
+                }
+                return "assets/[name]-[hash].js";
               },
+              footer: runtime === "cloudflare" ? reactRouterExport : undefined,
             },
           },
         },
-      };
+      } satisfies Partial<UserConfig>;
 
-      // return {
-      //   ...baseConfig,
-      //   resolve: {
-      //     alias,
-      //   },
-      //   build: {
-      //     // https://vite.dev/config/build-options#build-target
-      //     cssTarget: ["es2020", "edge88", "firefox78", "chrome87", "safari14"],
-      //     target: "esnext",
-      //     rollupOptions: {
-      //       input: pluginConfig.serverEntryPoint,
-      //       output: {
-      //         entryFileNames: "index.js",
-      //         chunkFileNames: (chunk) => {
-      //           if (chunk.name === "server-build") {
-      //             return reactRouterBuildFile;
-      //           }
-      //           return "assets/[name]-[hash].js";
-      //         },
-      //         footer: runtime === "cloudflare" ? reactRouterExport : undefined,
-      //       },
-      //     },
-      //   },
-      // };
+      if (pluginConfig.future.unstable_viteEnvironmentApi) {
+        return {
+          ...baseConfig,
+          environments: {
+            ssr: ssrConfig,
+          },
+        };
+      }
+
+      return {
+        ...baseConfig,
+        ...ssrConfig,
+      };
     },
     async closeBundle() {
       if (!pluginConfig || !pluginConfig.isSsrBuild || runtime !== "cloudflare") {
@@ -289,6 +278,7 @@ function resolvePluginConfig(config: UserConfig, options: ReactRouterHonoServerP
   const serverEntryPoint = options.serverEntryPoint || findDefaultServerEntry(appDirectory);
   const serverBuildFile = reactRouterConfig.serverBuildFile;
   const basename = reactRouterConfig.basename;
+  const future = reactRouterConfig.future;
 
   return {
     rootDirectory,
@@ -300,6 +290,7 @@ function resolvePluginConfig(config: UserConfig, options: ReactRouterHonoServerP
     dev: options.dev,
     serverBuildFile,
     basename,
+    future,
   };
 }
 
