@@ -85,6 +85,12 @@ export function reactRouterHonoServer(options: ReactRouterHonoServerPluginOption
         return;
       }
 
+      if (pluginConfig.future.unstable_viteEnvironmentApi) {
+        console.warn(
+          "\x1b[33mThe unstable_viteEnvironmentApi is enabled.\nThis is experimental and may break your build.\x1b[0m\n"
+        );
+      }
+
       if (
         runtime === "cloudflare" &&
         !config.plugins?.find((p) => p && "name" in p && p.name === "react-router-cloudflare-vite-dev-proxy")
@@ -111,7 +117,7 @@ export function reactRouterHonoServer(options: ReactRouterHonoServerPluginOption
         },
       } satisfies UserConfig;
 
-      if (!pluginConfig.isSsrBuild) {
+      if (!pluginConfig.future.unstable_viteEnvironmentApi && !pluginConfig.isSsrBuild) {
         return baseConfig;
       }
 
@@ -131,8 +137,7 @@ export function reactRouterHonoServer(options: ReactRouterHonoServerPluginOption
         };
       }
 
-      return {
-        ...baseConfig,
+      const ssrConfig = {
         resolve: {
           alias,
         },
@@ -154,6 +159,20 @@ export function reactRouterHonoServer(options: ReactRouterHonoServerPluginOption
             },
           },
         },
+      } satisfies Partial<UserConfig>;
+
+      if (pluginConfig.future.unstable_viteEnvironmentApi) {
+        return {
+          ...baseConfig,
+          environments: {
+            ssr: ssrConfig,
+          },
+        };
+      }
+
+      return {
+        ...baseConfig,
+        ...ssrConfig,
       };
     },
     async closeBundle() {
@@ -259,6 +278,7 @@ function resolvePluginConfig(config: UserConfig, options: ReactRouterHonoServerP
   const serverEntryPoint = options.serverEntryPoint || findDefaultServerEntry(appDirectory);
   const serverBuildFile = reactRouterConfig.serverBuildFile;
   const basename = reactRouterConfig.basename;
+  const future = reactRouterConfig.future;
 
   return {
     rootDirectory,
@@ -270,6 +290,7 @@ function resolvePluginConfig(config: UserConfig, options: ReactRouterHonoServerP
     dev: options.dev,
     serverBuildFile,
     basename,
+    future,
   };
 }
 
