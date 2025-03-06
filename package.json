@@ -63,7 +63,8 @@
     "check": "biome check .",
     "check:fix": "biome check --fix .",
     "typecheck": "tsc",
-    "validate": "npm run check && npm run tsc"
+    "validate": "npm run check && npm run tsc",
+    "clear-all": "rm -rf node_modules package-lock.json && find ./examples -type d -name 'node_modules' -exec rm -rf {} + && find ./examples -name 'package-lock.json' -exec rm -f {} +"
   },
   "author": "",
   "license": "ISC",
