@@ -166,12 +166,3 @@ export async function importBuild(): Promise<ServerBuild> {
 export function createGetLoadContext(getLoadContext: HonoServerOptionsBase<Env>["getLoadContext"]) {
   return getLoadContext;
 }
-
-/**
- * Retrieves the major React version from node_modules
- */
-export async function getReactVersion() {
-  const reactPackage = await import("react");
-  const version = reactPackage.default.version || reactPackage.version;
-  return Number.parseInt(version.split(".")[0]);
-}

@@ -165,6 +165,18 @@ export default defineConfig({
 });
 ```
 
+##### React 19
+> [!IMPORTANT]
+> Check this [example](./examples/cloudflare/simple-19/) to see how to use it.
+
+> [!TIP]
+> You may need to add the `force_react_19` flag to the `reactRouterHonoServer` plugin config.
+
+```ts
+// vite.config.ts
+reactRouterHonoServer({ runtime: "cloudflare", flag: { force_react_19: true } }), // add this
+```
+
 #### AWS Lambda
 > [!TIP]
 > AWS shares the same runtime as Node.
