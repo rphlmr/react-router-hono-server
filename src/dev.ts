@@ -101,6 +101,9 @@ export function reactRouterHonoServer(options: ReactRouterHonoServerPluginOption
         // throw new Error("Missing mandatory plugin cloudflareDevProxy() in vite.config.ts");
       }
 
+      console.log("config.mode", config.mode, config.mode === "production" ? "production" : "development");
+      console.log("process.env.NODE_ENV", process.env.NODE_ENV);
+
       const baseConfig = {
         // Define environment variables that are hot-swapped during development and SSR build
         define: {

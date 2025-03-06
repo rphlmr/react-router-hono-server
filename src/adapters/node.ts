@@ -11,6 +11,7 @@ import {
   cleanUpgradeListeners,
   createGetLoadContext,
   createWebSocket,
+  getBuildMode,
   importBuild,
   patchUpgradeListener,
 } from "../helpers";
@@ -90,7 +91,7 @@ export async function createHonoServer<E extends Env = BlankEnv>(options?: HonoS
     defaultLogger: options?.defaultLogger ?? true,
     overrideGlobalObjects: options?.overrideGlobalObjects ?? false,
   };
-  const mode = import.meta.env.MODE || "production";
+  const mode = getBuildMode();
   const PRODUCTION = mode === "production";
   const clientBuildPath = `${import.meta.env.REACT_ROUTER_HONO_SERVER_BUILD_DIRECTORY}/client`;
   const app = new Hono<E>(mergedOptions.app);
