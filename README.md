@@ -722,7 +722,7 @@ export default await createHonoServer({
 });
 ```
 
-### Creating custom Middleware
+### Creating custom Hono Middleware
 
 You can create middleware using the [`createMiddleware`](https://hono.dev/docs/helpers/factory#createmiddleware) or [`createFactory`](https://hono.dev/docs/helpers/factory#createfactory) functions from `hono/factory`.
 
@@ -743,6 +743,18 @@ export default await createHonoServer({
   },
 });
 ```
+
+### Using React Router Middleware (unstable future)
+You can use React Router middleware with this package.
+
+> [!TIP]
+> Check this [example](./examples/node/simple-future-middleware/) to see how to use it.
+
+> [!IMPORTANT]
+> Please note that this is an unstable feature and could change in the future.
+> 
+> If you already have a custom `getLoadContext` function, you now have to return a `Map` from it. Check the example for more information.
+
 
 ### Using WebSockets
 #### Node

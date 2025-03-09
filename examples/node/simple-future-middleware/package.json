@@ -1,5 +1,5 @@
 {
-  "name": "node-simple-future",
+  "name": "node-simple-future-middleware",
   "private": true,
   "sideEffects": true,
   "type": "module",
