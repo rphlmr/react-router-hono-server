@@ -123,6 +123,10 @@ export default defineConfig({
 > [!TIP]
 > Check this [example](./examples/bun/simple/) to see how to use it.
 
+> [!IMPORTANT]
+> React 19 and `bun --bun` flag require a special `entry.server.tsx` file. Check [Using `bun --bun` flag?](#using-bun---bun-flag)
+> Check this [example](./examples/bun/simple-bun-runtime/) to see how to use it.
+
 ```ts
 // vite.config.ts
 import { reactRouter } from "@react-router/dev/vite";
@@ -137,6 +141,53 @@ export default defineConfig({
     tsconfigPaths()
   ],
 });
+```
+
+##### Using `bun --bun` flag?
+> [!TIP]
+> Check this [example](./examples/bun/simple-bun-runtime/) to see how to use it.
+
+If you are using the [`bun --bun` flag](https://bun.sh/docs/cli/run#bun), you need to have a proper `entry.server.tsx` file.
+
+When building for production, at least for React 19, it uses a special `react-dom-server.bun` import with only the `renderToReadableStream` function available.
+
+
+```ts
+import { isbot } from "isbot";
+import { renderToReadableStream } from "react-dom/server.bun";
+import type { AppLoadContext, EntryContext } from "react-router";
+import { ServerRouter } from "react-router";
+
+export default async function handleRequest(
+  request: Request,
+  responseStatusCode: number,
+  responseHeaders: Headers,
+  routerContext: EntryContext,
+  _loadContext: AppLoadContext
+) {
+  let shellRendered = false;
+  const userAgent = request.headers.get("user-agent");
+
+  const body = await renderToReadableStream(<ServerRouter context={routerContext} url={request.url} />, {
+    onError(error: unknown) {
+      responseStatusCode = 500;
+      if (shellRendered) {
+        console.error(error);
+      }
+    },
+  });
+  shellRendered = true;
+
+  if ((userAgent && isbot(userAgent)) || routerContext.isSpaMode) {
+    await body.allReady;
+  }
+
+  responseHeaders.set("Content-Type", "text/html");
+  return new Response(body, {
+    headers: responseHeaders,
+    status: responseStatusCode,
+  });
+}
 ```
 
 #### Cloudflare Workers
