@@ -42,7 +42,7 @@ export async function createWebSocket({ app, enabled }: Config): Promise<WebSock
   if (!enabled) {
     return defaultWebSocket;
   }
-  const mode = import.meta.env.MODE;
+  const mode = process.env.NODE_ENV === "development" ? "development" : "production";
   const DEV = mode === "development";
   const runtime = import.meta.env.REACT_ROUTER_HONO_SERVER_RUNTIME as Runtime;
 
@@ -174,4 +174,11 @@ export async function getReactVersion() {
   const reactPackage = await import("react");
   const version = reactPackage.default.version || reactPackage.version;
   return Number.parseInt(version.split(".")[0]);
+}
+
+/**
+ * Get the build mode from the environment
+ */
+export function getBuildMode() {
+  return process.env.NODE_ENV === "development" ? "development" : "production";
 }

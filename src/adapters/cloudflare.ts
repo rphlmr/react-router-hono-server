@@ -4,7 +4,7 @@ import { createMiddleware } from "hono/factory";
 import { logger } from "hono/logger";
 import type { BlankEnv } from "hono/types";
 import { createRequestHandler } from "react-router";
-import { bindIncomingRequestSocketInfo, createGetLoadContext, importBuild } from "../helpers";
+import { bindIncomingRequestSocketInfo, createGetLoadContext, getBuildMode, importBuild } from "../helpers";
 import { cache } from "../middleware";
 import type { HonoServerOptionsBase, WithoutWebsocket } from "../types/hono-server-options-base";
 
@@ -26,7 +26,7 @@ export async function createHonoServer<E extends Env = BlankEnv>(options?: HonoS
     ...options,
     defaultLogger: options?.defaultLogger ?? true,
   };
-  const mode = import.meta.env.MODE || "production";
+  const mode = getBuildMode();
   const PRODUCTION = mode === "production";
   const app = new Hono<E>(mergedOptions.app);
 
