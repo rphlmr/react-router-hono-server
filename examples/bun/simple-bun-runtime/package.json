@@ -1,5 +1,5 @@
 {
-  "name": "bun-with-pre-render",
+  "name": "bun-simple-bun-runtime",
   "private": true,
   "sideEffects": true,
   "type": "module",
