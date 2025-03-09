@@ -154,7 +154,7 @@ When building for production, at least for React 19, it uses a special `react-do
 
 ```ts
 import { isbot } from "isbot";
-import { renderToReadableStream } from "react-dom/server";
+import { renderToReadableStream } from "react-dom/server.bun";
 import type { AppLoadContext, EntryContext } from "react-router";
 import { ServerRouter } from "react-router";
 
