@@ -42,7 +42,7 @@ export async function createWebSocket({ app, enabled }: Config): Promise<WebSock
   if (!enabled) {
     return defaultWebSocket;
   }
-  const mode = import.meta.env.MODE;
+  const mode = process.env.NODE_ENV === "development" ? "development" : "production";
   const DEV = mode === "development";
   const runtime = import.meta.env.REACT_ROUTER_HONO_SERVER_RUNTIME as Runtime;
 
@@ -165,4 +165,11 @@ export async function importBuild(): Promise<ServerBuild> {
  */
 export function createGetLoadContext(getLoadContext: HonoServerOptionsBase<Env>["getLoadContext"]) {
   return getLoadContext;
+}
+
+/**
+ * Get the build mode from the environment
+ */
+export function getBuildMode() {
+  return process.env.NODE_ENV === "development" ? "development" : "production";
 }
