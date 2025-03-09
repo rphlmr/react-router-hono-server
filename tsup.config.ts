@@ -22,9 +22,6 @@ export default defineConfig([
       "virtual:react-router/server-build",
       "react",
     ],
-    onSuccess: async () => {
-      setupExamples();
-    },
   },
   {
     entry: ["src/cli.ts"],
@@ -40,7 +37,14 @@ export default defineConfig([
   },
 ]);
 
+process.on("beforeExit", (code) => {
+  if (code === 0) {
+    setupExamples();
+  }
+});
+
 function setupExamples() {
+  console.log("Setting up examples...");
   const adapters = fs.readdirSync("examples");
 
   for (const adapter of adapters) {
@@ -69,4 +73,5 @@ function setupExamples() {
       fs.copyFileSync("package.json", path.join(moduleDir, "package.json"));
     }
   }
+  console.log("Examples setup complete.");
 }
