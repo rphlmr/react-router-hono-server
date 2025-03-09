@@ -6,20 +6,13 @@ import bunAdapter from "@hono/vite-dev-server/bun";
 import nodeAdapter from "@hono/vite-dev-server/node";
 import type { Config as ReactRouterConfig } from "@react-router/dev/config";
 import type { Plugin, UserConfig } from "vite";
-import { getReactVersion } from "./helpers";
 import type { Runtime } from "./types/runtime";
 
 type MetaEnv<T> = {
   [K in keyof T as `import.meta.env.${string & K}`]: T[K];
 };
 
-type ReactRouterHonoServerPluginOptions = {
-  /**
-   * The runtime to use for the server.
-   *
-   * Defaults to `node`.
-   */
-  runtime?: Runtime;
+type ReactRouterHonoServerPluginOptionsBase = {
   /**
    * The path to the server file, relative to `vite.config.ts`.
    *
@@ -50,6 +43,31 @@ type ReactRouterHonoServerPluginOptions = {
     export?: DevServerOptions["export"];
   };
 };
+
+type ReactRouterHonoServerPluginOptionsDefault = ReactRouterHonoServerPluginOptionsBase & {
+  /**
+   * The runtime to use for the server.
+   *
+   * Defaults to `node`.
+   */
+  runtime?: Runtime;
+};
+
+type ReactRouterHonoServerPluginOptionsCloudflare = ReactRouterHonoServerPluginOptionsBase & {
+  /**
+   * The runtime to use for the server.
+   *
+   * Defaults to `node`.
+   */
+  runtime: Extract<Runtime, "cloudflare">;
+  flag?: {
+    force_react_19?: boolean;
+  };
+};
+
+type ReactRouterHonoServerPluginOptions =
+  | ReactRouterHonoServerPluginOptionsDefault
+  | ReactRouterHonoServerPluginOptionsCloudflare;
 
 const virtualModuleId = "\0virtual:react-router-hono-server/server";
 const reactRouterExport =
@@ -130,7 +148,7 @@ export function reactRouterHonoServer(options: ReactRouterHonoServerPluginOption
       let alias = undefined;
 
       if (runtime === "cloudflare") {
-        const reactVersion = await getReactVersion();
+        const reactVersion = await getReactVersion(pluginConfig);
 
         alias = {
           "react-dom/server": reactVersion >= 19 ? "react-dom/server.edge" : "react-dom/server.browser",
@@ -183,11 +201,22 @@ export function reactRouterHonoServer(options: ReactRouterHonoServerPluginOption
       console.log("Cleaning up server exports...");
 
       const buildPath = path.join(pluginConfig.rootDirectory, pluginConfig.buildDirectory, "server", "index.js");
-      let content = await fs.promises.readFile(buildPath, "utf-8");
+      let content = await fs.promises.readFile(buildPath, "utf-8").catch((e) => {
+        if (e.code === "ENOENT") {
+          console.error("\x1b[31m\nThe server was not built\x1b[0m");
+          if (pluginConfig?.flag?.force_react_19) {
+            console.error(
+              "\x1b[31m\nYou are forcing React 19 but the server failed to be built by React Router.\nCheck your dependencies, but it's possible that your project is still using React 18 from a node_modules root (monorepo?)\n\x1b[0m"
+            );
+          }
+        }
+
+        throw e;
+      });
       content = content.replace(reactRouterExport, "");
 
       // Patch cloudflare server build for react 19 (#77)
-      if ((await getReactVersion()) >= 19) {
+      if ((await getReactVersion(pluginConfig)) >= 19) {
         content = content.replace(/react-dom\/server\.browser/g, "react-dom/server.edge");
       }
 
@@ -291,6 +320,7 @@ function resolvePluginConfig(config: UserConfig, options: ReactRouterHonoServerP
     serverBuildFile,
     basename,
     future,
+    flag: isCloudflareOptions(options) ? options.flag : {},
   };
 }
 
@@ -320,4 +350,27 @@ function findDefaultServerEntry(appDirectory: string): string {
   }
   // If neither create a virtual module with a default Hono server
   return virtualModuleId;
+}
+
+/**
+ * Retrieves the major React version from node_modules
+ */
+async function getReactVersion(pluginConfig: PluginConfig) {
+  if (pluginConfig?.flag?.force_react_19) {
+    return 19;
+  }
+
+  const reactPackage = await import("react");
+  const version = reactPackage.default.version || reactPackage.version;
+
+  return Number.parseInt(version.split(".")[0]);
+}
+
+/**
+ * Type guard to check if options is the Cloudflare variant
+ */
+function isCloudflareOptions(
+  options: ReactRouterHonoServerPluginOptions
+): options is ReactRouterHonoServerPluginOptionsCloudflare {
+  return options.runtime === "cloudflare";
 }
