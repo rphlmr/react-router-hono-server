@@ -588,6 +588,10 @@ export interface HonoServerOptions<E extends Env = BlankEnv> extends HonoServerO
    * Customize the hostname of the node server
    */
   hostname?: string;
+  /**
+   * Customize the serve static options
+   */
+  serveStaticOptions?: ServeStaticOptions<E>;
 }
 ```
 
@@ -600,6 +604,10 @@ export interface HonoServerOptions<E extends Env = BlankEnv> extends HonoServerO
    * {@link https://bun.sh/docs/api/http#start-a-server-bun-serve}
    */
   customBunServer?: Serve & ServeOptions;
+  /**
+   * Customize the serve static options
+   */
+  serveStaticOptions?: ServeStaticOptions<E>;
 }
 ```
 
