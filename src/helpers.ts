@@ -135,7 +135,7 @@ type SocketInfo = Partial<IncomingMessage["socket"]>;
  * Unlock the usage of https://hono.dev/docs/helpers/conninfo in dev
  */
 export function bindIncomingRequestSocketInfo() {
-  return createMiddleware(async (c, next) => {
+  return createMiddleware((c, next) => {
     c.env.server = {
       incoming: {
         socket: {
@@ -154,7 +154,7 @@ export function bindIncomingRequestSocketInfo() {
  * Import React Router server build
  */
 export async function importBuild(): Promise<ServerBuild> {
-  return import(
+  return await import(
     // @ts-expect-error - Virtual module provided by React Router at build time
     "virtual:react-router/server-build"
   );
