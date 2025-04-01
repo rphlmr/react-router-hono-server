@@ -52,6 +52,10 @@ interface HonoNodeServerOptions<E extends Env = BlankEnv> extends HonoServerOpti
    * @default false
    */
   overrideGlobalObjects?: boolean;
+  /**
+   * Customize the hostname of the node server
+   */
+  hostname?: string;
 }
 
 type HonoServerOptionsWithWebSocket<E extends Env = BlankEnv> = HonoNodeServerOptions<E> & WithWebsocket<E>;
@@ -177,6 +181,7 @@ export async function createHonoServer<E extends Env = BlankEnv>(options?: HonoS
         ...mergedOptions.customNodeServer,
         port: mergedOptions.port,
         overrideGlobalObjects: mergedOptions.overrideGlobalObjects,
+        hostname: mergedOptions.hostname,
       },
       mergedOptions.listeningListener
     );
