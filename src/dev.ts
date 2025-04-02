@@ -273,12 +273,12 @@ export function reactRouterHonoServer(options: ReactRouterHonoServerPluginOption
         export: options.dev?.export || "default",
         exclude: [
           new RegExp(
-            `^(?=\\/${pluginConfig.appDirectory.replace(/^\/+|\/+$/g, "").replaceAll("/", "\\/")}\\/)((?!.*\\.data(\\?|$)).*\\..*(\\?.*)?$)`
+            `^(?=\\/${pluginConfig.appDirectory.replace(/^[/\\]+|[/\\]+$/g, "").replaceAll(/[/\\]+/g, "/")}\\/)((?!.*\\.data(\\?|$)).*\\..*(\\?.*)?$)`
           ),
           /\?import(\?.*)?$/,
           /^\/@.+$/,
           /^\/node_modules\/.*/,
-          `/${pluginConfig.appDirectory}/**/.*/**`,
+          `^(?=\\/${pluginConfig.appDirectory.replace(/^[/\\]+|[/\\]+$/g, "").replace(/[/\\]+/g, "/")}/**/.*/**)`,
           ...(pluginConfig.dev?.exclude || []),
         ],
       });
