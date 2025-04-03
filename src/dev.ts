@@ -164,7 +164,7 @@ export function reactRouterHonoServer(options: ReactRouterHonoServerPluginOption
           cssTarget: ["es2020", "edge88", "firefox78", "chrome87", "safari14"],
           target: "esnext",
           rollupOptions: {
-            input: [pluginConfig.serverEntryPoint, 'virtual:react-router/server-build'],
+            input: [pluginConfig.serverEntryPoint, "virtual:react-router/server-build"],
             output: {
               entryFileNames: "index.js",
               chunkFileNames: (chunk) => {
