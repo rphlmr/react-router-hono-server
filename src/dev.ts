@@ -276,19 +276,23 @@ export function reactRouterHonoServer(options: ReactRouterHonoServerPluginOption
             `^(?=\\/${pluginConfig.appDirectory.replace(/^[/\\]+|[/\\]+$/g, "").replaceAll(/[/\\]+/g, "/")}\\/)((?!.*\\.data(\\?|$)).*\\..*(\\?.*)?$)`
           ),
           new RegExp(
-            `^(?=\\/${pluginConfig.appDirectory
-              .split("/")[0]
-              .replace(/^[/\\]+|[/\\]+$/g, "")
-              .replaceAll(/[/\\]+/g, "/")}\\/)((?!.*\\.data(\\?|$)).*\\..*(\\?.*)?$)`
+            `^(?=\\/${
+              pluginConfig.appDirectory
+                .replace(/^[/\\]+|[/\\]+$/g, "")
+                .replaceAll(/[/\\]+/g, "/")
+                .split("/")[0]
+            }\\/)((?!.*\\.data(\\?|$)).*\\..*(\\?.*)?$)`
           ),
           /\?import(\?.*)?$/,
           /^\/@.+$/,
           /^\/node_modules\/.*/,
           `^(?=\\/${pluginConfig.appDirectory.replace(/^[/\\]+|[/\\]+$/g, "").replace(/[/\\]+/g, "/")}/**/.*/**)`,
-          `^(?=\\/${pluginConfig.appDirectory
-            .split("/")[0]
-            .replace(/^[/\\]+|[/\\]+$/g, "")
-            .replace(/[/\\]+/g, "/")}/**/.*/**)`,
+          `^(?=\\/${
+            pluginConfig.appDirectory
+              .replace(/^[/\\]+|[/\\]+$/g, "")
+              .replace(/[/\\]+/g, "/")
+              .split("/")[0]
+          }/**/.*/**)`,
           ...(pluginConfig.dev?.exclude || []),
         ],
       });
