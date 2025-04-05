@@ -36,7 +36,18 @@ interface HonoBunServerOptions<E extends Env = BlankEnv> extends HonoServerOptio
   /**
    * Customize the serve static options
    */
-  serveStaticOptions?: ServeStaticOptions<E>;
+  serveStaticOptions?: {
+    /**
+     * Customize the public assets (what's in your `public` directory) serve static options.
+     *
+     */
+    publicAssets?: Omit<ServeStaticOptions<E>, "root">;
+    /**
+     * Customize the client assets (what's in your `build/client/assets` directory - React Router) serve static options.
+     *
+     */
+    clientAssets?: Omit<ServeStaticOptions<E>, "root">;
+  };
 }
 
 type HonoServerOptionsWithWebSocket<E extends Env = BlankEnv> = HonoBunServerOptions<E> & WithWebsocket<E>;
@@ -91,7 +102,7 @@ export async function createHonoServer<E extends Env = BlankEnv>(options?: HonoS
     cache(60 * 60 * 24 * 365), // 1 year
     serveStatic({
       root: clientBuildPath,
-      ...mergedOptions.serveStaticOptions,
+      ...mergedOptions.serveStaticOptions?.clientAssets,
     })
   );
 
@@ -103,7 +114,7 @@ export async function createHonoServer<E extends Env = BlankEnv>(options?: HonoS
     cache(60 * 60), // 1 hour
     serveStatic({
       root: PRODUCTION ? clientBuildPath : "./public",
-      ...mergedOptions.serveStaticOptions,
+      ...mergedOptions.serveStaticOptions?.publicAssets,
     })
   );
 

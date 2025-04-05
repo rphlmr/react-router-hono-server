@@ -591,7 +591,18 @@ export interface HonoServerOptions<E extends Env = BlankEnv> extends HonoServerO
   /**
    * Customize the serve static options
    */
-  serveStaticOptions?: ServeStaticOptions<E>;
+  serveStaticOptions?: {
+    /**
+     * Customize the public assets (what's in your `public` directory) serve static options.
+     *
+     */
+    publicAssets?: Omit<ServeStaticOptions<E>, "root">;
+    /**
+     * Customize the client assets (what's in your `build/client/assets` directory - React Router) serve static options.
+     *
+     */
+    clientAssets?: Omit<ServeStaticOptions<E>, "root">;
+  };
 }
 ```
 
@@ -607,7 +618,18 @@ export interface HonoServerOptions<E extends Env = BlankEnv> extends HonoServerO
   /**
    * Customize the serve static options
    */
-  serveStaticOptions?: ServeStaticOptions<E>;
+  serveStaticOptions?: {
+    /**
+     * Customize the public assets (what's in your `public` directory) serve static options.
+     *
+     */
+    publicAssets?: Omit<ServeStaticOptions<E>, "root">;
+    /**
+     * Customize the client assets (what's in your `build/client/assets` directory - React Router) serve static options.
+     *
+     */
+    clientAssets?: Omit<ServeStaticOptions<E>, "root">;
+  };
 }
 ```
 
