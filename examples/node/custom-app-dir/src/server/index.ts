@@ -1,5 +1,5 @@
 import { createHonoServer } from "react-router-hono-server/node";
-import { someExternalHelper } from "./lib/helper";
+import { someExternalHelper } from "./lib/captcha/helper";
 
 console.log("loading server");
 

@@ -275,20 +275,12 @@ export function reactRouterHonoServer(options: ReactRouterHonoServerPluginOption
           new RegExp(
             `^(?=\\/${pluginConfig.appDirectory.replace(/^[/\\]+|[/\\]+$/g, "").replaceAll(/[/\\]+/g, "/")}\\/)((?!.*\\.data(\\?|$)).*\\..*(\\?.*)?$)`
           ),
-          new RegExp(
-            `^(?=\\/${pluginConfig.appDirectory
-              .split("/")[0]
-              .replace(/^[/\\]+|[/\\]+$/g, "")
-              .replaceAll(/[/\\]+/g, "/")}\\/)((?!.*\\.data(\\?|$)).*\\..*(\\?.*)?$)`
-          ),
+          new RegExp(`^(?=\\/${pluginConfig.appDirectory.split("/")[0]}\\/)((?!.*\\.data(\\?|$)).*\\..*(\\?.*)?$)`),
           /\?import(\?.*)?$/,
           /^\/@.+$/,
           /^\/node_modules\/.*/,
           `^(?=\\/${pluginConfig.appDirectory.replace(/^[/\\]+|[/\\]+$/g, "").replace(/[/\\]+/g, "/")}/**/.*/**)`,
-          `^(?=\\/${pluginConfig.appDirectory
-            .split("/")[0]
-            .replace(/^[/\\]+|[/\\]+$/g, "")
-            .replace(/[/\\]+/g, "/")}/**/.*/**)`,
+          `^(?=\\/${pluginConfig.appDirectory.split("/")[0]}/**/.*/**)`,
           ...(pluginConfig.dev?.exclude || []),
         ],
       });
