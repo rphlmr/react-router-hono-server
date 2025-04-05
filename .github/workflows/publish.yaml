@@ -16,12 +16,16 @@ jobs:
       - name: ⎔ Setup node
         uses: actions/setup-node@v4
         with:
+          node-version: "22.x"
+          registry-url: "https://registry.npmjs.org"
           node-version-file: "package.json"
           cache: "pnpm"
 
       - name: 📥 Install dependencies
-        run: pnpm install
+        run: pnpm install --frozen-lockfile
 
-      - run: pnpm publish
+      - name: Publish 🚀
+        shell: bash
+        run: pnpm publish --access public --no-git-checks
         env:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
