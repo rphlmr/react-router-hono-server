@@ -7,6 +7,7 @@ import { getSecret } from "~/utils/.server/secret";
 import { getEnv } from "~/utils/env.server";
 import dbLogo from "/images/database.svg";
 import type { Route } from "./+types/_index";
+import { someExternalHelper } from "src/server/lib/helper";
 
 export function loader() {
   console.log(getSecret(), getCommon());
@@ -16,6 +17,7 @@ export function loader() {
 }
 
 export async function clientLoader({ serverLoader }: Route.ClientLoaderArgs) {
+  console.log('from helper', someExternalHelper())
   console.log(getPublic(), getCommon());
   return {
     ...(await serverLoader()),
