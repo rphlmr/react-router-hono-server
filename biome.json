@@ -1,7 +1,7 @@
 {
   "$schema": "https://biomejs.dev/schemas/1.8.3/schema.json",
   "files": {
-    "ignore": ["dist", "build"]
+    "ignore": ["dist", "build", "examples"]
   },
   "vcs": {
     "enabled": true,
@@ -21,29 +21,37 @@
   },
   "linter": {
     "enabled": true,
-    "ignore": ["examples"],
+    "ignore": ["package.json"],
     "rules": {
       "recommended": true,
       "suspicious": {
         "recommended": true,
-        "noExplicitAny": "off"
+        "noExplicitAny": "off",
+        "useAwait": "error"
       },
       "style": {
         "recommended": true,
-        "noParameterAssign": "info"
+        "noParameterAssign": "info",
+        "noUnusedTemplateLiteral": "warn",
+        "noNonNullAssertion": "warn"
       },
       "complexity": {
-        "recommended": true
+        "recommended": true,
+        "noForEach": "warn",
+        "useLiteralKeys": "warn",
+        "noUselessCatch": "warn"
       },
       "security": {
-        "recommended": true
+        "recommended": true,
+        "noDangerouslySetInnerHtml": "off"
       },
       "performance": {
         "recommended": true
       },
       "correctness": {
         "recommended": true,
-        "noUnusedImports": "warn"
+        "noUnusedImports": "warn",
+        "useExhaustiveDependencies": "warn"
       },
       "a11y": {
         "recommended": true

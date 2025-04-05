@@ -1,11 +1,12 @@
 import type { AddressInfo } from "node:net";
 import { type ServerType, serve } from "@hono/node-server";
-import { serveStatic } from "@hono/node-server/serve-static";
+import { type ServeStaticOptions, serveStatic } from "@hono/node-server/serve-static";
 import { type Env, Hono } from "hono";
 import { createMiddleware } from "hono/factory";
 import { logger } from "hono/logger";
 import type { BlankEnv } from "hono/types";
 import { createRequestHandler } from "react-router";
+
 import {
   bindIncomingRequestSocketInfo,
   cleanUpgradeListeners,
@@ -52,6 +53,25 @@ interface HonoNodeServerOptions<E extends Env = BlankEnv> extends HonoServerOpti
    * @default false
    */
   overrideGlobalObjects?: boolean;
+  /**
+   * Customize the hostname of the node server
+   */
+  hostname?: string;
+  /**
+   * Customize the serve static options
+   */
+  serveStaticOptions?: {
+    /**
+     * Customize the public assets (what's in your `public` directory) serve static options.
+     *
+     */
+    publicAssets?: Omit<ServeStaticOptions<E>, "root">;
+    /**
+     * Customize the client assets (what's in your `build/client/assets` directory - React Router) serve static options.
+     *
+     */
+    clientAssets?: Omit<ServeStaticOptions<E>, "root">;
+  };
 }
 
 type HonoServerOptionsWithWebSocket<E extends Env = BlankEnv> = HonoNodeServerOptions<E> & WithWebsocket<E>;
@@ -115,7 +135,7 @@ export async function createHonoServer<E extends Env = BlankEnv>(options?: HonoS
   app.use(
     `/${import.meta.env.REACT_ROUTER_HONO_SERVER_ASSETS_DIR}/*`,
     cache(60 * 60 * 24 * 365), // 1 year
-    serveStatic({ root: clientBuildPath })
+    serveStatic({ root: clientBuildPath, ...mergedOptions.serveStaticOptions?.clientAssets })
   );
 
   /**
@@ -124,7 +144,7 @@ export async function createHonoServer<E extends Env = BlankEnv>(options?: HonoS
   app.use(
     "*",
     cache(60 * 60), // 1 hour
-    serveStatic({ root: PRODUCTION ? clientBuildPath : "./public" })
+    serveStatic({ root: PRODUCTION ? clientBuildPath : "./public", ...mergedOptions.serveStaticOptions?.publicAssets })
   );
 
   /**
@@ -177,6 +197,7 @@ export async function createHonoServer<E extends Env = BlankEnv>(options?: HonoS
         ...mergedOptions.customNodeServer,
         port: mergedOptions.port,
         overrideGlobalObjects: mergedOptions.overrideGlobalObjects,
+        hostname: mergedOptions.hostname,
       },
       mergedOptions.listeningListener
     );

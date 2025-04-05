@@ -27,6 +27,7 @@ export default defineConfig([
     entry: ["src/cli.ts"],
     outDir: "dist",
     format: ["esm"],
+    // biome-ignore lint/suspicious/useAwait: required by tsup
     onSuccess: async () => {
       const banner = "#!/usr/bin/env node\n";
       const cliFilePath = "dist/cli.js";

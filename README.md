@@ -576,7 +576,7 @@ export interface HonoServerOptions<E extends Env = BlankEnv> extends HonoServerO
    * The Node.js Adapter rewrites the global Request/Response and uses a lightweight Request/Response to improve performance.
    *
    * If you want this behavior, set it to `true`
-   * 
+   *
    * 🚨 Setting this to `true` can break `request.clone()` if you later check `instanceof Request`.
    *
    * {@link https://github.com/honojs/node-server?tab=readme-ov-file#overrideglobalobjects}
@@ -584,6 +584,25 @@ export interface HonoServerOptions<E extends Env = BlankEnv> extends HonoServerO
    * @default false
    */
   overrideGlobalObjects?: boolean;
+  /**
+   * Customize the hostname of the node server
+   */
+  hostname?: string;
+  /**
+   * Customize the serve static options
+   */
+  serveStaticOptions?: {
+    /**
+     * Customize the public assets (what's in your `public` directory) serve static options.
+     *
+     */
+    publicAssets?: Omit<ServeStaticOptions<E>, "root">;
+    /**
+     * Customize the client assets (what's in your `build/client/assets` directory - React Router) serve static options.
+     *
+     */
+    clientAssets?: Omit<ServeStaticOptions<E>, "root">;
+  };
 }
 ```
 
@@ -596,6 +615,21 @@ export interface HonoServerOptions<E extends Env = BlankEnv> extends HonoServerO
    * {@link https://bun.sh/docs/api/http#start-a-server-bun-serve}
    */
   customBunServer?: Serve & ServeOptions;
+  /**
+   * Customize the serve static options
+   */
+  serveStaticOptions?: {
+    /**
+     * Customize the public assets (what's in your `public` directory) serve static options.
+     *
+     */
+    publicAssets?: Omit<ServeStaticOptions<E>, "root">;
+    /**
+     * Customize the client assets (what's in your `build/client/assets` directory - React Router) serve static options.
+     *
+     */
+    clientAssets?: Omit<ServeStaticOptions<E>, "root">;
+  };
 }
 ```
 
@@ -627,7 +661,7 @@ interface HonoAWSServerOptions<E extends Env = BlankEnv> extends Omit<HonoServer
 > TLDR: If you encounter a `Error: Unable to decode turbo-stream response` after a redirect from your middleware, try to use `redirect` instead of `c.redirect`.
 >
 > `redirect` will use `c.redirect` for "normal" requests and a single-fetch-like response for React Router `.data` requests.
-> 
+>
 > If the next handler is a Hono middleware (ex: https://github.com/rphlmr/react-router-hono-server/discussions/56), you can use `c.redirect` as usual.
 >
 > You **have to** use the `redirect` helper to redirect from a middleware if the next handler that will receive this redirect is a React Router route.
@@ -752,7 +786,7 @@ You can use React Router middleware with this package.
 
 > [!IMPORTANT]
 > Please note that this is an unstable feature and could change in the future.
-> 
+>
 > If you already have a custom `getLoadContext` function, you now have to return a `Map` from it. Check the example for more information.
 
 

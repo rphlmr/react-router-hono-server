@@ -22,7 +22,7 @@ export default await createHonoServer();`;
 
 const file = command({
   name: "file",
-  async handler() {
+  handler() {
     const serverFilePath = path.resolve(process.cwd(), "app", "server.ts");
 
     fs.writeFileSync(serverFilePath, serverFile);
@@ -33,7 +33,7 @@ const file = command({
 
 const folder = command({
   name: "folder",
-  async handler() {
+  handler() {
     const serverFilePath = path.resolve(process.cwd(), "app", "server", "index.ts");
 
     if (!fs.existsSync(serverFilePath)) {
