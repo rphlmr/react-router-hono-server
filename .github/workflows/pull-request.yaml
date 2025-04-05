@@ -31,18 +31,20 @@ jobs:
       - name: ⬇️ Checkout repo
         uses: actions/checkout@v4
 
+      - name: 👷 Install pnpm
+        uses: pnpm/action-setup@v4
+
       - name: ⎔ Setup node
         uses: actions/setup-node@v4
         with:
           node-version-file: "package.json"
+          cache: "pnpm"
 
-      - name: 📥 Download deps
-        uses: bahmutov/npm-install@v1
-        with:
-          useLockFile: false
+      - name: 📥 Install dependencies
+        run: pnpm install
 
       - name: 🔎 Type check
-        run: npm run typecheck
+        run: pnpm typecheck
 
   # vitest:
   #   name: ⚡ Unit Tests

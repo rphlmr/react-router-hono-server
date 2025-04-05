@@ -9,9 +9,6 @@ export default defineConfig({
     cloudflareDevProxy(),
     reactRouterHonoServer({
       runtime: "cloudflare",
-      flag: {
-        force_react_19: true,
-      },
     }),
     reactRouter(),
     tsconfigPaths(),

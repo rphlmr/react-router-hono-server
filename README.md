@@ -964,7 +964,6 @@ Add the pre-render option to your `react-router.config.ts`
 import type { Config } from "@react-router/dev/config";
 
 export default {
-  serverBuildFile: "assets/server-build.js", // 🚨 Dont forget this
   prerender: ["/"],
 } satisfies Config;
 ```
