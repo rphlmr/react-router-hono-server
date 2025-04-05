@@ -4,7 +4,7 @@ on:
     types: [published]
   workflow_dispatch:
 jobs:
-  npm-publish:
+  pnpm-publish:
     runs-on: ubuntu-latest
     steps:
       - name: ⬇️ Checkout repo
