@@ -6,19 +6,23 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - name: Checkout code
-        uses: actions/checkout@v2
+      - name: ⬇️ Checkout repo
+        uses: actions/checkout@v4
 
-      - run: corepack enable
-      - uses: actions/setup-node@v4
+      - name: 👷 Install pnpm
+        uses: pnpm/action-setup@v4
+
+      - name: ⎔ Setup node
+        uses: actions/setup-node@v4
         with:
-          node-version: "22.x"
-          cache: "npm"
+          node-version-file: "package.json"
+          cache: "pnpm"
 
-      - name: Install dependencies
-        run: npm install
+      - name: 📥 Install dependencies
+        run: pnpm install
 
-      - name: Build
-        run: npm run build
+      - name: 🏗️ Build
+        run: pnpm build
 
-      - run: npx pkg-pr-new publish
+      - name: 📦 Publish
+        run: pnpm dlx pkg-pr-new publish --packageManager=pnpm
