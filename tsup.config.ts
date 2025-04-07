@@ -10,7 +10,7 @@ export default defineConfig([
       "src/adapters/cloudflare.ts",
       "src/adapters/aws-lambda.ts",
       "src/dev.ts",
-      "src/middleware.ts",
+      "src/helpers.ts",
       "src/http.ts",
     ],
     outDir: "dist",

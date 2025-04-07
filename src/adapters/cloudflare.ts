@@ -1,11 +1,16 @@
 import type { Fetcher, RequestInit } from "@cloudflare/workers-types";
-import { type Env, Hono } from "hono";
+import { type Context, type Env, Hono } from "hono";
 import { createMiddleware } from "hono/factory";
 import { logger } from "hono/logger";
 import type { BlankEnv } from "hono/types";
 import { createRequestHandler } from "react-router";
-import { bindIncomingRequestSocketInfo, createGetLoadContext, getBuildMode, importBuild } from "../helpers";
-import { cache } from "../middleware";
+import {
+  bindIncomingRequestSocketInfo,
+  cacheOnFound,
+  createGetLoadContext,
+  getBuildMode,
+  importBuild,
+} from "../helpers";
 import type { HonoServerOptionsBase, WithoutWebsocket } from "../types/hono-server-options-base";
 
 export { createGetLoadContext };
@@ -41,8 +46,7 @@ export async function createHonoServer<E extends Env = BlankEnv>(options?: HonoS
   app.use(
     // https://developers.cloudflare.com/workers/static-assets/binding/#experimental_serve_directly
     `/${import.meta.env.REACT_ROUTER_HONO_SERVER_ASSETS_DIR}/*`,
-    cache(60 * 60 * 24 * 365), // 1 year
-    serveCloudflareAssets()
+    serveCloudflareAssets(cacheOnFound(!PRODUCTION ? 0 : 60 * 60 * 24 * 365)) // 1 year
   );
 
   /**
@@ -52,16 +56,11 @@ export async function createHonoServer<E extends Env = BlankEnv>(options?: HonoS
     app.use(
       // https://developers.cloudflare.com/workers/static-assets/binding/#experimental_serve_directly
       "*",
-      cache(60 * 60), // 1 hour
-      serveCloudflareAssets()
+      serveCloudflareAssets(cacheOnFound(!PRODUCTION ? 0 : 60 * 60)) // 1 hour
     );
   } else {
     const { serveStatic } = await import("@hono/node-server/serve-static");
-    app.use(
-      "*",
-      cache(60 * 60), // 1 hour
-      serveStatic({ root: "./public" })
-    );
+    app.use("*", serveStatic({ root: "./public", onFound: cacheOnFound(!PRODUCTION ? 0 : 60 * 60) }));
     app.use(bindIncomingRequestSocketInfo());
   }
 
@@ -115,7 +114,7 @@ let warned = false;
  *
  * https://github.com/sergiodxa/remix-hono/blob/main/src/cloudflare.ts
  */
-function serveCloudflareAssets() {
+function serveCloudflareAssets(onFound?: (path: string, c: Context<any>) => void) {
   return createMiddleware(async (c, next) => {
     const binding = c.env?.ASSETS as Fetcher | undefined;
 
@@ -140,7 +139,13 @@ function serveCloudflareAssets() {
         return next();
       }
 
-      response = new Response(response.body, response);
+      onFound?.(c.req.url, c);
+
+      response = new Response(
+        response.body,
+        // As onFound only changes the headers, we just need to merge the headers
+        Object.assign(response, { headers: Object.assign(response.headers, c.res.headers) })
+      );
 
       return response;
     } catch {

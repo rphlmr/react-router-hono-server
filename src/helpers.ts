@@ -2,7 +2,7 @@ import type { IncomingMessage, Server } from "node:http";
 import type { Http2SecureServer, Http2Server } from "node:http2";
 import type { ServerType } from "@hono/node-server";
 import type { Serve } from "bun";
-import type { Env, Hono } from "hono";
+import type { Context, Env, Hono } from "hono";
 import { createMiddleware } from "hono/factory";
 import type { UpgradeWebSocket } from "hono/ws";
 import type { ServerBuild } from "react-router";
@@ -172,4 +172,18 @@ export function createGetLoadContext(getLoadContext: HonoServerOptionsBase<Env>[
  */
 export function getBuildMode() {
   return process.env.NODE_ENV === "development" ? "development" : "production";
+}
+
+/**
+ * Creates a cache function to be used with `onFound` method in `serveStatic`
+ *
+ * @param seconds - The number of seconds to cache, 0 to disable caching
+ */
+export function cacheOnFound(seconds: number) {
+  return (_: string, c: Context<any>) => {
+    if (seconds === 0) return;
+    if (!c.req.path.match(/\.[a-zA-Z0-9]+$/) || c.req.path.endsWith(".data")) return;
+    if (!c.res.ok) return;
+    c.res.headers.set("cache-control", `public, max-age=${seconds}`);
+  };
 }

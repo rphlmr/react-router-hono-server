@@ -1,3 +1,4 @@
+import type { ServeStaticOptions } from "hono/serve-static";
 import type { ViteDevServer } from "vite";
 
 /* @internal */
