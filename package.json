@@ -39,11 +39,11 @@
         "default": "./dist/dev.js"
       }
     },
-    "./middleware": {
+    "./helpers": {
       "import": {
-        "import": "./dist/middleware.js",
-        "types": "./dist/middleware.d.ts",
-        "default": "./dist/middleware.js"
+        "import": "./dist/helpers.js",
+        "types": "./dist/helpers.d.ts",
+        "default": "./dist/helpers.js"
       }
     },
     "./http": {

@@ -5,8 +5,13 @@ import { createMiddleware } from "hono/factory";
 import { logger } from "hono/logger";
 import type { BlankEnv } from "hono/types";
 import { createRequestHandler } from "react-router";
-import { bindIncomingRequestSocketInfo, createGetLoadContext, getBuildMode, importBuild } from "../helpers";
-import { cache } from "../middleware";
+import {
+  bindIncomingRequestSocketInfo,
+  cacheOnFound,
+  createGetLoadContext,
+  getBuildMode,
+  importBuild,
+} from "../helpers";
 import type { HonoServerOptionsBase, WithoutWebsocket } from "../types/hono-server-options-base";
 
 export { createGetLoadContext };
@@ -62,8 +67,10 @@ export async function createHonoServer<E extends Env = BlankEnv>(options?: HonoS
      */
     app.use(
       `/${import.meta.env.REACT_ROUTER_HONO_SERVER_ASSETS_DIR}/*`,
-      cache(60 * 60 * 24 * 365), // 1 year
-      serveStatic({ root: clientBuildPath })
+      serveStatic({
+        root: clientBuildPath,
+        onFound: cacheOnFound(!PRODUCTION ? 0 : 60 * 60 * 24 * 365), // 1 year
+      })
     );
 
     /**
@@ -71,9 +78,8 @@ export async function createHonoServer<E extends Env = BlankEnv>(options?: HonoS
      */
     app.use(
       "*",
-      cache(60 * 60), // 1 hour
-      serveStatic({ root: PRODUCTION ? clientBuildPath : "./public" })
-    );
+      serveStatic({ root: PRODUCTION ? clientBuildPath : "./public", onFound: cacheOnFound(!PRODUCTION ? 0 : 60 * 60) })
+    ); // 1 hour
   }
 
   /**
