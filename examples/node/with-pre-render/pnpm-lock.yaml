@@ -10,10 +10,10 @@ importers:
     dependencies:
       '@react-router/fs-routes':
         specifier: ^7.0.1
-        version: 7.4.0(@react-router/dev@7.4.0(react-router@7.4.0(react-dom@18.3.1(react@18.3.1))(react@18.3.1))(typescript@5.8.3)(vite@5.4.17))(typescript@5.8.3)
+        version: 7.4.0(@react-router/dev@7.4.0(react-router@7.5.2(react-dom@18.3.1(react@18.3.1))(react@18.3.1))(typescript@5.8.3)(vite@5.4.17))(typescript@5.8.3)
       '@react-router/node':
         specifier: ^7.0.1
-        version: 7.4.0(react-router@7.4.0(react-dom@18.3.1(react@18.3.1))(react@18.3.1))(typescript@5.8.3)
+        version: 7.4.0(react-router@7.5.2(react-dom@18.3.1(react@18.3.1))(react@18.3.1))(typescript@5.8.3)
       isbot:
         specifier: ^4.1.0
         version: 4.4.0
@@ -24,15 +24,15 @@ importers:
         specifier: ^18.3.1
         version: 18.3.1(react@18.3.1)
       react-router:
-        specifier: ^7.0.1
-        version: 7.4.0(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
+        specifier: ^7.5.2
+        version: 7.5.2(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
       react-router-hono-server:
         specifier: '*'
-        version: 2.11.0(@react-router/dev@7.4.0(react-router@7.4.0(react-dom@18.3.1(react@18.3.1))(react@18.3.1))(typescript@5.8.3)(vite@5.4.17))(@types/react@18.3.20)(react-router@7.4.0(react-dom@18.3.1(react@18.3.1))(react@18.3.1))(vite@5.4.17)
+        version: 2.11.0(@react-router/dev@7.4.0(react-router@7.5.2(react-dom@18.3.1(react@18.3.1))(react@18.3.1))(typescript@5.8.3)(vite@5.4.17))(@types/react@18.3.20)(react-router@7.5.2(react-dom@18.3.1(react@18.3.1))(react@18.3.1))(vite@5.4.17)
     devDependencies:
       '@react-router/dev':
         specifier: ^7.0.1
-        version: 7.4.0(react-router@7.4.0(react-dom@18.3.1(react@18.3.1))(react@18.3.1))(typescript@5.8.3)(vite@5.4.17)
+        version: 7.4.0(react-router@7.5.2(react-dom@18.3.1(react@18.3.1))(react@18.3.1))(typescript@5.8.3)(vite@5.4.17)
       '@types/react':
         specifier: ^18.3.12
         version: 18.3.20
@@ -633,9 +633,6 @@ packages:
 
   '@tybys/wasm-util@0.9.0':
     resolution: {integrity: sha512-6+7nlbMVX/PVDCwaIQ8nTOPveOcFLSt8GcXdx8hD0bt39uWxYT88uXzqTd4fTvqta7oeUJqudepapKNt2DYJFw==}
-
-  '@types/cookie@0.6.0':
-    resolution: {integrity: sha512-4Kh9a6B2bQciAhf7FSuMRRkUWecJgJu9nPnx3yzpsfXX/c50REIqpHY4C82bXP90qrLtXtkDxTZosYO3UpOwlA==}
 
   '@types/estree@1.0.7':
     resolution: {integrity: sha512-w28IoSUCJpidD/TGviZwwMJckNESJZXFu7NBZ5YJ4mEUnNraUn9Pm8HSZm/jDF1pDWYKspWE7oVphigUPRakIQ==}
@@ -1953,8 +1950,8 @@ packages:
       wrangler:
         optional: true
 
-  react-router@7.4.0:
-    resolution: {integrity: sha512-Y2g5ObjkvX3VFeVt+0CIPuYd9PpgqCslG7ASSIdN73LwA1nNWzcMLaoMRJfP3prZFI92svxFwbn7XkLJ+UPQ6A==}
+  react-router@7.5.2:
+    resolution: {integrity: sha512-9Rw8r199klMnlGZ8VAsV/I8WrIF6IyJ90JQUdboupx1cdkgYqwnrYjH+I/nY/7cA1X5zia4mDJqH36npP7sxGQ==}
     engines: {node: '>=20.0.0'}
     peerDependencies:
       react: '>=18'
@@ -2834,7 +2831,7 @@ snapshots:
   '@pkgjs/parseargs@0.11.0':
     optional: true
 
-  '@react-router/dev@7.4.0(react-router@7.4.0(react-dom@18.3.1(react@18.3.1))(react@18.3.1))(typescript@5.8.3)(vite@5.4.17)':
+  '@react-router/dev@7.4.0(react-router@7.5.2(react-dom@18.3.1(react@18.3.1))(react@18.3.1))(typescript@5.8.3)(vite@5.4.17)':
     dependencies:
       '@babel/core': 7.26.10
       '@babel/generator': 7.27.0
@@ -2845,7 +2842,7 @@ snapshots:
       '@babel/traverse': 7.27.0
       '@babel/types': 7.27.0
       '@npmcli/package-json': 4.0.1
-      '@react-router/node': 7.4.0(react-router@7.4.0(react-dom@18.3.1(react@18.3.1))(react@18.3.1))(typescript@5.8.3)
+      '@react-router/node': 7.4.0(react-router@7.5.2(react-dom@18.3.1(react@18.3.1))(react@18.3.1))(typescript@5.8.3)
       arg: 5.0.2
       babel-dead-code-elimination: 1.0.10
       chokidar: 4.0.3
@@ -2859,7 +2856,7 @@ snapshots:
       picocolors: 1.1.1
       prettier: 2.8.8
       react-refresh: 0.14.2
-      react-router: 7.4.0(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
+      react-router: 7.5.2(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
       semver: 7.7.1
       set-cookie-parser: 2.7.1
       valibot: 0.41.0(typescript@5.8.3)
@@ -2880,17 +2877,17 @@ snapshots:
       - supports-color
       - terser
 
-  '@react-router/fs-routes@7.4.0(@react-router/dev@7.4.0(react-router@7.4.0(react-dom@18.3.1(react@18.3.1))(react@18.3.1))(typescript@5.8.3)(vite@5.4.17))(typescript@5.8.3)':
+  '@react-router/fs-routes@7.4.0(@react-router/dev@7.4.0(react-router@7.5.2(react-dom@18.3.1(react@18.3.1))(react@18.3.1))(typescript@5.8.3)(vite@5.4.17))(typescript@5.8.3)':
     dependencies:
-      '@react-router/dev': 7.4.0(react-router@7.4.0(react-dom@18.3.1(react@18.3.1))(react@18.3.1))(typescript@5.8.3)(vite@5.4.17)
+      '@react-router/dev': 7.4.0(react-router@7.5.2(react-dom@18.3.1(react@18.3.1))(react@18.3.1))(typescript@5.8.3)(vite@5.4.17)
       minimatch: 9.0.5
     optionalDependencies:
       typescript: 5.8.3
 
-  '@react-router/node@7.4.0(react-router@7.4.0(react-dom@18.3.1(react@18.3.1))(react@18.3.1))(typescript@5.8.3)':
+  '@react-router/node@7.4.0(react-router@7.5.2(react-dom@18.3.1(react@18.3.1))(react@18.3.1))(typescript@5.8.3)':
     dependencies:
       '@mjackson/node-fetch-server': 0.2.0
-      react-router: 7.4.0(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
+      react-router: 7.5.2(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
       source-map-support: 0.5.21
       stream-slice: 0.1.2
       undici: 6.21.2
@@ -2963,8 +2960,6 @@ snapshots:
     dependencies:
       tslib: 2.8.1
     optional: true
-
-  '@types/cookie@0.6.0': {}
 
   '@types/estree@1.0.7': {}
 
@@ -4406,24 +4401,23 @@ snapshots:
 
   react-refresh@0.14.2: {}
 
-  react-router-hono-server@2.11.0(@react-router/dev@7.4.0(react-router@7.4.0(react-dom@18.3.1(react@18.3.1))(react@18.3.1))(typescript@5.8.3)(vite@5.4.17))(@types/react@18.3.20)(react-router@7.4.0(react-dom@18.3.1(react@18.3.1))(react@18.3.1))(vite@5.4.17):
+  react-router-hono-server@2.11.0(@react-router/dev@7.4.0(react-router@7.5.2(react-dom@18.3.1(react@18.3.1))(react@18.3.1))(typescript@5.8.3)(vite@5.4.17))(@types/react@18.3.20)(react-router@7.5.2(react-dom@18.3.1(react@18.3.1))(react@18.3.1))(vite@5.4.17):
     dependencies:
       '@drizzle-team/brocli': 0.11.0
       '@hono/node-server': 1.14.0(hono@4.7.5)
       '@hono/node-ws': 1.1.1(@hono/node-server@1.14.0(hono@4.7.5))(hono@4.7.5)
       '@hono/vite-dev-server': 0.17.0(hono@4.7.5)
-      '@react-router/dev': 7.4.0(react-router@7.4.0(react-dom@18.3.1(react@18.3.1))(react@18.3.1))(typescript@5.8.3)(vite@5.4.17)
+      '@react-router/dev': 7.4.0(react-router@7.5.2(react-dom@18.3.1(react@18.3.1))(react@18.3.1))(typescript@5.8.3)(vite@5.4.17)
       '@types/react': 18.3.20
       hono: 4.7.5
-      react-router: 7.4.0(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
+      react-router: 7.5.2(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
       vite: 5.4.17
     transitivePeerDependencies:
       - bufferutil
       - utf-8-validate
 
-  react-router@7.4.0(react-dom@18.3.1(react@18.3.1))(react@18.3.1):
+  react-router@7.5.2(react-dom@18.3.1(react@18.3.1))(react@18.3.1):
     dependencies:
-      '@types/cookie': 0.6.0
       cookie: 1.0.2
       react: 18.3.1
       set-cookie-parser: 2.7.1
