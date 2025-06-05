@@ -72,7 +72,7 @@ type ReactRouterHonoServerPluginOptions =
 const REACT_ROUTER_VIRTUAL_MODULE_ID = "\0virtual:react-router/server-build";
 const VIRTUAL_MODULE_ID = "\0virtual:react-router-hono-server/server";
 const REACT_ROUTER_EXPORT =
-  "export { serverManifest as assets, assetsBuildDirectory, basename, entry, future, isSpaMode, prerender, publicPath, routes, ssr };";
+  "export { serverManifest as assets, assetsBuildDirectory, basename, entry, future, isSpaMode, prerender, publicPath, routes, ssr, routeDiscovery };";
 
 export function reactRouterHonoServer(options: ReactRouterHonoServerPluginOptions = {}): Plugin {
   const runtime: Runtime = options.runtime || "node";
