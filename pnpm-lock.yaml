@@ -36,7 +36,7 @@ importers:
         specifier: ^7.2.0
         version: 7.5.0(react@19.1.0)
       vite:
-        specifier: ^6.0.0
+        specifier: ^6.0.0 || ^7.0.0
         version: 6.2.5(@types/node@22.14.0)
       wrangler:
         specifier: ^4.2.0
