@@ -13,7 +13,7 @@ export function cache(seconds: number) {
 
     await next();
 
-    if (!c.res.ok) {
+    if (!c.res.ok || c.res.headers.has("cache-control")) {
       return;
     }
 
