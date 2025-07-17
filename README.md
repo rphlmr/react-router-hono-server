@@ -567,8 +567,6 @@ export interface HonoServerOptions<E extends Env = BlankEnv> extends HonoServerO
   /**
    * Callback executed just after `serve` from `@hono/node-server`
    *
-   * **Only applied to production mode**
-   *
    * For example, you can use this to bind `@hono/node-ws`'s `injectWebSocket`
    */
   onServe?: (server: ServerType) => void;
