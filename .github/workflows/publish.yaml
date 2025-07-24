@@ -3,12 +3,17 @@ on:
   release:
     types: [published]
   workflow_dispatch:
+  push:
+    branches: [main]
 jobs:
-  pnpm-publish:
+  release:
     runs-on: ubuntu-latest
+    if: github.repository_owner == 'rphlmr'
     steps:
       - name: ⬇️ Checkout repo
         uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
 
       - name: 👷 Install pnpm
         uses: pnpm/action-setup@v4
@@ -24,8 +29,13 @@ jobs:
       - name: 📥 Install dependencies
         run: pnpm install --frozen-lockfile
 
-      - name: Publish 🚀
-        shell: bash
-        run: pnpm publish --access public --no-git-checks
+      - name: 🦋 Create Release Pull Request or Publish
+        id: changesets
+        uses: changesets/action@v1
+        with:
+          publish: pnpm run release
+          title: "chore: release package"
+          commit: "chore: release package"
         env:
-          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
