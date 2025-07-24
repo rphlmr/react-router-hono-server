@@ -4,5 +4,7 @@
   "initialVersions": {
     "react-router-hono-server": "2.17.0-pre"
   },
-  "changesets": []
+  "changesets": [
+    "purple-crabs-follow"
+  ]
 }
