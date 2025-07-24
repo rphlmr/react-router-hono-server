@@ -67,7 +67,9 @@
     "clear-all": "rm -rf node_modules pnpm-lock.yaml && find ./examples -type d -name 'node_modules' -exec rm -rf {} + && find ./examples -name 'pnpm-lock.yaml' -exec rm -f {} +",
     "changeset": "changeset",
     "version": "changeset version",
-    "release": "changeset publish"
+    "release": "changeset publish",
+    "changeset:next": "changeset pre enter next",
+    "changeset:next:exit": "changeset pre exit"
   },
   "author": "",
   "license": "ISC",
