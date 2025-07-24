@@ -1,7 +1,7 @@
 {
   "$schema": "https://biomejs.dev/schemas/1.8.3/schema.json",
   "files": {
-    "ignore": ["dist", "build", "out"]
+    "ignore": ["dist", "build", "out", "examples"]
   },
   "vcs": {
     "enabled": true,
@@ -21,7 +21,7 @@
   },
   "linter": {
     "enabled": true,
-    "ignore": ["package.json", "examples"],
+    "ignore": ["package.json"],
     "rules": {
       "recommended": true,
       "suspicious": {
