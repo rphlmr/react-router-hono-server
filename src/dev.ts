@@ -308,6 +308,7 @@ export function reactRouterHonoServer(options: ReactRouterHonoServerPluginOption
 
       // Apply the dev server plugin's configureServer hook if it exists
       if (typeof devServerPlugin.configureServer === "function") {
+        // @ts-ignore - FIXME: Come back to this later
         devServerPlugin.configureServer(server);
       } else {
         console.error("Dev server plugin configureServer hook is not a function. This is likely a bug, I guess 😅\n");

@@ -30,7 +30,7 @@ export default function Index({ loaderData: data }: Route.ComponentProps) {
   console.log("value", value);
   const { revalidate } = useRevalidator();
   return (
-    <div className="min-h-screen bg-gray-100 flex flex-col items-center justify-center">
+    <div className="flex flex-col justify-center items-center bg-gray-100 min-h-screen">
       <button type="button" onClick={revalidate} className="flex items-center gap-2">
         <img src={dbLogo} alt="Database" />
         Revalidate
@@ -38,18 +38,18 @@ export default function Index({ loaderData: data }: Route.ComponentProps) {
       <input />
       <Input value={value} onChange={(e) => setValue(e.target.value)} />
       <div className="mt-8 w-full max-w-4xl overflow-x-auto">
-        <table className="w-full border-collapse bg-gray-100 shadow-md rounded-lg">
+        <table className="bg-gray-100 shadow-md rounded-lg w-full border-collapse">
           <thead>
             <tr className="bg-gray-200">
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-600 uppercase tracking-wider">Key</th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-600 uppercase tracking-wider">Value</th>
+              <th className="px-6 py-3 font-medium text-gray-600 text-xs text-left uppercase tracking-wider">Key</th>
+              <th className="px-6 py-3 font-medium text-gray-600 text-xs text-left uppercase tracking-wider">Value</th>
             </tr>
           </thead>
           <tbody className="bg-white divide-y divide-gray-200">
             {Object.entries(data.env).map(([key, value]) => (
               <tr key={key} className="hover:bg-gray-50">
-                <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">{key}</td>
-                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{value ?? "-"}</td>
+                <td className="px-6 py-4 font-medium text-gray-900 text-sm whitespace-nowrap">{key}</td>
+                <td className="px-6 py-4 text-gray-500 text-sm whitespace-nowrap">{value ?? "-"}</td>
               </tr>
             ))}
           </tbody>

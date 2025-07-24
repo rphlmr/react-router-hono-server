@@ -4,7 +4,7 @@ import type { ServerType } from "@hono/node-server";
 import type { Serve } from "bun";
 import type { Env, Hono } from "hono";
 import { createMiddleware } from "hono/factory";
-import type { UpgradeWebSocket } from "hono/ws";
+import { type UpgradeWebSocket, defineWebSocketHelper } from "hono/ws";
 import type { ServerBuild } from "react-router";
 import type { HonoServerOptionsBase } from "./types/hono-server-options-base";
 import type { Runtime } from "./types/runtime";
@@ -21,7 +21,7 @@ interface WebSocket {
 }
 
 const defaultWebSocket = {
-  upgradeWebSocket: () => async () => {},
+  upgradeWebSocket: defineWebSocketHelper(() => {}),
   injectWebSocket: (server) => server,
 } satisfies WebSocket;
 

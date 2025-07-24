@@ -70,6 +70,7 @@ export async function createHonoServer<E extends Env = BlankEnv>(
   options?: HonoServerOptionsWithWebSocket<E>
 ): Promise<CustomBunServer>;
 export async function createHonoServer<E extends Env = BlankEnv>(options?: HonoServerOptions<E>) {
+  const build = await importBuild();
   const basename = import.meta.env.REACT_ROUTER_HONO_SERVER_BASENAME;
   const mergedOptions: HonoServerOptions<E> = {
     ...options,
@@ -141,9 +142,7 @@ export async function createHonoServer<E extends Env = BlankEnv>(options?: HonoS
     strict: false,
   });
 
-  reactRouterApp.use(async (c, next) => {
-    const build = await importBuild();
-
+  reactRouterApp.use((c, next) => {
     return createMiddleware(async (c) => {
       const requestHandler = createRequestHandler(build, mode);
       const loadContext = mergedOptions.getLoadContext?.(c, { build, mode });

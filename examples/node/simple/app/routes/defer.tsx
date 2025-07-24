@@ -1,6 +1,6 @@
 import React from "react";
-import { Await, useLoaderData } from "react-router";
-import { Route } from "./+types/defer";
+import { Await } from "react-router";
+import type { Route } from "./+types/defer";
 
 async function getProjectLocation() {
   return new Promise((resolve) => setTimeout(() => resolve("user/project"), 2000)) as Promise<string>;
