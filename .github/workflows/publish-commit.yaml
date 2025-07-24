@@ -24,5 +24,16 @@ jobs:
       - name: 🏗️ Build
         run: pnpm build
 
-      - name: 📦 Publish
+      - name: 🔍 Check pre-release mode
+        id: prerelease
+        run: |
+          if [[ -f ".changeset/pre.json" ]] && [[ $(cat .changeset/pre.json | jq -r '.mode') != "exit" ]]; then
+            echo "mode=pre-release" >> $GITHUB_OUTPUT
+            echo "📦 Building pre-release package"
+          else
+            echo "mode=stable" >> $GITHUB_OUTPUT
+            echo "📦 Building stable package"
+          fi
+
+      - name: 📦 Publish (${{ steps.prerelease.outputs.mode }})
         run: pnpm dlx pkg-pr-new publish --packageManager=pnpm
