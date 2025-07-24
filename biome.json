@@ -1,7 +1,7 @@
 {
   "$schema": "https://biomejs.dev/schemas/1.8.3/schema.json",
   "files": {
-    "ignore": ["dist", "build", "examples"]
+    "ignore": ["dist", "build", "out", "examples"]
   },
   "vcs": {
     "enabled": true,

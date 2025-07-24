@@ -22,6 +22,8 @@ export default defineConfig([
       "virtual:react-router/server-build",
       "react",
     ],
+    // FIXME: temporary fix defer issue by shipping last working versions
+    noExternal: ["@hono/node-server", "@hono/vite-dev-server"],
   },
   {
     entry: ["src/cli.ts"],
@@ -40,39 +42,18 @@ export default defineConfig([
 
 process.on("beforeExit", (code) => {
   if (code === 0) {
-    setupExamples();
+    setupOutput();
   }
 });
 
-function setupExamples() {
-  console.log("Setting up examples...");
-  const adapters = fs.readdirSync("examples");
+function setupOutput() {
+  console.log("Setting up output...");
+  const moduleDir = path.join("out");
 
-  for (const adapter of adapters) {
-    const adapterPath = path.join("examples", adapter);
+  fs.rmSync(moduleDir, { recursive: true, force: true });
+  fs.mkdirSync(moduleDir, { recursive: true });
+  fs.cpSync(path.resolve("dist"), path.join(moduleDir, "dist"), { recursive: true });
+  fs.copyFileSync("package.json", path.join(moduleDir, "package.json"));
 
-    if (!fs.statSync(adapterPath).isDirectory()) {
-      continue;
-    }
-
-    const examples = fs.readdirSync(adapterPath);
-
-    for (const example of examples) {
-      const examplePath = path.join(adapterPath, example);
-
-      if (!fs.statSync(examplePath).isDirectory()) {
-        continue;
-      }
-
-      const moduleDir = path.join(examplePath, "node_modules", "react-router-hono-server");
-
-      fs.rmSync(moduleDir, { recursive: true, force: true });
-      fs.mkdirSync(moduleDir, { recursive: true });
-      fs.cpSync(path.resolve("dist"), path.join(moduleDir, "dist"), { recursive: true });
-
-      // Copy package.json
-      fs.copyFileSync("package.json", path.join(moduleDir, "package.json"));
-    }
-  }
-  console.log("Examples setup complete.");
+  console.log("Output setup complete.");
 }

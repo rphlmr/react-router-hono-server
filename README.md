@@ -490,6 +490,10 @@ You can add additional Hono middleware with the `configure` function. If you do 
 
 The `configure` function can be async. So, make sure to `await createHonoServer()`.
 
+> NB: If you import some shared code in your server file (or middleware), Vite will code split the file (your server code will be in a separate chunk, re-exported as default in `build/server/index.js`).
+>
+> In this situation, if you  `await createHonoServer()` it will error with `Detected unsettled top-level await`. Just remove the `await` and it will work fine.
+
 If you want to set up the React Router `AppLoadContext`, pass in a function to `getLoadContext`.
 
 Modify the `AppLoadContext` interface used in your app.

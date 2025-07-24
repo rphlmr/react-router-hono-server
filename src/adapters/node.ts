@@ -94,6 +94,10 @@ export async function createHonoServer<E extends Env = BlankEnv>(
   options?: HonoServerOptionsWithWebSocket<E>
 ): Promise<Hono<E>>;
 export async function createHonoServer<E extends Env = BlankEnv>(options?: HonoServerOptions<E>) {
+  if (!options?.listeningListener) {
+    console.time("🏎️ Server started in");
+  }
+  const build = await importBuild();
   const basename = import.meta.env.REACT_ROUTER_HONO_SERVER_BASENAME;
   const mergedOptions: HonoServerOptions<E> = {
     ...options,
@@ -106,6 +110,8 @@ export async function createHonoServer<E extends Env = BlankEnv>(options?: HonoS
         if (basename !== "/") {
           console.log(`🔗 http://127.0.0.1:${info.port}${basename}`);
         }
+
+        console.timeEnd("🏎️ Server started in");
       }),
     port: options?.port || Number(process.env.PORT) || 3000,
     defaultLogger: options?.defaultLogger ?? true,
@@ -170,9 +176,7 @@ export async function createHonoServer<E extends Env = BlankEnv>(options?: HonoS
     strict: false,
   });
 
-  reactRouterApp.use(async (c, next) => {
-    const build = await importBuild();
-
+  reactRouterApp.use((c, next) => {
     return createMiddleware(async (c) => {
       const requestHandler = createRequestHandler(build, mode);
       const loadContext = mergedOptions.getLoadContext?.(c, { build, mode });
