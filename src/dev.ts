@@ -143,6 +143,7 @@ export function reactRouterHonoServer(options: ReactRouterHonoServerPluginOption
 
       let reactRouterBuildFile = pluginConfig.serverBuildFile;
 
+      // TODO: Useless now
       if (reactRouterBuildFile === "index.js") {
         reactRouterBuildFile = "assets/server-build.js";
       }
@@ -176,16 +177,16 @@ export function reactRouterHonoServer(options: ReactRouterHonoServerPluginOption
 
                 return "index.js";
               },
-              // not invoked when target is webworker (single file output)
+              // not invoked when target is webworker (single file output) TODO: Useless now
               chunkFileNames: (chunk) => {
                 if (chunk.name === "server-build") {
                   return reactRouterBuildFile;
                 }
                 return "assets/[name]-[hash].js";
               },
-              // We are doing that because in this case, we build a single file that only exports the Hono server
+              // We are doing that because we build a single file that only exports the Hono server
               // RR needs its exports for prerendering
-              footer: runtime === "cloudflare" ? REACT_ROUTER_EXPORT : undefined,
+              footer: REACT_ROUTER_EXPORT,
             },
           },
         },
