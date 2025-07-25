@@ -186,7 +186,12 @@ export function reactRouterHonoServer(options: ReactRouterHonoServerPluginOption
               },
               // We are doing that because we build a single file that only exports the Hono server
               // RR needs its exports for prerendering
-              footer: REACT_ROUTER_EXPORT,
+              footer: (chunk) => {
+                if (!chunk.isEntry) {
+                  return "";
+                }
+                return REACT_ROUTER_EXPORT;
+              },
             },
           },
         },
