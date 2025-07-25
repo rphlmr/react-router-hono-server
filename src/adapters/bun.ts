@@ -1,5 +1,6 @@
 // @ts-expect-error - Virtual module provided by React Router at build time
 import * as build from "virtual:react-router/server-build";
+
 import type { Serve, ServeOptions } from "bun";
 import { type Env, Hono } from "hono";
 import { serveStatic } from "hono/bun";
@@ -8,7 +9,6 @@ import { logger } from "hono/logger";
 import type { ServeStaticOptions } from "hono/serve-static";
 import type { BlankEnv } from "hono/types";
 import { createRequestHandler } from "react-router";
-
 import {
   bindIncomingRequestSocketInfo,
   cleanUpgradeListeners,
