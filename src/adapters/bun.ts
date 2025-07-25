@@ -1,3 +1,5 @@
+// @ts-expect-error - Virtual module provided by React Router at build time
+import * as build from "virtual:react-router/server-build";
 import type { Serve, ServeOptions } from "bun";
 import { type Env, Hono } from "hono";
 import { serveStatic } from "hono/bun";
@@ -13,7 +15,6 @@ import {
   createGetLoadContext,
   createWebSocket,
   getBuildMode,
-  importBuild,
   patchUpgradeListener,
 } from "../helpers";
 import { cache } from "../middleware";
@@ -70,7 +71,6 @@ export async function createHonoServer<E extends Env = BlankEnv>(
   options?: HonoServerOptionsWithWebSocket<E>
 ): Promise<CustomBunServer>;
 export async function createHonoServer<E extends Env = BlankEnv>(options?: HonoServerOptions<E>) {
-  const build = await importBuild();
   const basename = import.meta.env.REACT_ROUTER_HONO_SERVER_BASENAME;
   const mergedOptions: HonoServerOptions<E> = {
     ...options,
