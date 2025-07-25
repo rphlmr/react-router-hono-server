@@ -21,19 +21,25 @@ jobs:
       - name: 📥 Install dependencies
         run: pnpm install
 
-      - name: 🏗️ Build
-        run: pnpm build
+      - name: 📋 Version packages
+        run: pnpm changeset version
 
       - name: 🔍 Check pre-release mode
         id: prerelease
         run: |
+          VERSION=$(node -p "require('./package.json').version")
+          echo "version=$VERSION" >> $GITHUB_OUTPUT
+
           if [[ -f ".changeset/pre.json" ]] && [[ $(cat .changeset/pre.json | jq -r '.mode') != "exit" ]]; then
             echo "mode=pre-release" >> $GITHUB_OUTPUT
-            echo "📦 Building pre-release package"
+            echo "📦 Building pre-release package v$VERSION"
           else
             echo "mode=stable" >> $GITHUB_OUTPUT
-            echo "📦 Building stable package"
+            echo "📦 Building stable package v$VERSION"
           fi
 
-      - name: 📦 Publish (${{ steps.prerelease.outputs.mode }})
+      - name: 🏗️ Build
+        run: pnpm build
+
+      - name: 📦 Publish (${{ steps.prerelease.outputs.mode }}) v${{ steps.prerelease.outputs.version }}
         run: pnpm dlx pkg-pr-new publish --packageManager=pnpm
