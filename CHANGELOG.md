@@ -1,5 +1,11 @@
 # react-router-hono-server
 
+## 2.17.0-next.2
+
+### Patch Changes
+
+- 1a21a8b: remove obsolete build target options from reactRouterHonoServer
+
 ## 2.17.0-next.1
 
 ### Patch Changes
