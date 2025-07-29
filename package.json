@@ -9,50 +9,50 @@
   "exports": {
     "./node": {
       "import": {
-        "import": "./dist/adapters/node.js",
         "types": "./dist/adapters/node.d.ts",
+        "import": "./dist/adapters/node.js",
         "default": "./dist/adapters/node.js"
       }
     },
     "./bun": {
       "import": {
-        "import": "./dist/adapters/bun.js",
         "types": "./dist/adapters/bun.d.ts",
+        "import": "./dist/adapters/bun.js",
         "default": "./dist/adapters/bun.js"
       }
     },
     "./cloudflare": {
       "import": {
-        "import": "./dist/adapters/cloudflare.js",
         "types": "./dist/adapters/cloudflare.d.ts",
+        "import": "./dist/adapters/cloudflare.js",
         "default": "./dist/adapters/cloudflare.js"
       }
     },
     "./aws-lambda": {
       "import": {
-        "import": "./dist/adapters/aws-lambda.js",
         "types": "./dist/adapters/aws-lambda.d.ts",
+        "import": "./dist/adapters/aws-lambda.js",
         "default": "./dist/adapters/aws-lambda.js"
       }
     },
     "./dev": {
       "import": {
-        "import": "./dist/dev.js",
         "types": "./dist/dev.d.ts",
+        "import": "./dist/dev.js",
         "default": "./dist/dev.js"
       }
     },
     "./middleware": {
       "import": {
-        "import": "./dist/middleware.js",
         "types": "./dist/middleware.d.ts",
+        "import": "./dist/middleware.js",
         "default": "./dist/middleware.js"
       }
     },
     "./http": {
       "import": {
-        "import": "./dist/http.js",
         "types": "./dist/http.d.ts",
+        "import": "./dist/http.js",
         "default": "./dist/http.js"
       }
     }
