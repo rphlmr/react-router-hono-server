@@ -1,5 +1,11 @@
 # react-router-hono-server
 
+## 2.17.0-next.1
+
+### Patch Changes
+
+- 9bf869b: Statically import RR build
+
 ## 2.17.0-next.0
 
 ### Minor Changes
