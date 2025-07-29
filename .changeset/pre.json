@@ -5,6 +5,7 @@
     "react-router-hono-server": "2.17.0-pre"
   },
   "changesets": [
+    "beige-colts-think",
     "purple-crabs-follow",
     "small-parks-help"
   ]
