@@ -86,9 +86,7 @@
   "bin": {
     "react-router-hono-server": "dist/cli.js"
   },
-  "files": [
-    "dist"
-  ],
+  "files": ["dist"],
   "homepage": "https://github.com/rphlmr/react-router-hono-server#readme",
   "dependencies": {
     "@drizzle-team/brocli": "^0.11.0",
@@ -136,13 +134,7 @@
   },
   "packageManager": "pnpm@10.7.1",
   "pnpm": {
-    "onlyBuiltDependencies": [
-      "@biomejs/biome",
-      "esbuild",
-      "lefthook",
-      "sharp",
-      "workerd"
-    ],
+    "onlyBuiltDependencies": ["@biomejs/biome", "esbuild", "lefthook", "sharp", "workerd"],
     "overrides": {
       "@hono/node-server": "1.14.1"
     }
