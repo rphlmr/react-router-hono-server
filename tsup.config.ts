@@ -22,8 +22,6 @@ export default defineConfig([
       "virtual:react-router/server-build",
       "react",
     ],
-    // FIXME: temporary fix defer issue by shipping last working versions
-    noExternal: ["@hono/node-server", "@hono/vite-dev-server"],
   },
   {
     entry: ["src/cli.ts"],
