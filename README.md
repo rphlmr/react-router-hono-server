@@ -47,15 +47,16 @@ Install the following npm package.
 > This is not a dev dependency, as it creates the Hono server used in production.
 
 ```bash
-npm install react-router-hono-server
+npm install react-router-hono-server hono @hono/node-server
+
+# For Bun you can install @hono/node-server as a dev dependency
+bun install -D @hono/node-server
 
 # For Cloudflare Workers, add the following
 npm install -D miniflare wrangler
 ```
 
 > [!TIP]
-> You don't need to install `hono` as it is included in this package.
->
 > If you use `pnpm`, and want to use some imports from `hono`, you may need to install `hono` manually or create a `.npmrc` file in your project with the following content:
 >
 > ```

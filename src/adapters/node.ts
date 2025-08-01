@@ -175,7 +175,16 @@ export async function createHonoServer<E extends Env = BlankEnv>(options?: HonoS
     return createMiddleware(async (c) => {
       const requestHandler = createRequestHandler(build, mode);
       const loadContext = mergedOptions.getLoadContext?.(c, { build, mode });
-      return requestHandler(c.req.raw, loadContext instanceof Promise ? await loadContext : loadContext);
+      const response = await requestHandler(
+        c.req.raw,
+        loadContext instanceof Promise ? await loadContext : loadContext
+      );
+
+      if (response.headers.get("content-type") === "text/x-script") {
+        response.headers.set("transfer-encoding", "chunked");
+      }
+
+      return response;
     })(c, next);
   });
 
