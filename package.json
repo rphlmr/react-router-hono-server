@@ -119,6 +119,9 @@
     "wrangler": "^4.2.0"
   },
   "peerDependenciesMeta": {
+    "@hono/node-server": {
+      "optional": false
+    },
     "@cloudflare/workers-types": {
       "optional": true
     },
