@@ -134,7 +134,7 @@ export function reactRouterHonoServer(options: ReactRouterHonoServerPluginOption
           // Ensure our package is not externalized during SSR build
           // This is necessary because we are using a virtual import to load the React Router server entry point
           noExternal: ["react-router-hono-server"],
-          external: ["@hono/node-ws", "@hono/node-server", "hono"],
+          external: ["@hono/node-ws"],
         },
       } satisfies UserConfig;
 
