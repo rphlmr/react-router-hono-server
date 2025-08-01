@@ -159,6 +159,12 @@ export function reactRouterHonoServer(options: ReactRouterHonoServerPluginOption
         };
       }
 
+      if (runtime === "bun" && env.command === "build") {
+        alias = {
+          "react-dom/server": "react-dom/server.node",
+        };
+      }
+
       const ssrConfig = {
         resolve: {
           alias,
