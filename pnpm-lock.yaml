@@ -12,11 +12,11 @@ importers:
         specifier: ^0.11.0
         version: 0.11.0
       '@hono/node-server':
-        specifier: ^1.18.0
-        version: 1.18.0(hono@4.8.10)
+        specifier: ^1.18.1
+        version: 1.18.1(hono@4.8.10)
       '@hono/node-ws':
         specifier: ^1.2.0
-        version: 1.2.0(@hono/node-server@1.18.0(hono@4.8.10))(hono@4.8.10)
+        version: 1.2.0(@hono/node-server@1.18.1(hono@4.8.10))(hono@4.8.10)
       '@hono/vite-dev-server':
         specifier: ^0.20.0
         version: 0.20.0(hono@4.8.10)(miniflare@3.20250718.0)(wrangler@4.26.1(@cloudflare/workers-types@4.20250731.0))
@@ -723,8 +723,8 @@ packages:
     resolution: {integrity: sha512-vBZP4NlzfOlerQTnba4aqZoMhE/a9HY7HRqoOPaETQcSQuWEIyZMHGfVu6w9wGtGK5fED5qRs2DteVCjOH60sA==}
     engines: {node: '>=14'}
 
-  '@hono/node-server@1.18.0':
-    resolution: {integrity: sha512-CJ0H3/ouk/JWnyiuYOJLdpuWhO2D2BTNigHaFixnW3CrwZb+E+4s/KoFkcikHXcVmXoxaLJx1nlGa3JChEFtFA==}
+  '@hono/node-server@1.18.1':
+    resolution: {integrity: sha512-O3puG/b7owYYmoQ2XPBf3SxBz6Dhk5VmWFhbaBU8/5wcUaXUPS0goxaI2Zfyg+Cu14ILJHEU7IFRw7miFxuXxg==}
     engines: {node: '>=18.14.1'}
     peerDependencies:
       hono: ^4
@@ -3413,13 +3413,13 @@ snapshots:
 
   '@fastify/busboy@2.1.1': {}
 
-  '@hono/node-server@1.18.0(hono@4.8.10)':
+  '@hono/node-server@1.18.1(hono@4.8.10)':
     dependencies:
       hono: 4.8.10
 
-  '@hono/node-ws@1.2.0(@hono/node-server@1.18.0(hono@4.8.10))(hono@4.8.10)':
+  '@hono/node-ws@1.2.0(@hono/node-server@1.18.1(hono@4.8.10))(hono@4.8.10)':
     dependencies:
-      '@hono/node-server': 1.18.0(hono@4.8.10)
+      '@hono/node-server': 1.18.1(hono@4.8.10)
       hono: 4.8.10
       ws: 8.18.3
     transitivePeerDependencies:
@@ -3428,7 +3428,7 @@ snapshots:
 
   '@hono/vite-dev-server@0.20.0(hono@4.8.10)(miniflare@3.20250718.0)(wrangler@4.26.1(@cloudflare/workers-types@4.20250731.0))':
     dependencies:
-      '@hono/node-server': 1.18.0(hono@4.8.10)
+      '@hono/node-server': 1.18.1(hono@4.8.10)
       hono: 4.8.10
       minimatch: 9.0.5
     optionalDependencies:
