@@ -1,6 +1,6 @@
 {
   "name": "react-router-hono-server",
-  "version": "2.17.0",
+  "version": "2.18.0",
   "type": "module",
   "description": "The Vite plugin you need to create a Hono server for your React Router app in less than 10 seconds.",
   "publishConfig": {
@@ -86,7 +86,9 @@
   "bin": {
     "react-router-hono-server": "dist/cli.js"
   },
-  "files": ["dist"],
+  "files": [
+    "dist"
+  ],
   "homepage": "https://github.com/rphlmr/react-router-hono-server#readme",
   "dependencies": {
     "@drizzle-team/brocli": "^0.11.0",
@@ -137,6 +139,12 @@
   },
   "packageManager": "pnpm@10.7.1",
   "pnpm": {
-    "onlyBuiltDependencies": ["@biomejs/biome", "esbuild", "lefthook", "sharp", "workerd"]
+    "onlyBuiltDependencies": [
+      "@biomejs/biome",
+      "esbuild",
+      "lefthook",
+      "sharp",
+      "workerd"
+    ]
   }
 }

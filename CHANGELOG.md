@@ -1,5 +1,15 @@
 # react-router-hono-server
 
+## 2.18.0
+
+### Minor Changes
+
+- dacbc3a: Make Bun use the same entry.server as Node
+
+### Patch Changes
+
+- dacbc3a: Fix wrong peer deps
+
 ## 2.17.0
 
 ### Minor Changes
