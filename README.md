@@ -125,7 +125,7 @@ export default defineConfig({
 > Check this [example](./examples/bun/simple/) to see how to use it.
 
 > [!IMPORTANT]
-> React 19 and `bun --bun` flag require a special `entry.server.tsx` file. Check [Using `bun --bun` flag?](#using-bun---bun-flag)
+> React 19 and `bun --bun` flag should work with the same `entry.server.tsx` file as Node. Check [Using `bun --bun` flag?](#using-bun---bun-flag)
 > Check this [example](./examples/bun/simple-bun-runtime/) to see how to use it.
 
 ```ts
@@ -148,9 +148,11 @@ export default defineConfig({
 > [!TIP]
 > Check this [example](./examples/bun/simple-bun-runtime/) to see how to use it.
 
-If you are using the [`bun --bun` flag](https://bun.sh/docs/cli/run#bun), you need to have a proper `entry.server.tsx` file.
+If you are using the [`bun --bun` flag](https://bun.sh/docs/cli/run#bun), you need to have the same `entry.server.tsx` file as Node.
 
 When building for production, at least for React 19, it uses a special `react-dom-server.bun` import with only the `renderToReadableStream` function available.
+
+React Router Hono Server vite plugin will alias that to `react-dom/server.node`
 
 
 ```ts
