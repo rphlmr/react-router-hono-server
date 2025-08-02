@@ -150,7 +150,7 @@ export default defineConfig({
 
 If you are using the [`bun --bun` flag](https://bun.sh/docs/cli/run#bun), you need to have the same `entry.server.tsx` file as Node.
 
-When building for production, at least for React 19, it uses a special `react-dom-server.bun` import with only the `renderToReadableStream` function available.
+When building for production, at least for React 19, it uses a special `react-dom/server.bun` import with only the `renderToReadableStream` function available.
 
 React Router Hono Server vite plugin will alias that to `react-dom/server.node`
 
