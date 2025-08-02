@@ -159,6 +159,18 @@ export function reactRouterHonoServer(options: ReactRouterHonoServerPluginOption
         };
       }
 
+      if (runtime === "bun" && pluginConfig.future.unstable_viteEnvironmentApi) {
+        throw new Error(
+          "The unstable_viteEnvironmentApi is not supported with the Bun runtime. Please disable it in your react-router.config.ts"
+        );
+      }
+
+      if (runtime === "bun" && env.command === "build") {
+        alias = {
+          "react-dom/server": "react-dom/server.node",
+        };
+      }
+
       const ssrConfig = {
         resolve: {
           alias,
