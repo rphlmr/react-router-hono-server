@@ -176,7 +176,6 @@ export function reactRouterHonoServer(options: ReactRouterHonoServerPluginOption
           alias,
         },
         build: {
-          target: "esnext",
           rollupOptions: {
             input: pluginConfig.serverEntryPoint,
             output: {
