@@ -179,7 +179,6 @@ export function reactRouterHonoServer(options: ReactRouterHonoServerPluginOption
           rollupOptions: {
             input: pluginConfig.serverEntryPoint,
             output: {
-              inlineDynamicImports: true,
               entryFileNames: (chunk) => {
                 // https://github.com/remix-run/react-router/issues/13226#issuecomment-2773364665
                 // RR expects to find its virtual module id in build/server/.vite/manifest.json in order to prerender
@@ -188,14 +187,16 @@ export function reactRouterHonoServer(options: ReactRouterHonoServerPluginOption
 
                 return "index.js";
               },
+              // not invoked when target is webworker (single file output)
+              chunkFileNames: (chunk) => {
+                if (chunk.name === "server-build") {
+                  return reactRouterBuildFile;
+                }
+                return "assets/[name]-[hash].js";
+              },
               // We are doing that because we build a single file that only exports the Hono server
               // RR needs its exports for prerendering
-              footer: (chunk) => {
-                if (!chunk.isEntry) {
-                  return "";
-                }
-                return REACT_ROUTER_EXPORT;
-              },
+              footer: runtime === "cloudflare" ? REACT_ROUTER_EXPORT : undefined,
             },
           },
         },

@@ -1,5 +1,5 @@
 ---
-"react-router-hono-server": patch
+"react-router-hono-server": minor
 ---
 
-inline dynamics imports
+Rollback single file server output (revert to 2.16.0 behavior)
