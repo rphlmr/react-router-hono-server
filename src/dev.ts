@@ -193,17 +193,20 @@ export function reactRouterHonoServer(options: ReactRouterHonoServerPluginOption
                 }
                 return "assets/[name]-[hash].js";
               },
-              manualChunks: (id) => {
-                if (id.includes(REACT_ROUTER_VIRTUAL_MODULE_ID)) {
-                  return "server-build";
-                }
+              manualChunks:
+                runtime !== "cloudflare"
+                  ? (id) => {
+                      if (id.includes(REACT_ROUTER_VIRTUAL_MODULE_ID)) {
+                        return "server-build";
+                      }
 
-                if (id.includes(pluginConfig!.serverEntryPoint)) {
-                  return "server";
-                }
+                      if (id.includes(pluginConfig!.serverEntryPoint)) {
+                        return "server";
+                      }
 
-                return "chunk";
-              },
+                      return "chunk";
+                    }
+                  : undefined,
               // We are doing that because we build a single file that only exports the Hono server
               // RR needs its exports for prerendering
               footer: runtime === "cloudflare" ? REACT_ROUTER_EXPORT : undefined,
