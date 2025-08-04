@@ -1,5 +1,12 @@
 # react-router-hono-server
 
+## 2.19.0
+
+### Minor Changes
+
+- 9703630: Prevent build import conflicts by splitting imports into chunks
+- 9703630: Rollback single file server output (revert to 2.16.0 behavior)
+
 ## 2.18.0
 
 ### Minor Changes
