@@ -305,7 +305,7 @@ touch app/server.ts
 // app/server.ts
 import { createHonoServer } from "react-router-hono-server/node";
 
-export default await createHonoServer({/* options */});
+export default createHonoServer({/* options */});
 ```
 
 #### Alternative
@@ -325,7 +325,7 @@ It is useful if you have many middleware and want to keep your server file clean
 
 import { createHonoServer } from "react-router-hono-server/node";
 
-export default await createHonoServer({/* options */});
+export default createHonoServer({/* options */});
 ```
 
 #### I don't like this default
@@ -526,12 +526,6 @@ export type HonoServerOptions<E extends Env = BlankEnv> = {
 
 You can add additional Hono middleware with the `configure` function. If you do not provide a function, it will create a default Hono server.
 
-The `configure` function can be async. So, make sure to `await createHonoServer()`.
-
-> NB: If you import some shared code in your server file (or middleware), Vite will code split the file (your server code will be in a separate chunk, re-exported as default in `build/server/index.js`).
->
-> In this situation, if you  `await createHonoServer()` it will error with `Detected unsettled top-level await`. Just remove the `await` and it will work fine.
-
 If you want to set up the React Router `AppLoadContext`, pass in a function to `getLoadContext`.
 
 Modify the `AppLoadContext` interface used in your app.
@@ -557,7 +551,7 @@ declare module "react-router" {
   }
 }
 
-export default await createHonoServer({
+export default createHonoServer({
   getLoadContext(_, { build, mode }) {
     const isProductionMode = mode === "production";
     return {
@@ -743,7 +737,7 @@ You can use it to add protection middleware, for example.
 import { reactRouterRedirect } from "react-router-hono-server/http";
 import { createHonoServer } from "react-router-hono-server/node";
 
-export default await createHonoServer({
+export default createHonoServer({
   beforeAll(app) {
     app.use(async (c, next) => {
       if (c.req.path.includes("/protected") && !c.req.header("Authorization")) {
@@ -765,7 +759,7 @@ import { createCookieSessionStorage } from "react-router";
 import { createHonoServer } from "react-router-hono-server/node";
 import { session } from "remix-hono/session";
 
-export default await createHonoServer({
+export default createHonoServer({
   configure: (server) => {
     server.use(
       session({
@@ -808,7 +802,7 @@ Then, use them with the `configure` function of `createHonoServer`.
 import { createMiddleware } from "hono/factory";
 import { createHonoServer } from "react-router-hono-server/node";
 
-export default await createHonoServer({
+export default createHonoServer({
   configure: (server) => {
     server.use(
       createMiddleware(async (c, next) => {
@@ -846,7 +840,7 @@ import { createHonoServer } from "react-router-hono-server/node";
 // Store connected clients
 const clients = new Set<WSContext>();
 
-export default await createHonoServer({
+export default createHonoServer({
   useWebSocket: true,
   // 👆 Unlock this 👇 from @hono/node-ws
   configure: (app, { upgradeWebSocket }) => {
@@ -892,7 +886,7 @@ import { createHonoServer } from "react-router-hono-server/bun";
 // Store connected clients
 const clients = new Set<WSContext>();
 
-export default await createHonoServer({
+export default createHonoServer({
   useWebSocket: true,
   // 👆 Unlock this 👇 from @hono/node-ws in dev, hono/bun in prod
   configure(app, { upgradeWebSocket }) {
@@ -976,7 +970,7 @@ const app = new Hono();
 // Mount the API app at /api
 app.route(API_BASENAME, api);
 
-export default await createHonoServer({
+export default createHonoServer({
   // Pass the root Hono app to the server.
   // It will be used to mount the React Router app on the `basename` defined in react-router.config.ts
   app,
@@ -1070,7 +1064,7 @@ We now use the Vite virtual import `virtual:react-router/server-build` to load t
 > ```ts
 > import { createHonoServer } from "react-router-hono-server/node";
 >
-> export default await createHonoServer({/* other options */});
+> export default createHonoServer({/* other options */});
 > ```
 
 ### Update your `vite.config.ts`
