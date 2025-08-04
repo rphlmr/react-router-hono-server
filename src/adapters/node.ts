@@ -93,9 +93,7 @@ export async function createHonoServer<E extends Env = BlankEnv>(
   options?: HonoServerOptionsWithWebSocket<E>
 ): Promise<Hono<E>>;
 export async function createHonoServer<E extends Env = BlankEnv>(options?: HonoServerOptions<E>) {
-  if (!options?.listeningListener) {
-    console.time("🏎️  Server started in");
-  }
+  const startTime = Date.now();
   const build = await importBuild();
   const basename = import.meta.env.REACT_ROUTER_HONO_SERVER_BASENAME;
   const mergedOptions: HonoServerOptions<E> = {
@@ -110,7 +108,7 @@ export async function createHonoServer<E extends Env = BlankEnv>(options?: HonoS
           console.log(`🔗 http://127.0.0.1:${info.port}${basename}`);
         }
 
-        console.timeEnd("🏎️  Server started in");
+        console.log(`🏎️ Server started in ${Date.now() - startTime}ms`);
       }),
     port: options?.port || Number(process.env.PORT) || 3000,
     defaultLogger: options?.defaultLogger ?? true,
