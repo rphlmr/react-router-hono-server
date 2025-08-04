@@ -3,7 +3,7 @@ import { logger } from "./middleware";
 
 console.log("loading server");
 
-export default createHonoServer({
+export default await createHonoServer({
   configure(app) {
     app.use("*", logger());
   },
