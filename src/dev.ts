@@ -144,7 +144,6 @@ export function reactRouterHonoServer(options: ReactRouterHonoServerPluginOption
 
       let reactRouterBuildFile = pluginConfig.serverBuildFile;
 
-      // TODO: Useless now
       if (reactRouterBuildFile === "index.js") {
         reactRouterBuildFile = "assets/server-build.js";
       }
@@ -193,6 +192,12 @@ export function reactRouterHonoServer(options: ReactRouterHonoServerPluginOption
                   return reactRouterBuildFile;
                 }
                 return "assets/[name]-[hash].js";
+              },
+              manualChunks: (id) => {
+                if (![REACT_ROUTER_VIRTUAL_MODULE_ID, pluginConfig!.serverEntryPoint].includes(id)) {
+                  const filename = path.basename(id, path.extname(id));
+                  return filename;
+                }
               },
               // We are doing that because we build a single file that only exports the Hono server
               // RR needs its exports for prerendering
