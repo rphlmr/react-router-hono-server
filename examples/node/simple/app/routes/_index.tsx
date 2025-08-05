@@ -8,7 +8,7 @@ import { getEnv } from "~/utils/env.server";
 import dbLogo from "/images/database.svg";
 import type { Route } from "./+types/_index";
 
-export function loader() {
+export async function loader() {
   console.log(getSecret(), getCommon());
   return {
     env: getEnv(),
@@ -30,7 +30,7 @@ export default function Index({ loaderData: data }: Route.ComponentProps) {
   console.log("value", value);
   const { revalidate } = useRevalidator();
   return (
-    <div className="inset-0 flex flex-col justify-center items-center bg-gray-100 min-h-screen">
+    <div className="flex flex-col justify-center items-center bg-gray-100 min-h-screen">
       <button type="button" onClick={revalidate} className="flex items-center gap-2">
         <img src={dbLogo} alt="Database" />
         Revalidate

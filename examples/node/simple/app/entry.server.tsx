@@ -16,7 +16,9 @@ export default function handleRequest(
   routerContext: EntryContext,
   loadContext: AppLoadContext
 ) {
-  return new Promise((resolve, reject) => {
+  return new Promise(async (resolve, reject) => {
+    const module = await import("~/utils/env.server");
+    console.log(module.getEnv());
     let shellRendered = false;
     let userAgent = request.headers.get("user-agent");
 

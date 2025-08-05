@@ -1,3 +1,3 @@
-export function getEnv() {
+export const getEnv = () => {
   return { ...process.env };
-}
+};
