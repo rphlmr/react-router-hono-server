@@ -69,7 +69,7 @@
     "validate": "npm run check && npm run tsc",
     "clear-all": "rm -rf node_modules pnpm-lock.yaml && find ./examples -type d -name 'node_modules' -exec rm -rf {} + && find ./examples -name 'pnpm-lock.yaml' -exec rm -f {} +",
     "changeset": "changeset",
-    "version": "changeset version",
+    "version": "changeset version && biome format --write package.json",
     "release": "changeset publish",
     "changeset:next": "changeset pre enter next",
     "changeset:next:exit": "changeset pre exit"
