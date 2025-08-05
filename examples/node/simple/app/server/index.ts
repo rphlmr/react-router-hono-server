@@ -1,8 +1,10 @@
 import { createHonoServer } from "react-router-hono-server/node";
-import { getBuildInfo } from "~/utils/circular";
+import { getEnv } from "~/utils/env.server";
 import { logger } from "./middleware";
 
 console.log("loading server");
+
+console.log("server env", getEnv().TZ);
 
 export default await createHonoServer({
   async configure(app) {
