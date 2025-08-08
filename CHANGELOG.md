@@ -1,5 +1,11 @@
 # react-router-hono-server
 
+## 2.20.0
+
+### Minor Changes
+
+- 23eac74: make modules imported by the server entry a chunk
+
 ## 2.19.0
 
 ### Minor Changes
