@@ -38,6 +38,7 @@ jobs:
         id: changesets
         uses: changesets/action@v1
         with:
+          version: pnpm run version
           publish: pnpm run release
           title: "chore: release package"
           commit: "chore: release package"

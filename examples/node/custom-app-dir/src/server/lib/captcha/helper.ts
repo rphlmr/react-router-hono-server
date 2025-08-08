@@ -1,3 +1,3 @@
-export function someExternalHelper(){
-	return true
+export function someExternalHelper() {
+  return true;
 }

@@ -4,7 +4,7 @@ const LazyComponent = lazy(() => import("../components/lazy").then((mod) => ({ d
 
 export default function View() {
   return (
-    <div>
+    <div className="inset-0">
       <h1>Route with lazy imported component</h1>
       <Suspense fallback={<div>Loading...</div>}>
         <LazyComponent />

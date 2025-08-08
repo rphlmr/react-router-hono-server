@@ -69,7 +69,7 @@ type ReactRouterHonoServerPluginOptions =
   | ReactRouterHonoServerPluginOptionsDefault
   | ReactRouterHonoServerPluginOptionsCloudflare;
 
-const REACT_ROUTER_VIRTUAL_MODULE_ID = "\0virtual:react-router/server-build";
+const REACT_ROUTER_SERVER_BUILD_MODULE_ID = "\0virtual:react-router/server-build";
 const VIRTUAL_MODULE_ID = "\0virtual:react-router-hono-server/server";
 const REACT_ROUTER_EXPORT =
   "export { serverManifest as assets, assetsBuildDirectory, basename, entry, future, isSpaMode, prerender, publicPath, routes, ssr, routeDiscovery };";
@@ -103,6 +103,8 @@ export function reactRouterHonoServer(options: ReactRouterHonoServerPluginOption
       if (!pluginConfig) {
         return;
       }
+
+      const serverEntryPoint = pluginConfig.serverEntryPoint;
 
       if (pluginConfig.future.unstable_viteEnvironmentApi) {
         console.warn(
@@ -176,13 +178,13 @@ export function reactRouterHonoServer(options: ReactRouterHonoServerPluginOption
         },
         build: {
           rollupOptions: {
-            input: pluginConfig.serverEntryPoint,
+            input: serverEntryPoint,
             output: {
               entryFileNames: (chunk) => {
                 // https://github.com/remix-run/react-router/issues/13226#issuecomment-2773364665
                 // RR expects to find its virtual module id in build/server/.vite/manifest.json in order to prerender
                 // This is hacky but it's the only thing that works
-                chunk.facadeModuleId = REACT_ROUTER_VIRTUAL_MODULE_ID;
+                chunk.facadeModuleId = REACT_ROUTER_SERVER_BUILD_MODULE_ID;
 
                 return "index.js";
               },
@@ -191,20 +193,18 @@ export function reactRouterHonoServer(options: ReactRouterHonoServerPluginOption
                 if (chunk.name === "server-build") {
                   return reactRouterBuildFile;
                 }
+
                 return "assets/[name]-[hash].js";
               },
               manualChunks:
                 runtime !== "cloudflare"
-                  ? (id) => {
-                      if (id.includes(REACT_ROUTER_VIRTUAL_MODULE_ID)) {
-                        return "server-build";
+                  ? (id, meta) => {
+                      // Make modules that are imported by the server entry point a chunk
+                      if (meta.getModuleInfo(id)?.importers.some((id) => id.includes(serverEntryPoint))) {
+                        return path.basename(id, path.extname(id));
                       }
 
-                      if (id.includes(pluginConfig!.serverEntryPoint)) {
-                        return "server";
-                      }
-
-                      return "chunk";
+                      return undefined;
                     }
                   : undefined,
               // We are doing that because we build a single file that only exports the Hono server
