@@ -4,7 +4,8 @@
   "type": "module",
   "description": "The Vite plugin you need to create a Hono server for your React Router app in less than 10 seconds.",
   "publishConfig": {
-    "access": "public"
+    "access": "public",
+    "provenance": true
   },
   "exports": {
     "./node": {
