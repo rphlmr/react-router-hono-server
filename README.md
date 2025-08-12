@@ -823,7 +823,35 @@ You can use React Router middleware with this package.
 > [!IMPORTANT]
 > Please note that this is an unstable feature and could change in the future.
 >
-> If you already have a custom `getLoadContext` function, you now have to return a `Map` from it. Check the example for more information.
+> If you already have a custom `getLoadContext` function, you now have to return an instance of `unstable_RouterContextProvider` from it. Check this [example](./examples/node/simple-future-middleware/) for more information.
+>
+> ```ts
+> import { unstable_RouterContextProvider, unstable_createContext } from "react-router";
+> import { createHonoServer } from "react-router-hono-server/node";
+>
+> console.log("loading server");
+>
+> type GlobalAppContext = {
+>  appVersion: string;
+> };
+>
+> export const globalAppContext = unstable_createContext<GlobalAppContext>();
+>
+> export default await createHonoServer({
+>  getLoadContext(_c, { mode, build }) {
+>    const isProductionMode = mode === "production";
+>    const context = new unstable_RouterContextProvider();
+>
+>    context.set(globalAppContext, { appVersion: isProductionMode ? build.assets.version : "dev" });
+>
+>    return context;
+>  },
+> });
+>```
+
+Then, you can use the `use` function from `react-router` to access the context in your loaders and actions.
+
+```ts
 
 
 ### Using WebSockets

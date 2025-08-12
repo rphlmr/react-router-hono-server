@@ -1,9 +1,14 @@
 import type { Context, Env, Hono } from "hono";
 import type { UpgradeWebSocket } from "hono/ws";
-import type { AppLoadContext, ServerBuild, UNSAFE_MiddlewareEnabled, unstable_RouterContext } from "react-router";
+import type {
+  AppLoadContext,
+  ServerBuild,
+  UNSAFE_MiddlewareEnabled,
+  unstable_RouterContextProvider,
+} from "react-router";
 
 export type ReactRouterHonoServerAppLoadContext = UNSAFE_MiddlewareEnabled extends true
-  ? Map<unstable_RouterContext, unknown>
+  ? unstable_RouterContextProvider
   : AppLoadContext;
 
 export interface HonoServerOptionsBase<E extends Env> {
