@@ -1,5 +1,11 @@
 # react-router-hono-server
 
+## 2.21.0
+
+### Minor Changes
+
+- ee2abf2: Add support for React Router 7.8.0 unstable middleware changes
+
 ## 2.20.0
 
 ### Minor Changes
