@@ -16,7 +16,7 @@ import {
   patchUpgradeListener,
 } from "../helpers";
 import { cache } from "../middleware";
-import type { HonoServerOptionsBase, WithWebsocket, WithoutWebsocket } from "../types/hono-server-options-base";
+import type { HonoServerOptionsBase, WithoutWebsocket, WithWebsocket } from "../types/hono-server-options-base";
 
 export { createGetLoadContext };
 

@@ -91,7 +91,7 @@ export function cleanUpgradeListeners(httpServer: ServerType) {
   for (const listener of upgradeListeners) {
     httpServer.removeListener(
       "upgrade",
-      /* @ts-ignore - we don't care */
+      /* @ts-expect-error - we don't care */
       listener
     );
   }
@@ -112,7 +112,7 @@ export function patchUpgradeListener(httpServer: ServerType) {
     // remove the original listener
     httpServer.removeListener(
       "upgrade",
-      /* @ts-ignore - we don't care */
+      /* @ts-expect-error - we don't care */
       listener
     );
 

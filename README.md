@@ -507,6 +507,19 @@ export type HonoServerOptions<E extends Env = BlankEnv> = {
    *   }
    * }
    * ```
+   * 
+   * **To make the typing works correctly, in your `react-router.config.ts`, add future v8_middleware flag to true.**
+   *
+   * ```ts
+   * import { defineConfig } from "@react-router/dev";
+   *
+   * export default defineConfig({
+   *   future: {
+   *     v8_middleware: true,
+   *   },
+   *   // other config options...
+   * });
+   * ```
    */
   getLoadContext?: (
     c: Context,
@@ -814,19 +827,30 @@ export default createHonoServer({
 });
 ```
 
-### Using React Router Middleware (unstable future)
+### Using React Router Middleware
 You can use React Router middleware with this package.
 
 > [!TIP]
 > Check this [example](./examples/node/simple-future-middleware/) to see how to use it.
 
 > [!IMPORTANT]
-> Please note that this is an unstable feature and could change in the future.
+> **To make the typing works correctly, in your `react-router.config.ts`, add future v8_middleware flag to true.**
+> 
+>  ```ts
+>  import { defineConfig } from "@react-router/dev";
+> 
+>  export default defineConfig({
+>    future: {
+>      v8_middleware: true,
+>    },
+>    // other config options...
+>  });
+>  ```
 >
-> If you already have a custom `getLoadContext` function, you now have to return an instance of `unstable_RouterContextProvider` from it. Check this [example](./examples/node/simple-future-middleware/) for more information.
+> If you already have a custom `getLoadContext` function, you now have to return an instance of `RouterContextProvider` from it. Check this [example](./examples/node/simple-future-middleware/) for more information.
 >
 > ```ts
-> import { unstable_RouterContextProvider, unstable_createContext } from "react-router";
+> import { RouterContextProvider, createContext } from "react-router";
 > import { createHonoServer } from "react-router-hono-server/node";
 >
 > console.log("loading server");
@@ -835,12 +859,12 @@ You can use React Router middleware with this package.
 >  appVersion: string;
 > };
 >
-> export const globalAppContext = unstable_createContext<GlobalAppContext>();
+> export const globalAppContext = createContext<GlobalAppContext>();
 >
 > export default await createHonoServer({
 >  getLoadContext(_c, { mode, build }) {
 >    const isProductionMode = mode === "production";
->    const context = new unstable_RouterContextProvider();
+>    const context = new RouterContextProvider();
 >
 >    context.set(globalAppContext, { appVersion: isProductionMode ? build.assets.version : "dev" });
 >
