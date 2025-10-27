@@ -1,11 +1,10 @@
-name: Manual Publish with OTP
-
+name: Publish Package to npmjs
 on:
+  release:
+    types: [published]
   workflow_dispatch:
-    inputs:
-      otp:
-        description: "Enter your npm 2FA OTP code"
-        required: true
+  push:
+    branches: [main]
 
 permissions:
   contents: write
@@ -13,7 +12,7 @@ permissions:
   id-token: write
 
 jobs:
-  publish:
+  release:
     runs-on: ubuntu-latest
     if: github.repository_owner == 'rphlmr'
     steps:
@@ -35,13 +34,15 @@ jobs:
       - name: 📥 Install dependencies
         run: pnpm install --frozen-lockfile
 
-      - name: 🛡️ Mask OTP
-        run: echo "::add-mask::${{ github.event.inputs.otp }}"
-
-      - name: 🦋 Publish manually with OTP
-        run: pnpm run release --otp "$OTP"
+      - name: 🦋 Create Release Pull Request or Publish
+        id: changesets
+        uses: changesets/action@v1
+        with:
+          version: pnpm run version
+          publish: pnpm run release
+          title: "chore: release package"
+          commit: "chore: release package"
         env:
-          OTP: ${{ github.event.inputs.otp }}
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
