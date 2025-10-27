@@ -1,5 +1,11 @@
 # react-router-hono-server
 
+## 2.22.0
+
+### Minor Changes
+
+- 179e2ea: Upgrade to latest hono
+
 ## 2.21.0
 
 ### Minor Changes
