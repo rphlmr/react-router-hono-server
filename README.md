@@ -834,18 +834,15 @@ You can use React Router middleware with this package.
 > Check this [example](./examples/node/simple-future-middleware/) to see how to use it.
 
 > [!IMPORTANT]
-> **To make the typing works correctly, in your `react-router.config.ts`, add future v8_middleware flag to true.**
+> **To make the typing works correctly, in your `react-router.config.ts` or where you want, add future v8_middleware flag type to true.**
 > 
 >  ```ts
->  import { defineConfig } from "@react-router/dev";
-> 
->  export default defineConfig({
->    future: {
->      v8_middleware: true,
->    },
->    // other config options...
->  });
->  ```
+> declare module "react-router" {
+>   interface Future {
+>     v8_middleware: true; // 👈 Enable middleware types
+>   }
+> }
+> ```
 >
 > If you already have a custom `getLoadContext` function, you now have to return an instance of `RouterContextProvider` from it. Check this [example](./examples/node/simple-future-middleware/) for more information.
 >

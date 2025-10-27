@@ -42,17 +42,14 @@ export interface HonoServerOptionsBase<E extends Env> {
    * }
    * ```
    *
-   * **To make the typing works correctly, in your `react-router.config.ts`, add future v8_middleware flag to true.**
+   * **To make the typing works correctly, in your `react-router.config.ts` or where you want, add future v8_middleware flag type to true.**
    *
    * ```ts
-   * import { defineConfig } from "@react-router/dev";
-   *
-   * export default defineConfig({
-   *   future: {
-   *     v8_middleware: true,
-   *   },
-   *   // other config options...
-   * });
+   * declare module "react-router" {
+   *   interface Future {
+   *     v8_middleware: true; // 👈 Enable middleware types
+   *   }
+   * }
    * ```
    */
   getLoadContext?: (
