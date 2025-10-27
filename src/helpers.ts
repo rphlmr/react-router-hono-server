@@ -11,9 +11,9 @@ import type { Runtime } from "./types/runtime";
 
 type NodeServer = Server | Http2Server | Http2SecureServer;
 
-type BunServer = Serve;
+type BunServeOptions = Serve.Options<unknown, string>;
 
-type AnyServer = NodeServer | BunServer;
+type AnyServer = NodeServer | BunServeOptions;
 
 interface WebSocket {
   upgradeWebSocket: UpgradeWebSocket;

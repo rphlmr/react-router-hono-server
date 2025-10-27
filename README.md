@@ -663,7 +663,7 @@ export interface HonoServerOptions<E extends Env = BlankEnv> extends HonoServerO
    *
    * {@link https://bun.sh/docs/api/http#start-a-server-bun-serve}
    */
-  customBunServer?: Serve & ServeOptions;
+  customBunServer?: Serve.Options<unknown, string>;
   /**
    * Customize the serve static options
    */

@@ -1,4 +1,4 @@
-import type { Serve, ServeOptions } from "bun";
+import type { Serve } from "bun";
 import { type Env, Hono } from "hono";
 import { serveStatic } from "hono/bun";
 import { createMiddleware } from "hono/factory";
@@ -20,10 +20,7 @@ import type { HonoServerOptionsBase, WithoutWebsocket, WithWebsocket } from "../
 
 export { createGetLoadContext };
 
-type CustomBunServer = Serve &
-  ServeOptions & {
-    websocket?: unknown;
-  };
+type CustomBunServer = Serve.Options<unknown, string>;
 
 interface HonoBunServerOptions<E extends Env = BlankEnv> extends HonoServerOptionsBase<E> {
   /**
@@ -156,12 +153,12 @@ export async function createHonoServer<E extends Env = BlankEnv>(options?: HonoS
     app.route(`${basename}.data`, reactRouterApp);
   }
 
-  let server = {
+  let server: CustomBunServer = {
     ...mergedOptions.customBunServer,
     fetch: app.fetch,
     port: mergedOptions.port,
     development: !PRODUCTION,
-  };
+  } as CustomBunServer;
 
   if (PRODUCTION) {
     server = injectWebSocket(server);
