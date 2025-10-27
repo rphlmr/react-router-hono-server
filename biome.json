@@ -1,7 +1,16 @@
 {
-  "$schema": "https://biomejs.dev/schemas/1.8.3/schema.json",
+  "$schema": "https://biomejs.dev/schemas/2.3.1/schema.json",
   "files": {
-    "ignore": ["dist", "build", "out", ".changeset", ".github", ".vscode"]
+    "includes": [
+      "**",
+      "!**/dist",
+      "!**/build",
+      "!**/out",
+      "!**/.changeset",
+      "!**/.github",
+      "!**/.vscode",
+      "!**/examples"
+    ]
   },
   "vcs": {
     "enabled": true,
@@ -16,12 +25,10 @@
     "lineEnding": "lf",
     "lineWidth": 120
   },
-  "organizeImports": {
-    "enabled": true
-  },
+  "assist": { "actions": { "source": { "organizeImports": "on" } } },
   "linter": {
     "enabled": true,
-    "ignore": ["package.json", "examples"],
+    "includes": ["**", "!**/package.json"],
     "rules": {
       "recommended": true,
       "suspicious": {

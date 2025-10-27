@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { useRevalidator } from "react-router";
+import { NavLink, useRevalidator } from "react-router";
 import { Input } from "~/components/input";
 import { getPublic } from "~/utils/.client/public";
 import { getCommon } from "~/utils/.common/common";
@@ -35,6 +35,7 @@ export default function Index({ loaderData: data }: Route.ComponentProps) {
         <img src={dbLogo} alt="Database" />
         Revalidate
       </button>
+      <NavLink to="/defer">Go to defer</NavLink>
       <input />
       <Input value={value} onChange={(e) => setValue(e.target.value)} />
       <div className="mt-8 w-full max-w-4xl overflow-x-auto">

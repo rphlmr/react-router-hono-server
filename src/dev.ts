@@ -150,7 +150,7 @@ export function reactRouterHonoServer(options: ReactRouterHonoServerPluginOption
         reactRouterBuildFile = "assets/server-build.js";
       }
 
-      let alias = undefined;
+      let alias: Record<string, string> = {};
 
       if (runtime === "cloudflare") {
         const reactVersion = await getReactVersion(pluginConfig);
@@ -332,7 +332,7 @@ export function reactRouterHonoServer(options: ReactRouterHonoServerPluginOption
 
       // Apply the dev server plugin's configureServer hook if it exists
       if (typeof devServerPlugin.configureServer === "function") {
-        // @ts-ignore - FIXME: Come back to this later
+        // @ts-expect-error - FIXME: Come back to this later
         devServerPlugin.configureServer(server);
       } else {
         console.error("Dev server plugin configureServer hook is not a function. This is likely a bug, I guess 😅\n");
@@ -420,7 +420,7 @@ async function getReactVersion(pluginConfig: PluginConfig) {
   const reactPackage = await import("react");
   const version = reactPackage.default.version || reactPackage.version;
 
-  return Number.parseInt(version.split(".")[0]);
+  return Number.parseInt(version.split(".")[0], 10);
 }
 
 /**

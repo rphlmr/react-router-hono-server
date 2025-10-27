@@ -1,5 +1,5 @@
 import React from "react";
-import { Await } from "react-router";
+import { Await, NavLink } from "react-router";
 import type { Route } from "./+types/defer";
 
 async function getProjectLocation() {
@@ -15,6 +15,7 @@ export async function loader() {
 export default function ProjectRoute({ loaderData }: Route.ComponentProps) {
   return (
     <main>
+      <NavLink to="/app/sub">Go to Next</NavLink>
       <h1>Let's locate your project</h1>
       <React.Suspense fallback={<p>Loading project location...</p>}>
         <Await resolve={loaderData.project} errorElement={<p>Error loading project location!</p>}>

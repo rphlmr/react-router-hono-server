@@ -1,14 +1,9 @@
 import type { Context, Env, Hono } from "hono";
 import type { UpgradeWebSocket } from "hono/ws";
-import type {
-  AppLoadContext,
-  ServerBuild,
-  UNSAFE_MiddlewareEnabled,
-  unstable_RouterContextProvider,
-} from "react-router";
+import type { AppLoadContext, RouterContextProvider, ServerBuild, UNSAFE_MiddlewareEnabled } from "react-router";
 
 export type ReactRouterHonoServerAppLoadContext = UNSAFE_MiddlewareEnabled extends true
-  ? unstable_RouterContextProvider
+  ? RouterContextProvider
   : AppLoadContext;
 
 export interface HonoServerOptionsBase<E extends Env> {
@@ -43,6 +38,16 @@ export interface HonoServerOptionsBase<E extends Env> {
    *   interface AppLoadContext {
    *     // Add your custom context here
    *     whatever: string;
+   *   }
+   * }
+   * ```
+   *
+   * **To make the typing works correctly, in your `react-router.config.ts` or where you want, add future v8_middleware flag type to true.**
+   *
+   * ```ts
+   * declare module "react-router" {
+   *   interface Future {
+   *     v8_middleware: true; // 👈 Enable middleware types
    *   }
    * }
    * ```

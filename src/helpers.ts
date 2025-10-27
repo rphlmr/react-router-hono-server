@@ -11,9 +11,9 @@ import type { Runtime } from "./types/runtime";
 
 type NodeServer = Server | Http2Server | Http2SecureServer;
 
-type BunServer = Serve;
+type BunServeOptions = Serve.Options<unknown, string>;
 
-type AnyServer = NodeServer | BunServer;
+type AnyServer = NodeServer | BunServeOptions;
 
 interface WebSocket {
   upgradeWebSocket: UpgradeWebSocket;
@@ -91,7 +91,7 @@ export function cleanUpgradeListeners(httpServer: ServerType) {
   for (const listener of upgradeListeners) {
     httpServer.removeListener(
       "upgrade",
-      /* @ts-ignore - we don't care */
+      /* @ts-expect-error - we don't care */
       listener
     );
   }
@@ -112,7 +112,7 @@ export function patchUpgradeListener(httpServer: ServerType) {
     // remove the original listener
     httpServer.removeListener(
       "upgrade",
-      /* @ts-ignore - we don't care */
+      /* @ts-expect-error - we don't care */
       listener
     );
 

@@ -3,7 +3,7 @@ import { Await } from "react-router";
 import type { Route } from "./+types/defer";
 
 async function getProjectLocation() {
-  return new Promise((resolve) => setTimeout(() => resolve("user/project"), 20000)) as Promise<string>;
+  return new Promise((resolve) => setTimeout(() => resolve("user/project"), 2000)) as Promise<string>;
 }
 
 export async function loader() {
