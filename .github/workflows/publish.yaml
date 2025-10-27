@@ -1,10 +1,11 @@
-name: Publish Package to npmjs
+name: Manual Publish with OTP
+
 on:
-  release:
-    types: [published]
   workflow_dispatch:
-  push:
-    branches: [main]
+    inputs:
+      otp:
+        description: "Enter your npm 2FA OTP code"
+        required: true
 
 permissions:
   contents: write
@@ -12,7 +13,7 @@ permissions:
   id-token: write
 
 jobs:
-  release:
+  publish:
     runs-on: ubuntu-latest
     if: github.repository_owner == 'rphlmr'
     steps:
@@ -29,20 +30,13 @@ jobs:
         with:
           node-version: "22.x"
           registry-url: "https://registry.npmjs.org"
-          node-version-file: "package.json"
           cache: "pnpm"
 
       - name: 📥 Install dependencies
         run: pnpm install --frozen-lockfile
 
-      - name: 🦋 Create Release Pull Request or Publish
-        id: changesets
-        uses: changesets/action@v1
-        with:
-          version: pnpm run version
-          publish: pnpm run release
-          title: "chore: release package"
-          commit: "chore: release package"
+      - name: 🦋 Publish manually with OTP
+        run: pnpm run release --otp ${{ github.event.inputs.otp }}
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
