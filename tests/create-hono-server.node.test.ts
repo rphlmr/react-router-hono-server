@@ -71,7 +71,23 @@ describe("createHonoServer", () => {
     expect(apiJson).toEqual({ id: "resources/api" });
   });
 
-  it("responds with handleErrors", async () => {
+  it("responds with loader data deferred", async () => {
+    const { createHonoServer } = await import("../src/adapters/node");
+
+    const app = await createHonoServer({ defaultLogger: false });
+
+    const response = await app.request("http://127.0.0.1/defer.data");
+    expect(response.status).toBe(200);
+    expect(response.body).toBeInstanceOf(ReadableStream);
+    expect(response.body?.locked).toBe(false);
+
+    const text = await response.text();
+    expect(text.trim()).toBe(
+      `[{"_1":2,"_6":7},"root",{"_3":4},"data",{"_5":1},"id","routes/defer",{"_3":8},{"_5":9},["P",9]]\nP9:["defer"]`
+    );
+  });
+
+  it("catch unexpected errors with entry.server handleErrors", async () => {
     const consoleErrorSpy = vi.spyOn(console, "error").mockImplementation(() => {});
 
     try {
