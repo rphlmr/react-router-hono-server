@@ -10,7 +10,8 @@
     "types": ["vitest/globals", "vite/client", "@types/bun"],
     "rootDir": ".",
     "outDir": "./dist",
-    "noEmit": true
+    "noEmit": true,
+    "jsx": "react-jsx"
   },
   "include": ["src/**/*", "tests/**/*", "cli.ts"],
   "exclude": ["node_modules", "dist", "build", "virtual:react-router/server-build", "examples"]
