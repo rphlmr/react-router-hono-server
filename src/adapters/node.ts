@@ -16,7 +16,7 @@ import {
   patchUpgradeListener,
 } from "../helpers";
 import { cache } from "../middleware";
-import type { HonoServerOptionsBase, WithoutWebsocket, WithWebsocket } from "../types/hono-server-options-base";
+import type { HonoServerOptionsBase, WithNodeWebsocket, WithoutWebsocket } from "../types/hono-server-options-base";
 import type { CreateNodeServerOptions } from "../types/node.https";
 
 export { createGetLoadContext };
@@ -73,7 +73,7 @@ interface HonoNodeServerOptions<E extends Env = BlankEnv> extends HonoServerOpti
   };
 }
 
-type HonoServerOptionsWithWebSocket<E extends Env = BlankEnv> = HonoNodeServerOptions<E> & WithWebsocket<E>;
+type HonoServerOptionsWithWebSocket<E extends Env = BlankEnv> = HonoNodeServerOptions<E> & WithNodeWebsocket<E>;
 
 type HonoServerOptionsWithoutWebSocket<E extends Env = BlankEnv> = HonoNodeServerOptions<E> & WithoutWebsocket<E>;
 
@@ -118,7 +118,7 @@ export async function createHonoServer<E extends Env = BlankEnv>(options?: HonoS
   const PRODUCTION = mode === "production";
   const clientBuildPath = `${import.meta.env.REACT_ROUTER_HONO_SERVER_BUILD_DIRECTORY}/client`;
   const app = new Hono<E>(mergedOptions.app);
-  const { upgradeWebSocket, injectWebSocket } = await createWebSocket({
+  const { upgradeWebSocket, injectWebSocket, wss } = await createWebSocket({
     app,
     enabled: mergedOptions.useWebSocket ?? false,
   });
@@ -161,7 +161,7 @@ export async function createHonoServer<E extends Env = BlankEnv>(options?: HonoS
    * Add optional middleware
    */
   if (mergedOptions.useWebSocket) {
-    await mergedOptions.configure(app, { upgradeWebSocket });
+    await mergedOptions.configure(app, { upgradeWebSocket, wss });
   } else {
     await mergedOptions.configure?.(app);
   }

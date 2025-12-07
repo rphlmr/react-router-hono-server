@@ -12,7 +12,7 @@ export const serverBuildStub: ServerBuild = {
       handleDataRequest: (response) => response,
       handleError: (error: unknown, { request }) => {
         if (!request.signal.aborted) {
-          console.error(error);
+          console.error("handleError", error);
         }
       },
     },

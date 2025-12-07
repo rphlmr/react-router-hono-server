@@ -100,7 +100,35 @@ describe("createHonoServer", () => {
       expect(errorResponse.status).toBe(500);
       expect(errorJson).toContain("Test error from loader");
 
-      expect(consoleErrorSpy).toHaveBeenCalledWith(new Error("Test error from loader"));
+      expect(consoleErrorSpy).toHaveBeenCalledWith("handleError", new Error("Test error from loader"));
+    } finally {
+      consoleErrorSpy.mockRestore();
+    }
+  });
+
+  it("catch unexpected errors with Hono onError", async () => {
+    const consoleErrorSpy = vi.spyOn(console, "error").mockImplementation(() => {});
+
+    try {
+      const { createHonoServer } = await import("../src/adapters/node");
+
+      const app = await createHonoServer({
+        defaultLogger: false,
+        getLoadContext() {
+          throw new Error("Test error outside React Router");
+        },
+      });
+
+      app.onError((error, c) => {
+        console.error("onError", error);
+        return c.text("Caught unexpected error", 500);
+      });
+
+      const errorResponse = await app.request("http://127.0.0.1/");
+      const errorText = await errorResponse.text();
+      expect(errorResponse.status).toBe(500);
+      expect(errorText).toBe("Caught unexpected error");
+      expect(consoleErrorSpy).toHaveBeenCalledWith("onError", new Error("Test error outside React Router"));
     } finally {
       consoleErrorSpy.mockRestore();
     }

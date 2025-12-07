@@ -1,3 +1,4 @@
+import { NodeWebSocket } from "@hono/node-ws";
 import type { WSContext } from "hono/ws";
 import { createHonoServer } from "react-router-hono-server/node";
 
@@ -6,10 +7,18 @@ console.log("loading server");
 // Store connected clients
 const clients = new Set<WSContext>();
 
+let $wss:NodeWebSocket["wss"] | undefined;
+
 export default await createHonoServer({
   useWebSocket: true,
   // 👆 Unlock this 👇 from @hono/node-ws
-  configure: (app, { upgradeWebSocket }) => {
+  configure: (app, { upgradeWebSocket, wss }) => {
+    $wss = wss;
+
+    wss.on('connection', () => {
+      console.log('A new client connected! From configure');
+    });
+
     app.get(
       "/ws",
       upgradeWebSocket((c) => ({
@@ -36,4 +45,9 @@ export default await createHonoServer({
       }))
     );
   },
+});
+
+$wss?.on('connection', () => {
+  console.log('A new client connected! From outside configure');
+  // Implement pingpong or something.
 });

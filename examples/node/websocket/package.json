@@ -18,7 +18,7 @@
     "react": "^18.3.1",
     "react-dom": "^18.3.1",
     "react-router": "^7.0.1",
-    "react-router-hono-server": "*",
+    "react-router-hono-server": "file:../../../out",
     "react-use-websocket": "^4.11.1"
   },
   "devDependencies": {
