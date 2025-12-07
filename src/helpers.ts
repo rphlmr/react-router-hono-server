@@ -1,6 +1,7 @@
 import type { IncomingMessage, Server } from "node:http";
 import type { Http2SecureServer, Http2Server } from "node:http2";
 import type { ServerType } from "@hono/node-server";
+import type { NodeWebSocket } from "@hono/node-ws";
 import type { Serve } from "bun";
 import type { Env, Hono } from "hono";
 import { createMiddleware } from "hono/factory";
@@ -18,6 +19,7 @@ type AnyServer = NodeServer | BunServeOptions;
 interface WebSocket {
   upgradeWebSocket: UpgradeWebSocket;
   injectWebSocket: <Server extends AnyServer>(server: Server) => Server;
+  wss?: NodeWebSocket["wss"];
 }
 
 const defaultWebSocket = {
@@ -48,7 +50,7 @@ export async function createWebSocket({ app, enabled }: Config): Promise<WebSock
 
   if (DEV || runtime === "node") {
     const { createNodeWebSocket } = await import("@hono/node-ws");
-    const { injectWebSocket, upgradeWebSocket } = createNodeWebSocket({ app });
+    const { injectWebSocket, upgradeWebSocket, wss } = createNodeWebSocket({ app });
 
     return {
       upgradeWebSocket,
@@ -56,6 +58,7 @@ export async function createWebSocket({ app, enabled }: Config): Promise<WebSock
         injectWebSocket(server as NodeServer);
         return server;
       },
+      wss,
     };
   }
 

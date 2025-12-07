@@ -1,3 +1,4 @@
+import type { NodeWebSocket } from "@hono/node-ws";
 import type { Context, Env, Hono } from "hono";
 import type { UpgradeWebSocket } from "hono/ws";
 import type { AppLoadContext, RouterContextProvider, ServerBuild, UNSAFE_MiddlewareEnabled } from "react-router";
@@ -82,6 +83,26 @@ export interface WithWebsocket<E extends Env> {
    * It is applied after the default middleware and before the React Router middleware
    */
   configure: (app: Hono<E>, options: { upgradeWebSocket: UpgradeWebSocket }) => Promise<void> | void;
+}
+
+export interface WithNodeWebsocket<E extends Env> {
+  /**
+   * Enable WebSockets support in `configure`
+   *
+   * For `bun` and `cloudflare` we will use the `@hono/node-ws`'s `injectWebSocket` on dev (only),
+   *
+   * Defaults to `false`
+   */
+  useWebSocket: true;
+  /**
+   * Customize the Hono server, for example, adding middleware
+   *
+   * It is applied after the default middleware and before the React Router middleware
+   */
+  configure: (
+    app: Hono<E>,
+    options: { upgradeWebSocket: UpgradeWebSocket; wss: NodeWebSocket["wss"] }
+  ) => Promise<void> | void;
 }
 
 export interface WithoutWebsocket<E extends Env> {

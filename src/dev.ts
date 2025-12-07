@@ -106,12 +106,6 @@ export function reactRouterHonoServer(options: ReactRouterHonoServerPluginOption
 
       const serverEntryPoint = pluginConfig.serverEntryPoint;
 
-      if (pluginConfig.future.unstable_viteEnvironmentApi) {
-        console.warn(
-          "\x1b[33mThe unstable_viteEnvironmentApi is enabled.\nThis is experimental and may break your build.\x1b[0m\n"
-        );
-      }
-
       if (
         env.mode === "development" &&
         runtime === "cloudflare" &&
@@ -140,7 +134,7 @@ export function reactRouterHonoServer(options: ReactRouterHonoServerPluginOption
         },
       } satisfies UserConfig;
 
-      if (!pluginConfig.future.unstable_viteEnvironmentApi && !pluginConfig.isSsrBuild) {
+      if (!pluginConfig.future.v8_viteEnvironmentApi && !pluginConfig.isSsrBuild) {
         return baseConfig;
       }
 
@@ -160,9 +154,9 @@ export function reactRouterHonoServer(options: ReactRouterHonoServerPluginOption
         };
       }
 
-      if (runtime === "bun" && pluginConfig.future.unstable_viteEnvironmentApi) {
+      if (runtime === "bun" && pluginConfig.future.v8_viteEnvironmentApi) {
         throw new Error(
-          "The unstable_viteEnvironmentApi is not supported with the Bun runtime. Please disable it in your react-router.config.ts"
+          "The v8_viteEnvironmentApi flag is not supported with the Bun runtime. Please disable it in your react-router.config.ts"
         );
       }
 
@@ -215,7 +209,7 @@ export function reactRouterHonoServer(options: ReactRouterHonoServerPluginOption
         },
       } satisfies Omit<UserConfig, "plugins">;
 
-      if (pluginConfig.future.unstable_viteEnvironmentApi) {
+      if (pluginConfig.future.v8_viteEnvironmentApi) {
         return {
           ...baseConfig,
           environments: {

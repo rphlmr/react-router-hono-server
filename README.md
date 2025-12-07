@@ -872,15 +872,13 @@ You can use React Router middleware with this package.
 
 Then, you can use the `use` function from `react-router` to access the context in your loaders and actions.
 
-```ts
-
 
 ### Using WebSockets
 #### Node
 This package has a built-in helper to use `@hono/node-ws`
 
 > [!TIP]
-> Check this [example](./examples/node/websocket/) to see how to use it.
+> Check this [example](./examples/node/websocket/) to see how to use it
 
 ```ts
 import type { WSContext } from "hono/ws";
@@ -892,7 +890,13 @@ const clients = new Set<WSContext>();
 export default createHonoServer({
   useWebSocket: true,
   // 👆 Unlock this 👇 from @hono/node-ws
-  configure: (app, { upgradeWebSocket }) => {
+  configure: (app, { upgradeWebSocket, wss }) => {
+    // You now have access to the WebSocketServer instance
+    wss.on('connection', (ws) => {
+      console.log('A new client connected!');
+      // Implement pingpong or something.
+    });
+
     app.get(
       "/ws",
       upgradeWebSocket((c) => ({

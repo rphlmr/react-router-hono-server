@@ -7,6 +7,7 @@ interface ReactRouterHonoServerEnv {
 
 interface ImportMetaEnv extends ReactRouterHonoServerEnv {}
 
+// biome-ignore lint/correctness/noUnusedVariables: ...
 interface ImportMeta {
   readonly env: ImportMetaEnv;
 }
