@@ -104,12 +104,18 @@ export function reactRouterHonoServer(options: ReactRouterHonoServerPluginOption
         return;
       }
 
+      const isEnvironmentApiEnabled =
+        pluginConfig.future.unstable_viteEnvironmentApi ??
+        (pluginConfig.future as { v8_viteEnvironmentApi?: boolean }).v8_viteEnvironmentApi;
+
+      const flagName = pluginConfig.future.unstable_viteEnvironmentApi
+        ? "unstable_viteEnvironmentApi"
+        : "v8_viteEnvironmentApi";
+
       const serverEntryPoint = pluginConfig.serverEntryPoint;
 
-      if (pluginConfig.future.unstable_viteEnvironmentApi) {
-        console.warn(
-          "\x1b[33mThe unstable_viteEnvironmentApi is enabled.\nThis is experimental and may break your build.\x1b[0m\n"
-        );
+      if (isEnvironmentApiEnabled) {
+        console.warn(`\x1b[33mThe ${flagName} is enabled.\nThis is experimental and may break your build.\x1b[0m\n`);
       }
 
       if (
@@ -140,7 +146,7 @@ export function reactRouterHonoServer(options: ReactRouterHonoServerPluginOption
         },
       } satisfies UserConfig;
 
-      if (!pluginConfig.future.unstable_viteEnvironmentApi && !pluginConfig.isSsrBuild) {
+      if (!isEnvironmentApiEnabled && !pluginConfig.isSsrBuild) {
         return baseConfig;
       }
 
@@ -160,9 +166,9 @@ export function reactRouterHonoServer(options: ReactRouterHonoServerPluginOption
         };
       }
 
-      if (runtime === "bun" && pluginConfig.future.unstable_viteEnvironmentApi) {
+      if (runtime === "bun" && isEnvironmentApiEnabled) {
         throw new Error(
-          "The unstable_viteEnvironmentApi is not supported with the Bun runtime. Please disable it in your react-router.config.ts"
+          `The ${flagName} is not supported with the Bun runtime. Please disable it in your react-router.config.ts`
         );
       }
 
@@ -215,7 +221,7 @@ export function reactRouterHonoServer(options: ReactRouterHonoServerPluginOption
         },
       } satisfies Omit<UserConfig, "plugins">;
 
-      if (pluginConfig.future.unstable_viteEnvironmentApi) {
+      if (isEnvironmentApiEnabled) {
         return {
           ...baseConfig,
           environments: {
