@@ -96,7 +96,7 @@
     "@hono/node-server": "^1.19.5",
     "@hono/node-ws": "^1.2.0",
     "@hono/vite-dev-server": "^0.23.0",
-    "hono": "^4.10.3"
+    "hono": "^4.11.4"
   },
   "devDependencies": {
     "@biomejs/biome": "^2.3.1",
