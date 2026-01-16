@@ -13,13 +13,13 @@ importers:
         version: 0.11.0
       '@hono/node-server':
         specifier: ^1.19.5
-        version: 1.19.5(hono@4.10.3)
+        version: 1.19.5(hono@4.11.4)
       '@hono/node-ws':
         specifier: ^1.2.0
-        version: 1.2.0(@hono/node-server@1.19.5(hono@4.10.3))(hono@4.10.3)
+        version: 1.2.0(@hono/node-server@1.19.5(hono@4.11.4))(hono@4.11.4)
       '@hono/vite-dev-server':
         specifier: ^0.23.0
-        version: 0.23.0(hono@4.10.3)(miniflare@3.20250718.2)(wrangler@4.45.0(@cloudflare/workers-types@4.20251014.0))
+        version: 0.23.0(hono@4.11.4)(miniflare@3.20250718.2)(wrangler@4.45.0(@cloudflare/workers-types@4.20251014.0))
       '@react-router/dev':
         specifier: ^7.9.0
         version: 7.9.4(@types/node@22.18.12)(react-router@7.9.4(react@19.2.0))(typescript@5.9.3)(vite@7.1.12(@types/node@22.18.12))(wrangler@4.45.0(@cloudflare/workers-types@4.20251014.0))
@@ -27,8 +27,8 @@ importers:
         specifier: ^19.0.0
         version: 19.2.2
       hono:
-        specifier: ^4.10.3
-        version: 4.10.3
+        specifier: ^4.11.4
+        version: 4.11.4
       miniflare:
         specifier: ^3.20241205.0
         version: 3.20250718.2
@@ -1644,8 +1644,8 @@ packages:
     resolution: {integrity: sha512-0hJU9SCPvmMzIBdZFqNPXWa6dqh7WdH0cII9y+CyS8rG3nL48Bclra9HmKhVVUHyPWNH5Y7xDwAB7bfgSjkUMQ==}
     engines: {node: '>= 0.4'}
 
-  hono@4.10.3:
-    resolution: {integrity: sha512-2LOYWUbnhdxdL8MNbNg9XZig6k+cZXm5IjHn2Aviv7honhBMOHb+jxrKIeJRZJRmn+htUCKhaicxwXuUDlchRA==}
+  hono@4.11.4:
+    resolution: {integrity: sha512-U7tt8JsyrxSRKspfhtLET79pU8K+tInj5QZXs1jSugO1Vq5dFj3kmZsRldo29mTBfcjDRVRXrEZ6LS63Cog9ZA==}
     engines: {node: '>=16.9.0'}
 
   hosted-git-info@2.8.9:
@@ -3406,23 +3406,23 @@ snapshots:
 
   '@fastify/busboy@2.1.1': {}
 
-  '@hono/node-server@1.19.5(hono@4.10.3)':
+  '@hono/node-server@1.19.5(hono@4.11.4)':
     dependencies:
-      hono: 4.10.3
+      hono: 4.11.4
 
-  '@hono/node-ws@1.2.0(@hono/node-server@1.19.5(hono@4.10.3))(hono@4.10.3)':
+  '@hono/node-ws@1.2.0(@hono/node-server@1.19.5(hono@4.11.4))(hono@4.11.4)':
     dependencies:
-      '@hono/node-server': 1.19.5(hono@4.10.3)
-      hono: 4.10.3
+      '@hono/node-server': 1.19.5(hono@4.11.4)
+      hono: 4.11.4
       ws: 8.18.3
     transitivePeerDependencies:
       - bufferutil
       - utf-8-validate
 
-  '@hono/vite-dev-server@0.23.0(hono@4.10.3)(miniflare@3.20250718.2)(wrangler@4.45.0(@cloudflare/workers-types@4.20251014.0))':
+  '@hono/vite-dev-server@0.23.0(hono@4.11.4)(miniflare@3.20250718.2)(wrangler@4.45.0(@cloudflare/workers-types@4.20251014.0))':
     dependencies:
-      '@hono/node-server': 1.19.5(hono@4.10.3)
-      hono: 4.10.3
+      '@hono/node-server': 1.19.5(hono@4.11.4)
+      hono: 4.11.4
       minimatch: 9.0.5
     optionalDependencies:
       miniflare: 3.20250718.2
@@ -4421,7 +4421,7 @@ snapshots:
     dependencies:
       function-bind: 1.1.2
 
-  hono@4.10.3: {}
+  hono@4.11.4: {}
 
   hosted-git-info@2.8.9: {}
 
