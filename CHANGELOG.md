@@ -1,5 +1,11 @@
 # react-router-hono-server
 
+## 2.23.0
+
+### Minor Changes
+
+- 0ccf170: chore: bump hono to v4.11.4 ([#173](https://github.com/rphlmr/react-router-hono-server/issues/173))
+
 ## 2.22.0
 
 ### Minor Changes
