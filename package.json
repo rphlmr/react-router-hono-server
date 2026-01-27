@@ -92,24 +92,24 @@
   ],
   "homepage": "https://github.com/rphlmr/react-router-hono-server#readme",
   "dependencies": {
-    "@drizzle-team/brocli": "^0.11.0",
-    "@hono/node-server": "^1.19.5",
-    "@hono/node-ws": "^1.2.0",
-    "@hono/vite-dev-server": "^0.23.0",
-    "hono": "^4.11.4"
+    "@drizzle-team/brocli": "0.11.0",
+    "@hono/node-server": "1.19.9",
+    "@hono/node-ws": "1.3.0",
+    "@hono/vite-dev-server": "0.24.1",
+    "hono": "4.11.7"
   },
   "devDependencies": {
     "@biomejs/biome": "^2.3.1",
-    "@changesets/cli": "^2.29.7",
+    "@changesets/cli": "^2.29.8",
     "@cloudflare/workers-types": "^4.20250405.0",
-    "@types/bun": "^1.3.1",
-    "@types/node": "^22.18.12",
-    "@vitest/coverage-v8": "^4.0.4",
-    "lefthook": "^1.13.6",
+    "@types/bun": "^1.3.6",
+    "@types/node": "^22.19.7",
+    "@vitest/coverage-v8": "^4.0.18",
+    "lefthook": "^2.0.16",
     "npm-run-all": "^4.1.5",
-    "tsup": "^8.5.0",
+    "tsup": "^8.5.1",
     "typescript": "^5.9.3",
-    "vitest": "^4.0.4"
+    "vitest": "^4.0.18"
   },
   "peerDependencies": {
     "@cloudflare/workers-types": "^4.20250317.0",
