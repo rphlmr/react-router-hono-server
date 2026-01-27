@@ -1,5 +1,15 @@
 # react-router-hono-server
 
+## 2.24.0
+
+### Minor Changes
+
+- f1f2e3d: chore: 🔨 Update hono dependencies
+
+### Patch Changes
+
+- 1defe62: Add compatibility with environment API being promoted to v8 instead of unstable in React Router
+
 ## 2.23.0
 
 ### Minor Changes
