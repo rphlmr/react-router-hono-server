@@ -1,5 +1,11 @@
 # react-router-hono-server
 
+## 2.24.1
+
+### Patch Changes
+
+- f207d80: chore: 🔨 Update hono and related dependencies. Make hono a peer dep
+
 ## 2.24.0
 
 ### Minor Changes
