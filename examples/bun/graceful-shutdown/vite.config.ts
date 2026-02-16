@@ -1,0 +1,15 @@
+import { reactRouter } from "@react-router/dev/vite";
+import { reactRouterHonoServer } from "react-router-hono-server/dev";
+import { defineConfig } from "vite";
+import tsconfigPaths from "vite-tsconfig-paths";
+
+export default defineConfig({
+  plugins: [
+    reactRouterHonoServer({ runtime: "bun" }),
+    reactRouter(),
+    tsconfigPaths(),
+  ],
+  build: {
+    target: "esnext", // Bun supports all modern features including top-level await
+  },
+});
