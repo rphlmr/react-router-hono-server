@@ -665,6 +665,20 @@ export interface HonoServerOptions<E extends Env = BlankEnv> extends HonoServerO
    */
   customBunServer?: Serve.Options<unknown, string>;
   /**
+   * Callback executed after server has closed and all inflight requests completed,
+   * before process exit. Only applicable in production mode.
+   *
+   * @example
+   * ```ts
+   * export default createHonoServer({
+   *   onGracefulShutdown: async () => {
+   *     await db.close();
+   *   },
+   * });
+   * ```
+   */
+  onGracefulShutdown?: () => Promise<void> | void;  
+  /**
    * Customize the serve static options
    */
   serveStaticOptions?: {

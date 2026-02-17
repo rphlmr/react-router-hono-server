@@ -22,6 +22,10 @@ export { createGetLoadContext };
 
 type CustomBunServer = Serve.Options<unknown, string>;
 
+// Module-level references for graceful shutdown
+let serverInstance: ReturnType<typeof Bun.serve> | undefined;
+let shutdownCallback: (() => Promise<void> | void) | undefined;
+
 interface HonoBunServerOptions<E extends Env = BlankEnv> extends HonoServerOptionsBase<E> {
   /**
    * Customize the bun server
@@ -29,6 +33,20 @@ interface HonoBunServerOptions<E extends Env = BlankEnv> extends HonoServerOptio
    * {@link https://bun.sh/docs/api/http#start-a-server-bun-serve}
    */
   customBunServer?: Partial<CustomBunServer>;
+  /**
+   * Callback executed after server has closed and all inflight requests completed,
+   * before process exit. Only applicable in production mode.
+   *
+   * @example
+   * ```ts
+   * export default createHonoServer({
+   *   onGracefulShutdown: async () => {
+   *     await db.close();
+   *   },
+   * });
+   * ```
+   */
+  onGracefulShutdown?: () => Promise<void> | void;
   /**
    * Customize the serve static options
    */
@@ -76,6 +94,12 @@ export async function createHonoServer<E extends Env = BlankEnv>(options?: HonoS
   const mode = getBuildMode();
   const PRODUCTION = mode === "production";
   const clientBuildPath = `${import.meta.env.REACT_ROUTER_HONO_SERVER_BUILD_DIRECTORY}/client`;
+
+  // Store the shutdown callback for use in shutdown()
+  if (PRODUCTION && mergedOptions.onGracefulShutdown) {
+    shutdownCallback = mergedOptions.onGracefulShutdown;
+  }
+
   const app = new Hono<E>(mergedOptions.app);
   const { upgradeWebSocket, injectWebSocket } = await createWebSocket({
     app,
@@ -162,6 +186,47 @@ export async function createHonoServer<E extends Env = BlankEnv>(options?: HonoS
 
   if (PRODUCTION) {
     server = injectWebSocket(server);
+
+    // Actually start the server in production and store reference for graceful shutdown
+    serverInstance = Bun.serve(server);
+
+    console.log(`Started server: ${serverInstance.protocol}://${serverInstance.hostname}:${serverInstance.port}`);
+
+    // Automatically register signal handlers if graceful shutdown is enabled
+    if (shutdownCallback != null) {
+      // Graceful shutdown handler
+      let gracefulShutdownInProgress = false;
+      const gracefulShutdown = async (signal: string) => {
+        if (gracefulShutdownInProgress) return; // Prevent multiple invocations
+        gracefulShutdownInProgress = true;
+        try {
+          if (serverInstance != null) {
+            console.log(`\n📡 Received ${signal}, shutting down gracefully...`);
+            await serverInstance.stop(false); // false = wait for active connections to complete
+            console.log("Server stopped, all requests completed");
+
+            // Execute user's cleanup callback
+            if (shutdownCallback) {
+              console.log("🧹 Running cleanup tasks...");
+              await shutdownCallback();
+              console.log("✅ Cleanup complete!");
+            }
+
+            console.log("👋 Graceful shutdown completed");
+          }
+          process.exit(0);
+        } catch (error) {
+          console.error("❌ Shutdown failed:", error);
+          process.exit(1);
+        }
+      };
+      if (serverInstance != null) {
+        // we have a server to shut down, and a callback - bind to signals
+        process.on("SIGTERM", () => gracefulShutdown("SIGTERM"));
+        process.on("SIGINT", () => gracefulShutdown("SIGINT"));
+        console.log("✅ Graceful shutdown enabled. Press Ctrl+C to shutdown gracefully.");
+      }
+    }
   } else if (globalThis.__viteDevServer?.httpServer) {
     // You wonder why I'm doing this?
     // It is to make the dev server work with `hono/node-ws`
