@@ -1,5 +1,11 @@
 # react-router-hono-server
 
+## 2.25.0
+
+### Minor Changes
+
+- 8a64698: ✨ feat: Added optional production graceful shutdown for bun adapter.
+
 ## 2.24.1
 
 ### Patch Changes
