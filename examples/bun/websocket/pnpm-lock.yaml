@@ -28,14 +28,14 @@ importers:
         version: 7.9.4(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
       react-router-hono-server:
         specifier: '*'
-        version: 2.21.0(@hono/node-server@1.19.5(hono@4.10.3))(@react-router/dev@7.9.4(@types/node@24.9.1)(react-router@7.9.4(react-dom@18.3.1(react@18.3.1))(react@18.3.1))(typescript@5.9.3)(vite@5.4.21(@types/node@24.9.1)))(@types/react@18.3.26)(react-router@7.9.4(react-dom@18.3.1(react@18.3.1))(react@18.3.1))(vite@5.4.21(@types/node@24.9.1))
+        version: 2.21.0(@hono/node-server@1.19.10(hono@4.10.3))(@react-router/dev@7.9.4(@types/node@24.9.1)(react-router@7.9.4(react-dom@18.3.1(react@18.3.1))(react@18.3.1))(typescript@5.9.3)(vite@5.4.21(@types/node@24.9.1)))(@types/react@18.3.26)(react-router@7.9.4(react-dom@18.3.1(react@18.3.1))(react@18.3.1))(vite@5.4.21(@types/node@24.9.1))
       react-use-websocket:
         specifier: ^4.11.1
         version: 4.13.0
     devDependencies:
       '@hono/node-server':
-        specifier: ^1.13.7
-        version: 1.19.5(hono@4.10.3)
+        specifier: ^1.19.10
+        version: 1.19.10(hono@4.10.3)
       '@react-router/dev':
         specifier: ^7.0.1
         version: 7.9.4(@types/node@24.9.1)(react-router@7.9.4(react-dom@18.3.1(react@18.3.1))(react@18.3.1))(typescript@5.9.3)(vite@5.4.21(@types/node@24.9.1))
@@ -394,8 +394,8 @@ packages:
     resolution: {integrity: sha512-d9zaMRSTIKDLhctzH12MtXvJKSSUhaHcjV+2Z+GK+EEY7XKpP5yR4x+N3TAcHTcu963nIr+TMcCb4DBCYX1z6Q==}
     engines: {node: ^12.22.0 || ^14.17.0 || >=16.0.0}
 
-  '@hono/node-server@1.19.5':
-    resolution: {integrity: sha512-iBuhh+uaaggeAuf+TftcjZyWh2GEgZcVGXkNtskLVoWaXhnJtC5HLHrU8W1KHDoucqO1MswwglmkWLFyiDn4WQ==}
+  '@hono/node-server@1.19.10':
+    resolution: {integrity: sha512-hZ7nOssGqRgyV3FVVQdfi+U4q02uB23bpnYpdvNXkYTRRyWx84b7yf1ans+dnJ/7h41sGL3CeQTfO+ZGxuO+Iw==}
     engines: {node: '>=18.14.1'}
     peerDependencies:
       hono: ^4
@@ -1395,11 +1395,12 @@ packages:
 
   glob@10.4.5:
     resolution: {integrity: sha512-7Bv8RF0k6xjo7d4A/PxYLbUCfb6c+Vpd2/mB2yRDlew7Jb5hEXiCD9ibfO7wpk8i4sevK6DFny9h7EYbM3/sHg==}
+    deprecated: Old versions of glob are not supported, and contain widely publicized security vulnerabilities, which have been fixed in the current version. Please update. Support for old versions may be purchased (at exorbitant rates) by contacting i@izs.me
     hasBin: true
 
   glob@7.2.3:
     resolution: {integrity: sha512-nFR0zLpU2YCaRxwoCJvL6UvCH2JFyFVIvwTLsIf21AuHlMskA1hhTdk+LlYJtOlYt9v6dvszD2BGRqBL+iQK9Q==}
-    deprecated: Glob versions prior to v9 are no longer supported
+    deprecated: Old versions of glob are not supported, and contain widely publicized security vulnerabilities, which have been fixed in the current version. Please update. Support for old versions may be purchased (at exorbitant rates) by contacting i@izs.me
 
   globals@13.24.0:
     resolution: {integrity: sha512-AhO5QUcj8llrbG09iWhPU2B204J1xnPeL8kQmVorSsy+Sjj1sk8gIyh6cUocGmH4L0UuhAJy+hJMRA4mgA4mFQ==}
@@ -2758,13 +2759,13 @@ snapshots:
 
   '@eslint/js@8.57.1': {}
 
-  '@hono/node-server@1.19.5(hono@4.10.3)':
+  '@hono/node-server@1.19.10(hono@4.10.3)':
     dependencies:
       hono: 4.10.3
 
-  '@hono/node-ws@1.2.0(@hono/node-server@1.19.5(hono@4.10.3))(hono@4.10.3)':
+  '@hono/node-ws@1.2.0(@hono/node-server@1.19.10(hono@4.10.3))(hono@4.10.3)':
     dependencies:
-      '@hono/node-server': 1.19.5(hono@4.10.3)
+      '@hono/node-server': 1.19.10(hono@4.10.3)
       hono: 4.10.3
       ws: 8.18.3
     transitivePeerDependencies:
@@ -2773,7 +2774,7 @@ snapshots:
 
   '@hono/vite-dev-server@0.20.1(hono@4.10.3)':
     dependencies:
-      '@hono/node-server': 1.19.5(hono@4.10.3)
+      '@hono/node-server': 1.19.10(hono@4.10.3)
       hono: 4.10.3
       minimatch: 9.0.5
 
@@ -4475,11 +4476,11 @@ snapshots:
 
   react-refresh@0.14.2: {}
 
-  react-router-hono-server@2.21.0(@hono/node-server@1.19.5(hono@4.10.3))(@react-router/dev@7.9.4(@types/node@24.9.1)(react-router@7.9.4(react-dom@18.3.1(react@18.3.1))(react@18.3.1))(typescript@5.9.3)(vite@5.4.21(@types/node@24.9.1)))(@types/react@18.3.26)(react-router@7.9.4(react-dom@18.3.1(react@18.3.1))(react@18.3.1))(vite@5.4.21(@types/node@24.9.1)):
+  react-router-hono-server@2.21.0(@hono/node-server@1.19.10(hono@4.10.3))(@react-router/dev@7.9.4(@types/node@24.9.1)(react-router@7.9.4(react-dom@18.3.1(react@18.3.1))(react@18.3.1))(typescript@5.9.3)(vite@5.4.21(@types/node@24.9.1)))(@types/react@18.3.26)(react-router@7.9.4(react-dom@18.3.1(react@18.3.1))(react@18.3.1))(vite@5.4.21(@types/node@24.9.1)):
     dependencies:
       '@drizzle-team/brocli': 0.11.0
-      '@hono/node-server': 1.19.5(hono@4.10.3)
-      '@hono/node-ws': 1.2.0(@hono/node-server@1.19.5(hono@4.10.3))(hono@4.10.3)
+      '@hono/node-server': 1.19.10(hono@4.10.3)
+      '@hono/node-ws': 1.2.0(@hono/node-server@1.19.10(hono@4.10.3))(hono@4.10.3)
       '@hono/vite-dev-server': 0.20.1(hono@4.10.3)
       '@react-router/dev': 7.9.4(@types/node@24.9.1)(react-router@7.9.4(react-dom@18.3.1(react@18.3.1))(react@18.3.1))(typescript@5.9.3)(vite@5.4.21(@types/node@24.9.1))
       '@types/react': 18.3.26
