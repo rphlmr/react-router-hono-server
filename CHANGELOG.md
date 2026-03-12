@@ -1,5 +1,11 @@
 # react-router-hono-server
 
+## 2.25.1
+
+### Patch Changes
+
+- c8acef5: update hono
+
 ## 2.25.0
 
 ### Minor Changes
