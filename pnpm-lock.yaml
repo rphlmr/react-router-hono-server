@@ -22,7 +22,7 @@ importers:
         version: 0.25.0(hono@4.12.7)(miniflare@3.20250718.3)(wrangler@4.45.0(@cloudflare/workers-types@4.20251014.0))
       '@react-router/dev':
         specifier: ^7.9.0
-        version: 7.9.4(@types/node@22.19.10)(react-router@7.9.4(react@19.2.0))(typescript@5.9.3)(vite@7.1.12(@types/node@22.19.10))(wrangler@4.45.0(@cloudflare/workers-types@4.20251014.0))
+        version: 7.9.4(@types/node@25.4.0)(react-router@7.9.4(react@19.2.0))(typescript@5.9.3)(vite@7.1.12(@types/node@25.4.0))(wrangler@4.45.0(@cloudflare/workers-types@4.20251014.0))
       '@types/react':
         specifier: ^19.0.0
         version: 19.2.2
@@ -34,7 +34,7 @@ importers:
         version: 7.9.4(react@19.2.0)
       vite:
         specifier: ^7.0.0
-        version: 7.1.12(@types/node@22.19.10)
+        version: 7.1.12(@types/node@25.4.0)
       wrangler:
         specifier: ^4.2.0
         version: 4.45.0(@cloudflare/workers-types@4.20251014.0)
@@ -44,7 +44,7 @@ importers:
         version: 2.3.1
       '@changesets/cli':
         specifier: ^2.29.8
-        version: 2.29.8(@types/node@22.19.10)
+        version: 2.29.8(@types/node@25.4.0)
       '@cloudflare/workers-types':
         specifier: ^4.20250405.0
         version: 4.20251014.0
@@ -52,11 +52,11 @@ importers:
         specifier: ^1.3.6
         version: 1.3.6
       '@types/node':
-        specifier: ^22.19.10
-        version: 22.19.10
+        specifier: ^25.4.0
+        version: 25.4.0
       '@vitest/coverage-v8':
         specifier: ^4.0.18
-        version: 4.0.18(vitest@4.0.18(@types/node@22.19.10))
+        version: 4.0.18(vitest@4.0.18(@types/node@25.4.0))
       hono:
         specifier: 4.12.7
         version: 4.12.7
@@ -74,7 +74,7 @@ importers:
         version: 5.9.3
       vitest:
         specifier: ^4.0.18
-        version: 4.0.18(@types/node@22.19.10)
+        version: 4.0.18(@types/node@25.4.0)
 
 packages:
 
@@ -406,8 +406,8 @@ packages:
   '@drizzle-team/brocli@0.11.0':
     resolution: {integrity: sha512-hD3pekGiPg0WPCCGAZmusBBJsDqGUR66Y452YgQsZOnkdQ7ViEPKuyP4huUGEZQefp8g34RRodXYmJ2TbCH+tg==}
 
-  '@emnapi/runtime@1.8.1':
-    resolution: {integrity: sha512-mehfKSMWjjNol8659Z8KxEMrdSJDDot5SXMq00dM8BN4o+CLNXQ0xH2V7EchNHV4RmbZLmmPdEaXZc5H2FXmDg==}
+  '@emnapi/runtime@1.9.0':
+    resolution: {integrity: sha512-QN75eB0IH2ywSpRpNddCRfQIhmJYBCJ1x5Lb3IscKAL8bMnVAKnRg8dCoXbHzVLLH7P38N2Z3mtulB7W0J0FKw==}
 
   '@esbuild/aix-ppc64@0.25.11':
     resolution: {integrity: sha512-Xt1dOL13m8u0WE8iplx9Ibbm+hFAO0GsU2P34UNoDGvZYkY8ifSiy6Zuc1lYxfG7svWE2fzqCUmFp5HCn51gJg==}
@@ -1253,8 +1253,8 @@ packages:
   '@types/node@12.20.55':
     resolution: {integrity: sha512-J8xLz7q2OFulZ2cyGTLE1TbbZcjpno7FaN6zdJNrgAdrJ+DZzh/uFR6YrTb4C+nXakvud8Q4+rbhoIWlYQbUFQ==}
 
-  '@types/node@22.19.10':
-    resolution: {integrity: sha512-tF5VOugLS/EuDlTBijk0MqABfP8UxgYazTLo3uIn3b4yJgg26QRbVYJYsDtHrjdDUIRfP70+VfhTTc+CE1yskw==}
+  '@types/node@25.4.0':
+    resolution: {integrity: sha512-9wLpoeWuBlcbBpOY3XmzSTG3oscB6xjBEEtn+pYXTfhyXhIxC5FsBer2KTopBlvKEiW9l13po9fq+SJY/5lkhw==}
 
   '@types/react@19.2.2':
     resolution: {integrity: sha512-6mDvHUFSjyT2B2yeNx2nUgMxh9LtOWvkhIU3uePn2I2oyNymUAX1NIsdgviM4CH+JSrp2D2hsMvJOkxY+0wNRA==}
@@ -2769,8 +2769,8 @@ packages:
     resolution: {integrity: sha512-nWJ91DjeOkej/TA8pXQ3myruKpKEYgqvpw9lz4OPHj/NWFNluYrjbz9j01CJ8yKQd2g4jFoOkINCTW2I5LEEyw==}
     engines: {node: '>= 0.4'}
 
-  undici-types@6.21.0:
-    resolution: {integrity: sha512-iwDZqg0QAGrg9Rav5H4n0M64c3mkR59cJ6wQp+7C4nI0gsmExaedaYLNO44eT4AtBBwjbTiGPMlt2Md0T9H9JQ==}
+  undici-types@7.18.2:
+    resolution: {integrity: sha512-AsuCzffGHJybSaRrmr5eHr81mwJU3kjw6M+uprWvCXiNeN9SOGwQ3Jn8jb8m3Z6izVgknn1R0FTCEAP2QrLY/w==}
 
   undici@5.29.0:
     resolution: {integrity: sha512-raqeBD6NQK4SkWhQzeYKd1KmIG6dllBOTt55Rmkt4HtI9mwdWtJljnrXjAFUBLTSN67HWrOIZ3EPF4kjUw80Bg==}
@@ -3245,7 +3245,7 @@ snapshots:
     dependencies:
       '@changesets/types': 6.1.0
 
-  '@changesets/cli@2.29.8(@types/node@22.19.10)':
+  '@changesets/cli@2.29.8(@types/node@25.4.0)':
     dependencies:
       '@changesets/apply-release-plan': 7.0.14
       '@changesets/assemble-release-plan': 6.0.9
@@ -3261,7 +3261,7 @@ snapshots:
       '@changesets/should-skip-package': 0.1.2
       '@changesets/types': 6.1.0
       '@changesets/write': 0.4.0
-      '@inquirer/external-editor': 1.0.2(@types/node@22.19.10)
+      '@inquirer/external-editor': 1.0.2(@types/node@25.4.0)
       '@manypkg/get-packages': 1.1.3
       ansi-colors: 4.1.3
       ci-info: 3.9.0
@@ -3408,7 +3408,7 @@ snapshots:
 
   '@drizzle-team/brocli@0.11.0': {}
 
-  '@emnapi/runtime@1.8.1':
+  '@emnapi/runtime@1.9.0':
     dependencies:
       tslib: 2.8.1
     optional: true
@@ -3734,7 +3734,7 @@ snapshots:
 
   '@img/sharp-wasm32@0.33.5':
     dependencies:
-      '@emnapi/runtime': 1.8.1
+      '@emnapi/runtime': 1.9.0
     optional: true
 
   '@img/sharp-win32-ia32@0.33.5':
@@ -3743,12 +3743,12 @@ snapshots:
   '@img/sharp-win32-x64@0.33.5':
     optional: true
 
-  '@inquirer/external-editor@1.0.2(@types/node@22.19.10)':
+  '@inquirer/external-editor@1.0.2(@types/node@25.4.0)':
     dependencies:
       chardet: 2.1.0
       iconv-lite: 0.7.0
     optionalDependencies:
-      '@types/node': 22.19.10
+      '@types/node': 25.4.0
 
   '@isaacs/cliui@8.0.2':
     dependencies:
@@ -3857,7 +3857,7 @@ snapshots:
 
   '@poppinss/exception@1.2.3': {}
 
-  '@react-router/dev@7.9.4(@types/node@22.19.10)(react-router@7.9.4(react@19.2.0))(typescript@5.9.3)(vite@7.1.12(@types/node@22.19.10))(wrangler@4.45.0(@cloudflare/workers-types@4.20251014.0))':
+  '@react-router/dev@7.9.4(@types/node@25.4.0)(react-router@7.9.4(react@19.2.0))(typescript@5.9.3)(vite@7.1.12(@types/node@25.4.0))(wrangler@4.45.0(@cloudflare/workers-types@4.20251014.0))':
     dependencies:
       '@babel/core': 7.28.5
       '@babel/generator': 7.28.5
@@ -3886,8 +3886,8 @@ snapshots:
       semver: 7.7.3
       tinyglobby: 0.2.15
       valibot: 1.1.0(typescript@5.9.3)
-      vite: 7.1.12(@types/node@22.19.10)
-      vite-node: 3.2.4(@types/node@22.19.10)
+      vite: 7.1.12(@types/node@25.4.0)
+      vite-node: 3.2.4(@types/node@25.4.0)
     optionalDependencies:
       typescript: 5.9.3
       wrangler: 4.45.0(@cloudflare/workers-types@4.20251014.0)
@@ -4003,15 +4003,15 @@ snapshots:
 
   '@types/node@12.20.55': {}
 
-  '@types/node@22.19.10':
+  '@types/node@25.4.0':
     dependencies:
-      undici-types: 6.21.0
+      undici-types: 7.18.2
 
   '@types/react@19.2.2':
     dependencies:
       csstype: 3.1.3
 
-  '@vitest/coverage-v8@4.0.18(vitest@4.0.18(@types/node@22.19.10))':
+  '@vitest/coverage-v8@4.0.18(vitest@4.0.18(@types/node@25.4.0))':
     dependencies:
       '@bcoe/v8-coverage': 1.0.2
       '@vitest/utils': 4.0.18
@@ -4023,7 +4023,7 @@ snapshots:
       obug: 2.1.1
       std-env: 3.10.0
       tinyrainbow: 3.0.3
-      vitest: 4.0.18(@types/node@22.19.10)
+      vitest: 4.0.18(@types/node@25.4.0)
 
   '@vitest/expect@4.0.18':
     dependencies:
@@ -4034,13 +4034,13 @@ snapshots:
       chai: 6.2.2
       tinyrainbow: 3.0.3
 
-  '@vitest/mocker@4.0.18(vite@7.1.12(@types/node@22.19.10))':
+  '@vitest/mocker@4.0.18(vite@7.1.12(@types/node@25.4.0))':
     dependencies:
       '@vitest/spy': 4.0.18
       estree-walker: 3.0.3
       magic-string: 0.30.21
     optionalDependencies:
-      vite: 7.1.12(@types/node@22.19.10)
+      vite: 7.1.12(@types/node@25.4.0)
 
   '@vitest/pretty-format@4.0.18':
     dependencies:
@@ -4173,7 +4173,7 @@ snapshots:
 
   bun-types@1.3.6:
     dependencies:
-      '@types/node': 22.19.10
+      '@types/node': 25.4.0
 
   bundle-require@5.1.0(esbuild@0.27.2):
     dependencies:
@@ -5676,7 +5676,7 @@ snapshots:
       has-symbols: 1.1.0
       which-boxed-primitive: 1.1.1
 
-  undici-types@6.21.0: {}
+  undici-types@7.18.2: {}
 
   undici@5.29.0:
     dependencies:
@@ -5711,13 +5711,13 @@ snapshots:
 
   validate-npm-package-name@5.0.1: {}
 
-  vite-node@3.2.4(@types/node@22.19.10):
+  vite-node@3.2.4(@types/node@25.4.0):
     dependencies:
       cac: 6.7.14
       debug: 4.4.3
       es-module-lexer: 1.7.0
       pathe: 2.0.3
-      vite: 7.1.12(@types/node@22.19.10)
+      vite: 7.1.12(@types/node@25.4.0)
     transitivePeerDependencies:
       - '@types/node'
       - jiti
@@ -5732,7 +5732,7 @@ snapshots:
       - tsx
       - yaml
 
-  vite@7.1.12(@types/node@22.19.10):
+  vite@7.1.12(@types/node@25.4.0):
     dependencies:
       esbuild: 0.25.11
       fdir: 6.5.0(picomatch@4.0.3)
@@ -5741,13 +5741,13 @@ snapshots:
       rollup: 4.52.5
       tinyglobby: 0.2.15
     optionalDependencies:
-      '@types/node': 22.19.10
+      '@types/node': 25.4.0
       fsevents: 2.3.3
 
-  vitest@4.0.18(@types/node@22.19.10):
+  vitest@4.0.18(@types/node@25.4.0):
     dependencies:
       '@vitest/expect': 4.0.18
-      '@vitest/mocker': 4.0.18(vite@7.1.12(@types/node@22.19.10))
+      '@vitest/mocker': 4.0.18(vite@7.1.12(@types/node@25.4.0))
       '@vitest/pretty-format': 4.0.18
       '@vitest/runner': 4.0.18
       '@vitest/snapshot': 4.0.18
@@ -5764,10 +5764,10 @@ snapshots:
       tinyexec: 1.0.2
       tinyglobby: 0.2.15
       tinyrainbow: 3.0.3
-      vite: 7.1.12(@types/node@22.19.10)
+      vite: 7.1.12(@types/node@25.4.0)
       why-is-node-running: 2.3.0
     optionalDependencies:
-      '@types/node': 22.19.10
+      '@types/node': 25.4.0
     transitivePeerDependencies:
       - jiti
       - less
