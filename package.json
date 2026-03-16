@@ -93,9 +93,9 @@
   "homepage": "https://github.com/rphlmr/react-router-hono-server#readme",
   "dependencies": {
     "@drizzle-team/brocli": "0.11.0",
-    "@hono/node-server": "1.19.9",
+    "@hono/node-server": "1.19.11",
     "@hono/node-ws": "1.3.0",
-    "@hono/vite-dev-server": "0.25.0"
+    "@hono/vite-dev-server": "0.25.1"
   },
   "devDependencies": {
     "@biomejs/biome": "^2.3.1",
@@ -104,7 +104,7 @@
     "@types/bun": "^1.3.6",
     "@types/node": "^22.19.10",
     "@vitest/coverage-v8": "^4.0.18",
-    "hono": "4.12.7",
+    "hono": "4.12.8",
     "lefthook": "^2.0.16",
     "npm-run-all": "^4.1.5",
     "tsup": "^8.5.1",
@@ -113,14 +113,14 @@
   },
   "peerDependencies": {
     "@cloudflare/workers-types": "^4.20250317.0",
-    "@hono/node-server": "^1.19.0",
+    "@hono/node-server": "^1.19.11",
     "@react-router/dev": "^7.9.0",
     "@types/react": "^19.0.0",
-    "hono": "^4.11.0",
+    "hono": "^4.12.8",
     "miniflare": "^3.20241205.0",
-    "react-router": "^7.9.0",
-    "vite": "^7.0.0",
-    "wrangler": "^4.2.0"
+    "react-router": "^7.13.1",
+    "vite": ">=7.3.1",
+    "wrangler": "^4.73.0"
   },
   "peerDependenciesMeta": {
     "@hono/node-server": {
@@ -139,7 +139,7 @@
   "engines": {
     "node": ">=22.20.0"
   },
-  "packageManager": "pnpm@10.7.1",
+  "packageManager": "pnpm@10.32.1+sha512.a706938f0e89ac1456b6563eab4edf1d1faf3368d1191fc5c59790e96dc918e4456ab2e67d613de1043d2e8c81f87303e6b40d4ffeca9df15ef1ad567348f2be",
   "pnpm": {
     "onlyBuiltDependencies": [
       "@biomejs/biome",
