@@ -1,5 +1,11 @@
 # react-router-hono-server
 
+## 2.25.2
+
+### Patch Changes
+
+- 494127c: fix: 🔨 hono cve
+
 ## 2.25.1
 
 ### Patch Changes
