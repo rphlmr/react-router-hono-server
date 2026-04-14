@@ -1,5 +1,11 @@
 # react-router-hono-server
 
+## 2.25.3
+
+### Patch Changes
+
+- 6cbb781: update hono node server
+
 ## 2.25.2
 
 ### Patch Changes
