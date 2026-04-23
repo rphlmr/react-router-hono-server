@@ -4,5 +4,9 @@ updates:
     directory: "/"
     schedule:
       interval: "weekly"
+    # Dependabot cannot update transitive deps with pnpm lockfiles.
+    # Restrict updates to direct deps to avoid failing runs (e.g. vite transitive attempts).
+    allow:
+      - dependency-type: "direct"
     exclude-paths:
       - "examples/**"
