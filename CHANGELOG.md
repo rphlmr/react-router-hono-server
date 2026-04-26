@@ -1,5 +1,11 @@
 # react-router-hono-server
 
+## 2.26.0
+
+### Minor Changes
+
+- 15f28de: feat: add Deno support
+
 ## 2.25.3
 
 ### Patch Changes
