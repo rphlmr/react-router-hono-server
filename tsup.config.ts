@@ -9,6 +9,7 @@ export default defineConfig([
       "src/adapters/bun.ts",
       "src/adapters/cloudflare.ts",
       "src/adapters/aws-lambda.ts",
+      "src/adapters/deno.ts",
       "src/dev.ts",
       "src/middleware.ts",
       "src/http.ts",
