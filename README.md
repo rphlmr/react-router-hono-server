@@ -886,12 +886,15 @@ You can use React Router middleware with this package.
 
 Then, you can use the `use` function from `react-router` to access the context in your loaders and actions.
 
-```ts
-
-
 ### Using WebSockets
 #### Node
-This package has a built-in helper to use `@hono/node-ws`
+This package has a built-in helper to use `@hono/node-ws`.
+
+When using WebSockets with the Node adapter, install `@hono/node-ws` in your app:
+
+```bash
+npm install @hono/node-ws
+```
 
 > [!TIP]
 > Check this [example](./examples/node/websocket/) to see how to use it.
