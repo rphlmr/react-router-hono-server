@@ -11,7 +11,7 @@ import type { HonoServerOptionsBase, WithoutWebsocket } from "../types/hono-serv
 
 export { createGetLoadContext };
 
-type CustomDenoServer = Deno.ServeOptions;
+type CustomDenoServer = Deno.ServeTcpOptions;
 
 let serverInstance: ReturnType<typeof Deno.serve> | undefined;
 let shutdownCallback: (() => Promise<void> | void) | undefined;
@@ -71,13 +71,17 @@ export async function createHonoServer<E extends Env = BlankEnv>(options?: HonoS
   const basename = import.meta.env.REACT_ROUTER_HONO_SERVER_BASENAME;
   const mergedOptions: HonoServerOptions<E> = {
     ...options,
+    port: options?.port || Number(Deno.env.get("PORT")) || 3000,
     defaultLogger: options?.defaultLogger ?? true,
   };
   const mode = getBuildMode();
   const PRODUCTION = mode === "production";
   const clientBuildPath = `${import.meta.env.REACT_ROUTER_HONO_SERVER_BUILD_DIRECTORY}/client`;
   const app = new Hono<E>(mergedOptions.app);
-
+  // Store the shutdown callback for use in gracefulShutdown()
+  if (PRODUCTION && mergedOptions.onGracefulShutdown) {
+    shutdownCallback = mergedOptions.onGracefulShutdown;
+  }
   if (!PRODUCTION) {
     app.use(bindIncomingRequestSocketInfo());
   }
@@ -143,7 +147,7 @@ export async function createHonoServer<E extends Env = BlankEnv>(options?: HonoS
   const server: CustomDenoServer = {
     ...mergedOptions.customDenoServer,
     port: mergedOptions.port,
-  } as CustomDenoServer;
+  };
 
   if (PRODUCTION) {
     serverInstance = Deno.serve(server, app.fetch);
