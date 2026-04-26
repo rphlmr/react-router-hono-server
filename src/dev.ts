@@ -178,6 +178,12 @@ export function reactRouterHonoServer(options: ReactRouterHonoServerPluginOption
         };
       }
 
+      if (runtime === "deno" && env.command === "build") {
+        alias = {
+          "react-dom/server": "react-dom/server.node",
+        };
+      }
+
       const ssrConfig = {
         resolve: {
           alias,
@@ -293,6 +299,25 @@ export function reactRouterHonoServer(options: ReactRouterHonoServerPluginOption
       if (runtime === "cloudflare") {
         const { cloudflareAdapter } = await import("@hono/vite-dev-server/cloudflare");
         adapter = cloudflareAdapter;
+      }
+
+      if (runtime === "deno") {
+        adapter = () => {
+          if (typeof globalThis.navigator === "undefined") {
+            // @ts-expect-error not typed well
+            globalThis.navigator = {
+              userAgent: "Deno",
+            };
+          } else {
+            Object.defineProperty(globalThis.navigator, "userAgent", {
+              value: "Deno",
+              writable: false,
+            });
+          }
+          return {
+            env: Deno.env.toObject(),
+          };
+        };
       }
 
       // Create and apply the Hono dev server plugin

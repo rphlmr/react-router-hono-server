@@ -287,6 +287,26 @@ export default defineConfig({
 });
 ```
 
+#### Deno
+> [!TIP]
+> Check this [example](./examples/deno/simple/) to see how to use it.
+
+```ts
+// vite.config.ts
+import { reactRouter } from "@react-router/dev/vite";
+import { reactRouterHonoServer } from "react-router-hono-server/dev"; // add this
+import { defineConfig } from "vite";
+import tsconfigPaths from "vite-tsconfig-paths";
+
+export default defineConfig({
+  plugins: [
+    reactRouterHonoServer({ runtime: "deno" }), // add this
+    reactRouter(),
+    tsconfigPaths()
+  ],
+});
+```
+
 ### Create the server
 > [!TIP]
 > You can use the CLI to create the server file for you.
@@ -402,6 +422,17 @@ It is not an error, you can keep the React Router defaults for `build` and `dev`
   },
 ```
 
+
+### Deno
+It is not an error, you can keep the React Router defaults for `build`!
+```json
+  "scripts": {
+    "build": "react-router build",
+    "dev": "deno run -A npm:react-router dev",
+    "start": "deno run -A ./build/server/index.js",
+  },
+```
+
 ## How it works
 
 This helper works differently depending on the environment.
@@ -422,7 +453,7 @@ That's all!
 
 #### `reactRouterHonoServer` (Vite Plugin)
 ```ts
-type Runtime = "node" | "bun" | "cloudflare" | "aws";
+type Runtime = "node" | "bun" | "cloudflare" | "aws" | "deno";
 
 type ReactRouterHonoServerPluginOptions = {
   /**
@@ -714,6 +745,50 @@ interface HonoAWSServerOptions<E extends Env = BlankEnv> extends Omit<HonoServer
    * {@link https://hono.dev/docs/getting-started/aws-lambda#lambda-response-streaming}
    */
   invokeMode: InvokeMode;
+}
+```
+
+
+##### Deno
+```ts
+interface HonoDenoServerOptions<E extends Env = BlankEnv> extends HonoServerOptionsBase<E> {
+  /**
+   * Customize the deno server
+   *
+   * {@link https://docs.deno.com/api/deno/~/Deno.serve#parameters}
+   */
+  customDenoServer?: Deno.ServeOptions;
+
+  /**
+   * Callback executed after server has closed and all inflight requests completed,
+   * before process exit. Only applicable in production mode.
+   *
+   * @example
+   * ```ts
+   * export default createHonoServer({
+   *   onGracefulShutdown: async () => {
+   *     await db.close();
+   *   },
+   * });
+   * ```
+   */
+   
+  onGracefulShutdown?: () => Promise<void> | void;
+  /**
+   * Customize the serve static options
+   */
+  serveStaticOptions?: {
+    /**
+     * Customize the public assets (what's in your `public` directory) serve static options.
+     *
+     */
+    publicAssets?: Omit<ServeStaticOptions<E>, "root">;
+    /**
+     * Customize the client assets (what's in your `build/client/assets` directory - React Router) serve static options.
+     *
+     */
+    clientAssets?: Omit<ServeStaticOptions<E>, "root">;
+  };
 }
 ```
 
