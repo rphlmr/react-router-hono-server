@@ -104,19 +104,7 @@ export function reactRouterHonoServer(options: ReactRouterHonoServerPluginOption
         return;
       }
 
-      const isEnvironmentApiEnabled =
-        pluginConfig.future.unstable_viteEnvironmentApi ??
-        (pluginConfig.future as { v8_viteEnvironmentApi?: boolean }).v8_viteEnvironmentApi;
-
-      const flagName = pluginConfig.future.unstable_viteEnvironmentApi
-        ? "unstable_viteEnvironmentApi"
-        : "v8_viteEnvironmentApi";
-
       const serverEntryPoint = pluginConfig.serverEntryPoint;
-
-      if (isEnvironmentApiEnabled) {
-        console.warn(`\x1b[33mThe ${flagName} is enabled.\nThis is experimental and may break your build.\x1b[0m\n`);
-      }
 
       if (
         env.mode === "development" &&
@@ -146,10 +134,6 @@ export function reactRouterHonoServer(options: ReactRouterHonoServerPluginOption
         },
       } satisfies UserConfig;
 
-      if (!isEnvironmentApiEnabled && !pluginConfig.isSsrBuild) {
-        return baseConfig;
-      }
-
       let reactRouterBuildFile = pluginConfig.serverBuildFile;
 
       if (reactRouterBuildFile === "index.js") {
@@ -164,12 +148,6 @@ export function reactRouterHonoServer(options: ReactRouterHonoServerPluginOption
         alias = {
           "react-dom/server": reactVersion >= 19 ? "react-dom/server.edge" : "react-dom/server.browser",
         };
-      }
-
-      if (runtime === "bun" && isEnvironmentApiEnabled) {
-        throw new Error(
-          `The ${flagName} is not supported with the Bun runtime. Please disable it in your react-router.config.ts`
-        );
       }
 
       if (runtime === "bun" && env.command === "build") {
@@ -227,18 +205,11 @@ export function reactRouterHonoServer(options: ReactRouterHonoServerPluginOption
         },
       } satisfies Omit<UserConfig, "plugins">;
 
-      if (isEnvironmentApiEnabled) {
-        return {
-          ...baseConfig,
-          environments: {
-            ssr: ssrConfig as any,
-          },
-        };
-      }
-
       return {
         ...baseConfig,
-        ...ssrConfig,
+        environments: {
+          ssr: ssrConfig as any,
+        },
       };
     },
     async closeBundle() {
