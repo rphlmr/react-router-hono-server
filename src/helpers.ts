@@ -1,7 +1,6 @@
 import type { IncomingMessage, Server } from "node:http";
 import type { Http2SecureServer, Http2Server } from "node:http2";
 import type { ServerType } from "@hono/node-server";
-import type { Serve } from "bun";
 import type { Env, Hono } from "hono";
 import { createMiddleware } from "hono/factory";
 import type { UpgradeWebSocket } from "hono/ws";
@@ -11,7 +10,7 @@ import type { Runtime } from "./types/runtime";
 
 type NodeServer = Server | Http2Server | Http2SecureServer;
 
-type BunServeOptions = Serve.Options<unknown, string>;
+type BunServeOptions = Bun.Serve.Options<unknown, string>;
 
 type AnyServer = NodeServer | BunServeOptions;
 

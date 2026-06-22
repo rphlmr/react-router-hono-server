@@ -1,6 +1,6 @@
 import { serveStatic } from "@hono/node-server/serve-static";
 import { type Env, Hono } from "hono";
-import { handle, streamHandle } from "hono/aws-lambda";
+import { handle, type LambdaContext, type LambdaEvent, streamHandle } from "hono/aws-lambda";
 import { createMiddleware } from "hono/factory";
 import { logger } from "hono/logger";
 import type { BlankEnv } from "hono/types";
@@ -12,6 +12,12 @@ import type { HonoServerOptionsBase, WithoutWebsocket } from "../types/hono-serv
 export { createGetLoadContext };
 
 type InvokeMode = "default" | "stream";
+
+type AWSLambdaHandler = (
+  event: LambdaEvent,
+  lambdaContext: LambdaContext,
+  callback: (error?: Error | string | null, result?: unknown) => void
+) => unknown | Promise<unknown>;
 
 interface HonoAWSServerOptions<E extends Env = BlankEnv> extends Omit<HonoServerOptionsBase<E>, "port"> {
   /**
@@ -32,7 +38,9 @@ export type HonoServerOptions<E extends Env = BlankEnv> = HonoAWSServerOptions<E
  *
  * @param config {@link HonoServerOptions} - The configuration options for the server
  */
-export async function createHonoServer<E extends Env = BlankEnv>(options?: HonoServerOptions<E>) {
+export async function createHonoServer<E extends Env = BlankEnv>(
+  options?: HonoServerOptions<E>
+): Promise<Hono<E> | AWSLambdaHandler> {
   const basename = import.meta.env.REACT_ROUTER_HONO_SERVER_BASENAME;
   const mergedOptions: HonoServerOptions<E> = {
     ...options,

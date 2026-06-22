@@ -140,32 +140,30 @@ export function reactRouterHonoServer(options: ReactRouterHonoServerPluginOption
         reactRouterBuildFile = "assets/server-build.js";
       }
 
-      let alias: Record<string, string> = {};
+      const resolve: UserConfig["resolve"] = {};
 
       if (runtime === "cloudflare") {
         const reactVersion = await getReactVersion(pluginConfig);
 
-        alias = {
+        resolve.alias = {
           "react-dom/server": reactVersion >= 19 ? "react-dom/server.edge" : "react-dom/server.browser",
         };
       }
 
-      if (runtime === "bun" && env.command === "build") {
-        alias = {
+      if (runtime === "bun") {
+        resolve.alias = {
           "react-dom/server": "react-dom/server.node",
         };
       }
 
-      if (runtime === "deno" && env.command === "build") {
-        alias = {
+      if (runtime === "deno") {
+        resolve.alias = {
           "react-dom/server": "react-dom/server.node",
         };
       }
 
       const ssrConfig = {
-        resolve: {
-          alias,
-        },
+        resolve,
         build: {
           rollupOptions: {
             input: serverEntryPoint,
@@ -207,13 +205,14 @@ export function reactRouterHonoServer(options: ReactRouterHonoServerPluginOption
 
       return {
         ...baseConfig,
+        resolve,
         environments: {
           ssr: ssrConfig as any,
         },
       };
     },
     async closeBundle() {
-      if (!pluginConfig || !pluginConfig.isSsrBuild || runtime !== "cloudflare") {
+      if (!pluginConfig?.isSsrBuild || runtime !== "cloudflare") {
         return;
       }
 
