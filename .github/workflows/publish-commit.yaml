@@ -1,6 +1,10 @@
 name: 🚀 pkg-pr-new
 on: [pull_request]
 
+permissions:
+  contents: read
+  pull-requests: read
+
 jobs:
   build:
     runs-on: ubuntu-latest
@@ -23,6 +27,8 @@ jobs:
 
       - name: 📋 Version packages
         run: pnpm changeset version
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
 
       - name: 🔍 Check pre-release mode
         id: prerelease
