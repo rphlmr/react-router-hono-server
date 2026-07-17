@@ -1,5 +1,15 @@
 # react-router-hono-server
 
+## 3.0.0-next.0
+
+### Major Changes
+
+- [#235](https://github.com/rphlmr/react-router-hono-server/pull/235) [`d24ade3`](https://github.com/rphlmr/react-router-hono-server/commit/d24ade37825b5a76ab14e5fb9f422450f8f57abd) Thanks [@rphlmr](https://github.com/rphlmr)! - feat: ✨ Bump to React Router v8
+
+### Patch Changes
+
+- [#235](https://github.com/rphlmr/react-router-hono-server/pull/235) [`d24ade3`](https://github.com/rphlmr/react-router-hono-server/commit/d24ade37825b5a76ab14e5fb9f422450f8f57abd) Thanks [@rphlmr](https://github.com/rphlmr)! - feat: ✨ Update Vite configuration and package paths for React Router v8 support
+
 ## 2.26.0
 
 ### Minor Changes
