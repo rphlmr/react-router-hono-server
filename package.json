@@ -68,9 +68,9 @@
   "scripts": {
     "test": "vitest run",
     "test:cov": "vitest run --coverage",
-    "build": "tsup",
+    "build": "tsdown",
     "build:watch": "pnpm run build -- --watch",
-    "build:pack": "pnpm pack --pack-destination dist",
+    "build:pack": "pnpm pack --pack-destination --out out/react-router-hono-server.tgz",
     "prepublishOnly": "pnpm run build",
     "check": "biome check .",
     "check:fix": "biome check --fix .",
@@ -100,37 +100,36 @@
   ],
   "homepage": "https://github.com/rphlmr/react-router-hono-server#readme",
   "dependencies": {
-    "@drizzle-team/brocli": "0.11.0",
-    "@hono/node-server": "1.19.14",
-    "@hono/node-ws": "1.3.0",
-    "@hono/vite-dev-server": "0.25.1"
+    "@drizzle-team/brocli": "0.12.0",
+    "@hono/node-server": "2.0.6",
+    "@hono/node-ws": "1.3.1",
+    "@hono/vite-dev-server": "0.26.0"
   },
   "devDependencies": {
-    "@biomejs/biome": "^2.3.1",
-    "@changesets/changelog-github": "^0.6.0",
-    "@changesets/cli": "^2.29.8",
-    "@cloudflare/workers-types": "^4.20250405.0",
-    "@types/bun": "^1.3.6",
-    "@types/deno": "^2.5.0",
-    "@types/node": "^22.19.10",
-    "@vitest/coverage-v8": "^4.0.18",
-    "hono": "4.12.8",
-    "lefthook": "^2.0.16",
+    "@biomejs/biome": "^2.5.0",
+    "@changesets/changelog-github": "^0.7.0",
+    "@changesets/cli": "^2.31.0",
+    "@cloudflare/workers-types": "^4.20260621.1",
+    "@types/bun": "^1.3.14",
+    "@types/deno": "^2.7.0",
+    "@types/node": "^24.13.2",
+    "@vitest/coverage-v8": "^4.1.9",
+    "hono": "4.12.26",
     "npm-run-all": "^4.1.5",
-    "tsup": "^8.5.1",
-    "typescript": "^5.9.3",
-    "vitest": "^4.0.18"
+    "tsdown": "^0.22.3",
+    "typescript": "^6.0.3",
+    "vitest": "^4.1.9"
   },
   "peerDependencies": {
-    "@cloudflare/workers-types": "^4.20250317.0",
-    "@hono/node-server": "^1.19.14",
-    "@react-router/dev": "^7.9.0",
-    "@types/react": "^19.0.0",
-    "hono": "^4.12.8",
-    "miniflare": "^3.20241205.0",
-    "react-router": "^7.13.1",
-    "vite": ">=7.3.1",
-    "wrangler": "^4.73.0"
+    "@cloudflare/workers-types": "^4.20260621.1",
+    "@hono/node-server": "^2.0.6",
+    "@react-router/dev": "^8.0.1",
+    "@types/react": "^19.2.17",
+    "hono": "^4.12.26",
+    "miniflare": "^4.20260617.1",
+    "react-router": "^8.0.1",
+    "vite": ">=8.0.16",
+    "wrangler": "^4.103.0"
   },
   "peerDependenciesMeta": {
     "@hono/node-server": {
@@ -147,16 +146,7 @@
     }
   },
   "engines": {
-    "node": ">=22.20.0"
+    "node": ">=24.17.0"
   },
-  "packageManager": "pnpm@10.32.1+sha512.a706938f0e89ac1456b6563eab4edf1d1faf3368d1191fc5c59790e96dc918e4456ab2e67d613de1043d2e8c81f87303e6b40d4ffeca9df15ef1ad567348f2be",
-  "pnpm": {
-    "onlyBuiltDependencies": [
-      "@biomejs/biome",
-      "esbuild",
-      "lefthook",
-      "sharp",
-      "workerd"
-    ]
-  }
+  "packageManager": "pnpm@11.8.0+sha512.c1f5e7c4cb241c8f174b743851d82f42b802324afc8b0f116b96adb15aa06664948dde36960a3ba1079ba5b4b29dd0140135b94b5b5f5263592249d68e555f26"
 }

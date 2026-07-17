@@ -8,7 +8,6 @@ export default defineConfig({
     globals: true,
 
     coverage: {
-      all: false,
       provider: "v8",
       reporter: ["json-summary", "html"],
       thresholds: {

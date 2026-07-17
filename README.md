@@ -1,4 +1,4 @@
-# React Router v7 Hono Server
+# React Router v8 Hono Server
 
 <!-- ![GitHub Repo stars](https://img.shields.io/github/stars/rphlmr/react-router-hono-server?style=social)
 ![npm](https://img.shields.io/npm/v/open-source-stack?style=plastic)

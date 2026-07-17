@@ -1,0 +1,8 @@
+{
+  "mode": "pre",
+  "tag": "next",
+  "initialVersions": {
+    "react-router-hono-server": "2.26.0"
+  },
+  "changesets": []
+}

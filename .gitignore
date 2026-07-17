@@ -136,3 +136,4 @@ build
 .wrangler
 
 /examples/**/package-lock.json
+.idea

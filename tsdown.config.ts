@@ -1,6 +1,6 @@
 import fs from "node:fs";
 import path from "node:path";
-import { defineConfig } from "tsup";
+import { defineConfig } from "tsdown";
 
 export default defineConfig([
   {
@@ -16,18 +16,18 @@ export default defineConfig([
     ],
     outDir: "dist",
     format: ["esm"],
+    outExtensions: () => ({ js: ".js", dts: ".d.ts" }),
     clean: true,
     dts: true,
-    external: [
-      // virtual module provided by React Router at build time
-      "virtual:react-router/server-build",
-      "react",
-    ],
+    deps: {
+      neverBundle: ["react", "virtual:react-router/server-build"],
+    },
   },
   {
     entry: ["src/cli.ts"],
     outDir: "dist",
     format: ["esm"],
+    outExtensions: () => ({ js: ".js" }),
     // biome-ignore lint/suspicious/useAwait: required by tsup
     onSuccess: async () => {
       const banner = "#!/usr/bin/env node\n";

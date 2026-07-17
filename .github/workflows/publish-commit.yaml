@@ -1,19 +1,24 @@
 name: 🚀 pkg-pr-new
 on: [pull_request]
 
+permissions:
+  contents: read
+  pull-requests: read
+  statuses: read
+
 jobs:
   build:
     runs-on: ubuntu-latest
 
     steps:
       - name: ⬇️ Checkout repo
-        uses: actions/checkout@v4
+        uses: actions/checkout@v7
 
       - name: 👷 Install pnpm
-        uses: pnpm/action-setup@v4
+        uses: pnpm/action-setup@v6
 
       - name: ⎔ Setup node
-        uses: actions/setup-node@v4
+        uses: actions/setup-node@v6
         with:
           node-version-file: "package.json"
           cache: "pnpm"
@@ -23,6 +28,8 @@ jobs:
 
       - name: 📋 Version packages
         run: pnpm changeset version
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
       - name: 🔍 Check pre-release mode
         id: prerelease

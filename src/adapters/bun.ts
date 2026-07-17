@@ -1,4 +1,3 @@
-import type { Serve } from "bun";
 import { type Env, Hono } from "hono";
 import { serveStatic } from "hono/bun";
 import { createMiddleware } from "hono/factory";
@@ -20,7 +19,7 @@ import type { HonoServerOptionsBase, WithoutWebsocket, WithWebsocket } from "../
 
 export { createGetLoadContext };
 
-type CustomBunServer = Serve.Options<unknown, string>;
+type CustomBunServer = Bun.Serve.Options<unknown, string>;
 
 // Module-level references for graceful shutdown
 let serverInstance: ReturnType<typeof Bun.serve> | undefined;
@@ -189,8 +188,6 @@ export async function createHonoServer<E extends Env = BlankEnv>(options?: HonoS
 
     // Actually start the server in production and store reference for graceful shutdown
     serverInstance = Bun.serve(server);
-
-    console.log(`Started server: ${serverInstance.protocol}://${serverInstance.hostname}:${serverInstance.port}`);
 
     // Automatically register signal handlers if graceful shutdown is enabled
     if (shutdownCallback != null) {

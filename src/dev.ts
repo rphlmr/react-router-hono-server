@@ -104,19 +104,7 @@ export function reactRouterHonoServer(options: ReactRouterHonoServerPluginOption
         return;
       }
 
-      const isEnvironmentApiEnabled =
-        pluginConfig.future.unstable_viteEnvironmentApi ??
-        (pluginConfig.future as { v8_viteEnvironmentApi?: boolean }).v8_viteEnvironmentApi;
-
-      const flagName = pluginConfig.future.unstable_viteEnvironmentApi
-        ? "unstable_viteEnvironmentApi"
-        : "v8_viteEnvironmentApi";
-
       const serverEntryPoint = pluginConfig.serverEntryPoint;
-
-      if (isEnvironmentApiEnabled) {
-        console.warn(`\x1b[33mThe ${flagName} is enabled.\nThis is experimental and may break your build.\x1b[0m\n`);
-      }
 
       if (
         env.mode === "development" &&
@@ -143,12 +131,9 @@ export function reactRouterHonoServer(options: ReactRouterHonoServerPluginOption
           // This is necessary because we are using a virtual import to load the React Router server entry point
           noExternal: ["react-router-hono-server"],
           external: ["@hono/node-ws"],
+          optimizeDeps: runtime === "bun" ? { include: ["react-dom/server"], exclude: ["react"] } : undefined,
         },
       } satisfies UserConfig;
-
-      if (!isEnvironmentApiEnabled && !pluginConfig.isSsrBuild) {
-        return baseConfig;
-      }
 
       let reactRouterBuildFile = pluginConfig.serverBuildFile;
 
@@ -156,38 +141,30 @@ export function reactRouterHonoServer(options: ReactRouterHonoServerPluginOption
         reactRouterBuildFile = "assets/server-build.js";
       }
 
-      let alias: Record<string, string> = {};
+      const resolve: UserConfig["resolve"] = {};
 
       if (runtime === "cloudflare") {
         const reactVersion = await getReactVersion(pluginConfig);
 
-        alias = {
+        resolve.alias = {
           "react-dom/server": reactVersion >= 19 ? "react-dom/server.edge" : "react-dom/server.browser",
         };
       }
 
-      if (runtime === "bun" && isEnvironmentApiEnabled) {
-        throw new Error(
-          `The ${flagName} is not supported with the Bun runtime. Please disable it in your react-router.config.ts`
-        );
-      }
-
-      if (runtime === "bun" && env.command === "build") {
-        alias = {
+      if (runtime === "bun") {
+        resolve.alias = {
           "react-dom/server": "react-dom/server.node",
         };
       }
 
-      if (runtime === "deno" && env.command === "build") {
-        alias = {
+      if (runtime === "deno") {
+        resolve.alias = {
           "react-dom/server": "react-dom/server.node",
         };
       }
 
       const ssrConfig = {
-        resolve: {
-          alias,
-        },
+        resolve,
         build: {
           rollupOptions: {
             input: serverEntryPoint,
@@ -227,22 +204,16 @@ export function reactRouterHonoServer(options: ReactRouterHonoServerPluginOption
         },
       } satisfies Omit<UserConfig, "plugins">;
 
-      if (isEnvironmentApiEnabled) {
-        return {
-          ...baseConfig,
-          environments: {
-            ssr: ssrConfig as any,
-          },
-        };
-      }
-
       return {
         ...baseConfig,
-        ...ssrConfig,
+        resolve,
+        environments: {
+          ssr: ssrConfig as any,
+        },
       };
     },
     async closeBundle() {
-      if (!pluginConfig || !pluginConfig.isSsrBuild || runtime !== "cloudflare") {
+      if (!pluginConfig?.isSsrBuild || runtime !== "cloudflare") {
         return;
       }
 
