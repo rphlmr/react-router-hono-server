@@ -17,7 +17,7 @@
     "react": "^19.2.7",
     "react-dom": "^19.2.7",
     "react-router": "^8.0.1",
-    "react-router-hono-server": "file:../../../out"
+    "react-router-hono-server": "file:../../../out/react-router-hono-server.tgz"
   },
   "devDependencies": {
     "@react-router/dev": "^8.0.1",

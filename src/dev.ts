@@ -131,6 +131,7 @@ export function reactRouterHonoServer(options: ReactRouterHonoServerPluginOption
           // This is necessary because we are using a virtual import to load the React Router server entry point
           noExternal: ["react-router-hono-server"],
           external: ["@hono/node-ws"],
+          optimizeDeps: runtime === "bun" ? { include: ["react-dom/server"], exclude: ["react"] } : undefined,
         },
       } satisfies UserConfig;
 

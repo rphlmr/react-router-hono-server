@@ -70,7 +70,7 @@
     "test:cov": "vitest run --coverage",
     "build": "tsdown",
     "build:watch": "pnpm run build -- --watch",
-    "build:pack": "pnpm pack --pack-destination dist",
+    "build:pack": "pnpm pack --pack-destination --out out/react-router-hono-server.tgz",
     "prepublishOnly": "pnpm run build",
     "check": "biome check .",
     "check:fix": "biome check --fix .",
