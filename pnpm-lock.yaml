@@ -12,11 +12,11 @@ importers:
         specifier: 0.12.0
         version: 0.12.0
       '@hono/node-server':
-        specifier: 2.0.6
-        version: 2.0.6(hono@4.12.26)
+        specifier: 2.0.10
+        version: 2.0.10(hono@4.12.26)
       '@hono/node-ws':
         specifier: 1.3.1
-        version: 1.3.1(@hono/node-server@2.0.6(hono@4.12.26))(hono@4.12.26)
+        version: 1.3.1(@hono/node-server@2.0.10(hono@4.12.26))(hono@4.12.26)
       '@hono/vite-dev-server':
         specifier: 0.26.0
         version: 0.26.0(hono@4.12.26)(miniflare@4.20260617.1)(wrangler@4.103.0(@cloudflare/workers-types@4.20260621.1))
@@ -639,8 +639,8 @@ packages:
     peerDependencies:
       hono: ^4
 
-  '@hono/node-server@2.0.6':
-    resolution: {integrity: sha512-7DeRlKG57JDBNZ5Qj2jwVdgwQy4b0tLubRLl3zCf91/rCf9i7p1V5FtW/yWibm1uUHE493ts9ZXH/7g/LQWl+g==}
+  '@hono/node-server@2.0.10':
+    resolution: {integrity: sha512-ZcnNVhKTmyDJeg0UlnZjvM73JBsTAuhrH/J4fjwGOw59PwOW51r4J+p6CsKZWXdKSme4MFqU62CZMOsdDrU4CA==}
     engines: {node: '>=20'}
     peerDependencies:
       hono: ^4
@@ -1151,9 +1151,6 @@ packages:
 
   '@types/node@12.20.55':
     resolution: {integrity: sha512-J8xLz7q2OFulZ2cyGTLE1TbbZcjpno7FaN6zdJNrgAdrJ+DZzh/uFR6YrTb4C+nXakvud8Q4+rbhoIWlYQbUFQ==}
-
-  '@types/node@22.19.10':
-    resolution: {integrity: sha512-tF5VOugLS/EuDlTBijk0MqABfP8UxgYazTLo3uIn3b4yJgg26QRbVYJYsDtHrjdDUIRfP70+VfhTTc+CE1yskw==}
 
   '@types/node@24.13.2':
     resolution: {integrity: sha512-fRa09kZTgu8o71KFcDjUFuc7F+dEbZYZmkI0mg5YBTRs0yMKjYHsq/c0urDKeDb+D5qVgXOdFcuu+DZPKOITwA==}
@@ -2506,9 +2503,6 @@ packages:
   unconfig-core@7.5.0:
     resolution: {integrity: sha512-Su3FauozOGP44ZmKdHy2oE6LPjk51M/TRRjHv2HNCWiDvfvCoxC2lno6jevMA91MYAdCdwP05QnWdWpSbncX/w==}
 
-  undici-types@6.21.0:
-    resolution: {integrity: sha512-iwDZqg0QAGrg9Rav5H4n0M64c3mkR59cJ6wQp+7C4nI0gsmExaedaYLNO44eT4AtBBwjbTiGPMlt2Md0T9H9JQ==}
-
   undici-types@7.18.2:
     resolution: {integrity: sha512-AsuCzffGHJybSaRrmr5eHr81mwJU3kjw6M+uprWvCXiNeN9SOGwQ3Jn8jb8m3Z6izVgknn1R0FTCEAP2QrLY/w==}
 
@@ -3344,13 +3338,13 @@ snapshots:
     dependencies:
       hono: 4.12.26
 
-  '@hono/node-server@2.0.6(hono@4.12.26)':
+  '@hono/node-server@2.0.10(hono@4.12.26)':
     dependencies:
       hono: 4.12.26
 
-  '@hono/node-ws@1.3.1(@hono/node-server@2.0.6(hono@4.12.26))(hono@4.12.26)':
+  '@hono/node-ws@1.3.1(@hono/node-server@2.0.10(hono@4.12.26))(hono@4.12.26)':
     dependencies:
-      '@hono/node-server': 2.0.6(hono@4.12.26)
+      '@hono/node-server': 2.0.10(hono@4.12.26)
       hono: 4.12.26
       ws: 8.18.3
     transitivePeerDependencies:
@@ -3732,10 +3726,6 @@ snapshots:
 
   '@types/node@12.20.55': {}
 
-  '@types/node@22.19.10':
-    dependencies:
-      undici-types: 6.21.0
-
   '@types/node@24.13.2':
     dependencies:
       undici-types: 7.18.2
@@ -3898,7 +3888,7 @@ snapshots:
 
   bun-types@1.3.14:
     dependencies:
-      '@types/node': 22.19.10
+      '@types/node': 24.13.2
 
   cac@7.0.0: {}
 
@@ -5176,8 +5166,6 @@ snapshots:
     dependencies:
       '@quansync/fs': 1.0.0
       quansync: 1.0.0
-
-  undici-types@6.21.0: {}
 
   undici-types@7.18.2: {}
 
