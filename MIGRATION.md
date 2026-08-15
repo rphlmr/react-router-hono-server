@@ -6,7 +6,7 @@ Version 4 makes the currently supported runtime and dependency contract explicit
 
 Upgrade the application to:
 
-- Node.js 24.17 or newer for installation, builds, the CLI, and Node/AWS execution
+- Node.js 24.19 or newer for installation, builds, the CLI, and Node/AWS execution
 - React and React DOM 19.2
 - React Router 8.3 or newer
 - Vite 8

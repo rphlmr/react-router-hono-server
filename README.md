@@ -51,7 +51,7 @@ Choose the runtime that matches your deployment target. Application routes and H
 
 ### Supported versions
 
-- Node.js 24.17 or newer is required for installation, builds, and the CLI.
+- Node.js 24.19 or newer is required for installation, builds, and the CLI.
 - React 19.2, React DOM 19.2, React Router 8.3 or newer, Vite 8, Hono 4, and `@hono/node-server` 2 are supported.
 - Bun 1.3 or newer is required for Bun execution.
 - Deno 2 is required for Deno execution.
