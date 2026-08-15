@@ -35,8 +35,8 @@ jobs:
       - run: vp run typecheck
       - run: vp run test:package
 
-  node-aws:
-    name: Node and AWS
+  node:
+    name: Node
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v7
@@ -47,6 +47,18 @@ jobs:
       - run: vp install
       - run: vp exec playwright install --with-deps chromium
       - run: vp run test:node
+
+  aws:
+    name: AWS
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+      - uses: voidzero-dev/setup-vp@313600b80b104eadebb9111787d37a2e83e014ca # v1.17.0
+        with:
+          node-version: "24"
+          cache: true
+      - run: vp install
+      - run: vp exec playwright install --with-deps chromium
       - run: vp run test:aws
 
   bun:
