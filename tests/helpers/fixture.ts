@@ -109,6 +109,11 @@ class FixtureApp {
     return this.server?.logs() ?? "";
   }
 
+  get alive() {
+    const child = this.server?.child;
+    return Boolean(child && child.exitCode === null && child.signalCode == null);
+  }
+
   async stop() {
     await this.server?.stop();
     this.server = undefined;

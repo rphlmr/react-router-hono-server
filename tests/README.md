@@ -13,4 +13,6 @@ The Node fixture lives in `tests/fixtures/basic`. Helpers copy it to a temp dire
 - production: `react-router build` then `node ./build/server/index.js`
 - development: `react-router dev --host 127.0.0.1 --port <free> --strictPort`
 
- bun / Deno / Cloudflare launchers are intentionally not in this first cut.
+Production also covers deferred streaming, Hono load context, redirects, and non-200 responses. Dev also covers component/server-module invalidation, added routes, syntax-error recovery, and Hono routes surviving React Router reloads.
+
+Bun / Deno / Cloudflare launchers are not in this wave.
