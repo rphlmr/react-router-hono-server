@@ -52,7 +52,7 @@ Choose the runtime that matches your deployment target. Application routes and H
 ### Supported versions
 
 - Node.js 24.17 or newer is required for installation, builds, and the CLI.
-- React 19.2, React DOM 19.2, React Router 8, Vite 8, Hono 4, and `@hono/node-server` 2 are supported.
+- React 19.2, React DOM 19.2, React Router 8.3 or newer, Vite 8, Hono 4, and `@hono/node-server` 2 are supported.
 - Bun 1.3 or newer is required for Bun execution.
 - Deno 2 is required for Deno execution.
 - Cloudflare projects require the current `@cloudflare/vite-plugin`, Wrangler 4, an `ASSETS` binding, and the `nodejs_compat` compatibility flag.
@@ -69,7 +69,7 @@ The following setup creates a Node.js server. The other runtime guides use the s
 ### 1. Install the packages
 
 ```sh
-pnpm add react-router-hono-server hono @hono/node-server
+pnpm add react-router-hono-server hono @hono/node-server @react-router/node
 pnpm add -D @react-router/dev vite
 ```
 
@@ -190,7 +190,13 @@ The CLI infers the runtime from `vite.config.ts`. If it cannot find a runtime op
 
 ### React Router rendering entries
 
-React Router normally supplies hidden client and server rendering entries. Reveal them when you need to control hydration or SSR streaming:
+React Router supplies hidden client and server rendering entries. It selects the server renderer from the application's dependencies:
+
+- Applications with `@react-router/node`, `@react-router/express`, or `@react-router/serve` use the Node streaming entry.
+- Applications without those packages use the Web Streams entry.
+- A custom `app/entry.server.tsx` always takes precedence.
+
+Reveal the entries only when the application needs custom hydration or SSR behavior:
 
 ```sh
 npx react-router reveal
@@ -198,10 +204,27 @@ npx react-router reveal
 
 The command generates both `app/entry.client.tsx` and `app/entry.server.tsx`.
 
-- Node.js and AWS can use the standard Node streaming entry.
-- Bun, Deno, and Cloudflare require a Web Streams entry based on `renderToReadableStream`.
-
 See the [React Router reveal documentation](https://reactrouter.com/api/other-api/dev#react-router-reveal) for the generated files.
+
+### Optional React Router future flags
+
+React Router 8.3 has no stable future flags. Its two unstable flags are optional and belong in `react-router.config.ts`; `reactRouterHonoServer()` does not duplicate or enable them:
+
+```ts
+import type { Config } from "@react-router/dev/config";
+
+export default {
+  future: {
+    unstable_enableNodeReadableStream: true,
+    unstable_optimizeDeps: true,
+  },
+} satisfies Config;
+```
+
+- `unstable_enableNodeReadableStream` makes React Router use its Web Streams default entry on Node. It has no effect when `app/entry.server.tsx` exists.
+- `unstable_optimizeDeps` adds the client entry and route modules to Vite's dependency optimizer in development. If it causes optimization issues, remove the flag and restart the dev server.
+
+These flags are experimental and may change in React Router minor releases. See React Router's [future changes guide](https://reactrouter.com/upgrading/future) and [changelog](https://reactrouter.com/changelog).
 
 ## Runtime guides
 
@@ -254,18 +277,6 @@ import { createHonoServer } from "react-router-hono-server/bun";
 export default await createHonoServer();
 ```
 
-#### Configure React rendering
-
-Reveal the React Router entries:
-
-```sh
-bunx --bun react-router reveal
-```
-
-Update `app/entry.server.tsx` to use `renderToReadableStream` from `react-dom/server`. React 19 selects its
-Bun-specific server renderer for this import. Before returning the response, pipe the React stream through a
-`TransformStream` so suspended content continues streaming after the initial shell.
-
 #### Add scripts
 
 <!-- canonical:bun-scripts -->
@@ -273,7 +284,7 @@ Bun-specific server renderer for this import. Before returning the response, pip
 ```json
 {
   "scripts": {
-    "build": "bunx --bun react-router build",
+    "build": "react-router build",
     "dev": "bunx --bun vite",
     "start": "bun ./build/server/index.js",
     "typecheck": "react-router typegen && tsc --noEmit"
@@ -295,7 +306,7 @@ bun run start
 #### Bun runtime notes
 
 - `bunx --bun vite` forces Vite and its child processes to run with Bun.
-- React SSR uses React 19's Bun-specific renderer and standard Web Streams.
+- React Router automatically uses its Web Streams server entry.
 - `customBunServer` forwards options to `Bun.serve`.
 - Graceful shutdown, static-file customization, and WebSockets are supported.
 
@@ -336,16 +347,6 @@ import { createHonoServer } from "react-router-hono-server/deno";
 
 export default await createHonoServer();
 ```
-
-#### Configure React rendering
-
-Reveal the React Router entries:
-
-```sh
-deno run --allow-all npm:@react-router/dev reveal
-```
-
-Update `app/entry.server.tsx` to use `renderToReadableStream` from `react-dom/server`.
 
 #### Add scripts
 
@@ -422,10 +423,6 @@ import { createHonoServer } from "react-router-hono-server/cloudflare";
 export default await createHonoServer();
 ```
 
-#### Configure React rendering
-
-Run `react-router reveal`, then update `app/entry.server.tsx` to use `renderToReadableStream`.
-
 #### Configure Wrangler
 
 Create `wrangler.jsonc`:
@@ -488,7 +485,7 @@ Deploy the generated Worker with your normal Cloudflare workflow.
 #### Install
 
 ```sh
-pnpm add react-router-hono-server hono @hono/node-server
+pnpm add react-router-hono-server hono @hono/node-server @react-router/node
 pnpm add -D @react-router/dev vite
 ```
 

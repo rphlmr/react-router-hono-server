@@ -4,31 +4,35 @@ import type { FixtureApp } from "../../helpers/fixture";
 
 export function registerProductionBrowserTests(getApp: () => FixtureApp) {
   test("hydrates, interacts, navigates, submits actions, and loads assets in Chromium", async () => {
-    const browser = await chromium.launch();
-    const page = await browser.newPage();
-    const errors: string[] = [];
-    page.on("console", (message) => {
-      if (message.type() === "error") errors.push(message.text());
-    });
-    page.on("pageerror", (error) => errors.push(error.message));
-
-    try {
-      await page.goto(getApp().url);
-      await page.getByRole("button", { name: "count:0" }).click();
-      await expect.poll(() => page.getByRole("button").textContent()).toBe("count:1");
-      await expect.poll(() => page.evaluate(() => getComputedStyle(document.body).color)).toBe("rgb(20, 30, 40)");
-
-      await page.getByRole("link", { name: "Loader" }).click();
-      await expect.poll(() => page.getByRole("heading").textContent()).toBe("hello-from-loader");
-      await page.goto(`${getApp().url}/action`);
-      await page.getByRole("textbox").fill("browser-action");
-      await page.getByRole("button", { name: "Submit" }).click();
-      await expect.poll(() => page.getByText("browser-action").count()).toBe(1);
-      expect(errors).toEqual([]);
-    } finally {
-      await browser.close();
-    }
+    await assertProductionBrowserBehavior(getApp());
   });
+}
+
+export async function assertProductionBrowserBehavior(app: FixtureApp) {
+  const browser = await chromium.launch();
+  const page = await browser.newPage();
+  const errors: string[] = [];
+  page.on("console", (message) => {
+    if (message.type() === "error") errors.push(message.text());
+  });
+  page.on("pageerror", (error) => errors.push(error.message));
+
+  try {
+    await page.goto(app.url);
+    await page.getByRole("button", { name: "count:0" }).click();
+    await expect.poll(() => page.getByRole("button").textContent()).toBe("count:1");
+    await expect.poll(() => page.evaluate(() => getComputedStyle(document.body).color)).toBe("rgb(20, 30, 40)");
+
+    await page.getByRole("link", { name: "Loader" }).click();
+    await expect.poll(() => page.getByRole("heading").textContent()).toBe("hello-from-loader");
+    await page.goto(`${app.url}/action`);
+    await page.getByRole("textbox").fill("browser-action");
+    await page.getByRole("button", { name: "Submit" }).click();
+    await expect.poll(() => page.getByText("browser-action").count()).toBe(1);
+    expect(errors).toEqual([]);
+  } finally {
+    await browser.close();
+  }
 }
 
 export function registerDevBrowserTests(getApp: () => FixtureApp) {

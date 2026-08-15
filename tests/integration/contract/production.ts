@@ -39,38 +39,7 @@ export function registerProductionTests(getApp: () => FixtureApp) {
   });
 
   test("streams deferred loader data", async () => {
-    const response = await getApp().fetch("/deferred");
-
-    expect(response.status).toBe(200);
-    expect(response.body).not.toBeNull();
-
-    const reader = response.body?.getReader();
-    if (!reader) {
-      throw new Error("Response has no body");
-    }
-
-    const decoder = new TextDecoder();
-    let text = "";
-    let sawImmediateBeforeDeferred = false;
-
-    while (true) {
-      const { done, value } = await reader.read();
-      if (done) {
-        break;
-      }
-
-      text += decoder.decode(value, { stream: true });
-      if ((text.includes("immediate-value") || text.includes("loading-deferred")) && !text.includes("deferred-value")) {
-        sawImmediateBeforeDeferred = true;
-      }
-    }
-
-    text += decoder.decode();
-
-    expect(text).toContain("immediate-value");
-    expect(text).toContain("deferred-value");
-    expect(prefixBefore(text, "deferred-value")).toContain("immediate-value");
-    expect(sawImmediateBeforeDeferred).toBe(true);
+    await assertDeferredStreaming(getApp());
   });
 
   test("forwards Hono context into React Router loaders", async () => {
@@ -112,4 +81,39 @@ export function registerProductionTests(getApp: () => FixtureApp) {
     expect(response.status).toBe(200);
     expect(await response.text()).toContain("hello-from-loader");
   });
+}
+
+export async function assertDeferredStreaming(app: FixtureApp) {
+  const response = await app.fetch("/deferred");
+
+  expect(response.status).toBe(200);
+  expect(response.body).not.toBeNull();
+
+  const reader = response.body?.getReader();
+  if (!reader) {
+    throw new Error("Response has no body");
+  }
+
+  const decoder = new TextDecoder();
+  let text = "";
+  let sawImmediateBeforeDeferred = false;
+
+  while (true) {
+    const { done, value } = await reader.read();
+    if (done) {
+      break;
+    }
+
+    text += decoder.decode(value, { stream: true });
+    if ((text.includes("immediate-value") || text.includes("loading-deferred")) && !text.includes("deferred-value")) {
+      sawImmediateBeforeDeferred = true;
+    }
+  }
+
+  text += decoder.decode();
+
+  expect(text).toContain("immediate-value");
+  expect(text).toContain("deferred-value");
+  expect(prefixBefore(text, "deferred-value")).toContain("immediate-value");
+  expect(sawImmediateBeforeDeferred).toBe(true);
 }

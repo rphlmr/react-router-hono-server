@@ -161,6 +161,7 @@ async function createPreparedFixture(name: FixtureName, runtime: RuntimeName) {
     const manifestPath = path.join(cwd, "package.json");
     const manifest = JSON.parse(await readFile(manifestPath, "utf8"));
     manifest.scripts = launcher.scripts;
+    Object.assign(manifest.dependencies, launcher.dependencies);
     manifest.dependencies["react-router-hono-server"] = `file:${packageSource}`;
     if (runtime === "deno") {
       const packageManifest = JSON.parse(await readFile(path.join(packageSource, "package.json"), "utf8"));

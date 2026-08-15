@@ -8,7 +8,7 @@ Upgrade the application to:
 
 - Node.js 24.17 or newer for installation, builds, the CLI, and Node/AWS execution
 - React and React DOM 19.2
-- React Router 8
+- React Router 8.3 or newer
 - Vite 8
 - Hono 4
 - `@hono/node-server` 2
@@ -17,42 +17,13 @@ Upgrade the application to:
 
 React 18, React Router 7, the legacy Cloudflare proxy integration, and compatibility code selected by `force_react_19` are removed. Remove `force_react_19` from every server and plugin configuration.
 
-## Bun React rendering
+## React Router server rendering
 
-Version 4 uses React 19's Bun-specific server renderer. React Router's default Node entry uses `renderToPipeableStream` and is no longer compatible with the Bun runtime.
+React Router 8.3 selects its default server entry from the application's dependencies. Keep `@react-router/node` for Node and AWS applications. Remove `@react-router/node`, `@react-router/express`, and `@react-router/serve` from Bun, Deno, and Cloudflare applications so React Router selects its Web Streams entry.
 
-Reveal the React Router entries:
+Delete a custom `app/entry.server.tsx` when it only exists to select `renderToReadableStream`; React Router now handles that selection. Keep custom entries that implement application-specific rendering behavior.
 
-```sh
-bunx --bun react-router reveal
-```
-
-Update `app/entry.server.tsx` to import and use `renderToReadableStream`:
-
-```tsx
-import { renderToReadableStream } from "react-dom/server";
-import type { EntryContext, RouterContextProvider } from "react-router";
-import { ServerRouter } from "react-router";
-
-export default async function handleRequest(
-  request: Request,
-  responseStatusCode: number,
-  responseHeaders: Headers,
-  routerContext: EntryContext,
-  _loadContext: RouterContextProvider
-) {
-  const reactStream = await renderToReadableStream(<ServerRouter context={routerContext} url={request.url} />);
-  const body = reactStream.pipeThrough(new TransformStream());
-
-  responseHeaders.set("Content-Type", "text/html");
-  return new Response(body, {
-    headers: responseHeaders,
-    status: responseStatusCode,
-  });
-}
-```
-
-Keep the application's bot handling, streaming error handling, and `reactStream.allReady` behavior when adapting a customized entry. The `TransformStream` boundary is required to preserve deferred streaming with Bun's direct React stream. Do not import `react-dom/server.node` for Bun.
+React Router's optional `future.unstable_enableNodeReadableStream` and `future.unstable_optimizeDeps` flags work without corresponding `reactRouterHonoServer()` options. They are experimental and are not enabled by default. A custom server entry takes precedence over `unstable_enableNodeReadableStream`; if `unstable_optimizeDeps` causes development issues, remove it and restart the dev server.
 
 ## React Router context
 
@@ -166,7 +137,7 @@ Node:
 Bun:
 
 ```json
-{ "build": "bunx --bun react-router build", "dev": "bunx --bun react-router dev", "start": "bun ./build/server/index.js", "typecheck": "react-router typegen && tsc --noEmit" }
+{ "build": "react-router build", "dev": "bunx --bun react-router dev", "start": "bun ./build/server/index.js", "typecheck": "react-router typegen && tsc --noEmit" }
 ```
 
 Deno:
@@ -194,6 +165,7 @@ AWS Lambda:
 - Await `createHonoServer()` in the server entry.
 - Use the Cloudflare Vite plugin instead of a proxy.
 - Remove `force_react_19` and middleware future flags.
+- Keep React Router future flags in `react-router.config.ts`; do not copy them into the Hono plugin options.
 - For AWS streaming, use `invokeMode: "stream"`; otherwise use `invokeMode: "default"`.
 - Third-party Sentry, database, queue, Socket.IO, and other integration demonstrations are no longer maintained as part of this package's support contract.
 

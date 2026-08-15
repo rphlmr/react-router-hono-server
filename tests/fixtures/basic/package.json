@@ -11,7 +11,6 @@
   "dependencies": {
     "@hono/node-server": "2.1.1",
     "@react-router/fs-routes": "8.3.0",
-    "@react-router/node": "8.3.0",
     "hono": "4.13.2",
     "isbot": "5.2.1",
     "react": "19.2.8",

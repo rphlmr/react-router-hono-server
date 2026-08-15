@@ -3,6 +3,8 @@ import path from "node:path";
 import { afterEach, expect, test } from "vitest";
 import { type FixtureApp, ProductionFixture } from "../helpers/fixture";
 import { fixtureBin, runCommand } from "../helpers/process";
+import { assertProductionBrowserBehavior } from "./contract/browser";
+import { assertDeferredStreaming } from "./contract/production";
 
 let app: FixtureApp | undefined;
 
@@ -21,6 +23,25 @@ async function runCli(...args: string[]) {
     cwd: app.cwd,
   });
 }
+
+async function runReactRouterCli(...args: string[]) {
+  if (!app) throw new Error("Fixture is not initialized.");
+  return await runCommand({
+    command: fixtureBin(app.cwd, "react-router"),
+    args,
+    cwd: app.cwd,
+  });
+}
+
+const readableStreamConfig = `import type { Config } from "@react-router/dev/config";
+
+export default {
+  ssr: true,
+  future: {
+    unstable_enableNodeReadableStream: true,
+  },
+} satisfies Config;
+`;
 
 afterEach(async () => {
   await app?.stop();
@@ -59,17 +80,52 @@ test("installed CLI reveals a folder and infers every explicit runtime", async (
   }
 });
 
-test("installed React Router CLI reveals its rendering entries", async () => {
+test("React Router reveals working Node server and client entries", async () => {
   app = await ProductionFixture.create("basic", "node");
-  await rm(path.join(app.cwd, "app/entry.client.tsx"));
-  await rm(path.join(app.cwd, "app/entry.server.tsx"));
-
-  await runCommand({
-    command: fixtureBin(app.cwd, "react-router"),
-    args: ["reveal"],
-    cwd: app.cwd,
-  });
+  await runReactRouterCli("reveal");
 
   expect(await app.read("app/entry.client.tsx")).toContain("hydrateRoot");
-  expect(await app.read("app/entry.server.tsx")).toContain("renderToPipeableStream");
+  const entryServer = await app.read("app/entry.server.tsx");
+  expect(entryServer).toContain('import { renderToPipeableStream } from "react-dom/server";');
+  expect(entryServer).not.toContain('import { renderToReadableStream } from "react-dom/server";');
+
+  await app.build();
+  await app.startProduction();
+  await assertProductionBrowserBehavior(app);
+});
+
+test("React Router reveals and builds its opt-in readable stream entry", async () => {
+  app = await ProductionFixture.create("basic", "node");
+  await app.edit("react-router.config.ts", readableStreamConfig);
+  await runReactRouterCli("reveal", "entry.server");
+
+  const entryServer = await app.read("app/entry.server.tsx");
+  expect(entryServer).toContain('import { renderToReadableStream } from "react-dom/server";');
+  expect(entryServer).not.toContain('import { renderToPipeableStream } from "react-dom/server";');
+
+  await app.build();
+  await app.startProduction();
+  await assertDeferredStreaming(app);
+});
+
+test("a revealed server entry takes precedence over the readable stream flag", async () => {
+  app = await ProductionFixture.create("basic", "node");
+  await runReactRouterCli("reveal", "entry.server");
+
+  const entryServer = await app.read("app/entry.server.tsx");
+  expect(entryServer).toContain('import { renderToPipeableStream } from "react-dom/server";');
+
+  await app.edit(
+    "app/entry.server.tsx",
+    entryServer.replace(
+      'responseHeaders.set("Content-Type", "text/html");',
+      'responseHeaders.set("Content-Type", "text/html");\n          responseHeaders.set("x-entry-server", "custom");'
+    )
+  );
+  await app.edit("react-router.config.ts", readableStreamConfig);
+
+  await app.build();
+  await app.startProduction();
+
+  expect((await app.fetch("/")).headers.get("x-entry-server")).toBe("custom");
 });

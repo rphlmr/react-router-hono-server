@@ -69,9 +69,10 @@ export async function createHonoServer<E extends Env = BlankEnv>(
 
 export async function createHonoServer<E extends Env = BlankEnv>(options?: HonoServerOptions<E>) {
   const basename = import.meta.env.REACT_ROUTER_HONO_SERVER_BASENAME;
+  const envPort = typeof Deno === "undefined" ? undefined : Deno.env.get("PORT");
   const mergedOptions: HonoServerOptions<E> = {
     ...options,
-    port: options?.port || Number(Deno.env.get("PORT")) || 3000,
+    port: options?.port || Number(envPort) || 3000,
     defaultLogger: options?.defaultLogger ?? true,
   };
   const mode = getBuildMode();

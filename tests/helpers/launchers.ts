@@ -12,6 +12,7 @@ export type RuntimeCapabilities = {
 export type RuntimeDefinition = {
   name: RuntimeName;
   packageManager: { command: string; installArgs: string[]; lockfile: string };
+  dependencies?: Record<string, string>;
   scripts: { build: string; dev: string; start: string; typecheck: string };
   environment: NodeJS.ProcessEnv;
   capabilities: RuntimeCapabilities;
@@ -23,10 +24,13 @@ const commonScripts = {
   typecheck: "react-router typegen && tsc --noEmit",
 };
 
+const commonDependencies = { "@react-router/node": "8.3.0" };
+
 export const runtimeDefinitions = {
   node: {
     name: "node",
     packageManager: { command: "pnpm", installArgs: ["install"], lockfile: "pnpm-lock.yaml" },
+    dependencies: { ...commonDependencies },
     scripts: { ...commonScripts, start: "node ./build/server/index.js" },
     environment: {},
     capabilities: { browser: true, webSocket: true, workerd: false },
@@ -36,7 +40,6 @@ export const runtimeDefinitions = {
     packageManager: { command: "bun", installArgs: ["install", "--exact"], lockfile: "bun.lock" },
     scripts: {
       ...commonScripts,
-      build: "bunx --bun react-router build",
       dev: "bunx --bun vite",
       start: "bun ./build/server/index.js",
     },
@@ -68,6 +71,7 @@ export const runtimeDefinitions = {
   aws: {
     name: "aws",
     packageManager: { command: "pnpm", installArgs: ["install"], lockfile: "pnpm-lock.yaml" },
+    dependencies: { ...commonDependencies },
     scripts: { ...commonScripts, dev: "react-router dev", start: "node ./build/server/index.js" },
     environment: {},
     capabilities: { browser: false, webSocket: false, workerd: false },

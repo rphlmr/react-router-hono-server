@@ -141,9 +141,10 @@ export function reactRouterHonoServer(options: ReactRouterHonoServerPluginOption
       }
 
       if (runtime === "bun") {
-        // Vite's SSR resolver defaults to the Node condition even when Vite runs under Bun.
+        // React's Bun-specific direct stream closes when a suspended render yields.
+        // Keep React Router's Web Streams entry unchanged and select the standard renderer.
         resolve.alias = {
-          "react-dom/server": "react-dom/server.bun",
+          "react-dom/server": "react-dom/server.browser",
         };
       }
 
@@ -364,7 +365,6 @@ function resolvePluginConfig(config: UserConfig, options: ReactRouterHonoServerP
   const serverEntryPoint = options.serverEntryPoint || findDefaultServerEntry(appDirectory);
   const serverBuildFile = reactRouterConfig.serverBuildFile;
   const basename = reactRouterConfig.basename;
-  const future = reactRouterConfig.future;
 
   return {
     rootDirectory,
@@ -376,7 +376,6 @@ function resolvePluginConfig(config: UserConfig, options: ReactRouterHonoServerP
     dev: options.dev,
     serverBuildFile,
     basename,
-    future,
   };
 }
 
