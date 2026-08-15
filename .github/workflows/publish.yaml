@@ -31,7 +31,7 @@ jobs:
         run: vp install
 
       - name: ⬆️ Enable npm trusted publishing
-        run: npm install -g npm@^11.8.0
+        run: npm install -g npm@^12.0.2
 
       - name: 🦋 Create Release Pull Request or Publish
         id: changesets

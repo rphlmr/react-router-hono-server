@@ -46,7 +46,7 @@ jobs:
           fi
 
       - name: 🏗️ Build
-        run: vp build
+        run: vp run build
 
       - name: 📦 Publish (${{ steps.prerelease.outputs.mode }}) v${{ steps.prerelease.outputs.version }}
         run: vp dlx pkg-pr-new publish --packageManager=pnpm
