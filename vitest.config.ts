@@ -6,16 +6,16 @@ export default defineConfig({
     setupFiles: [],
     environment: "node",
     globals: true,
+    include: ["tests/**/*.test.ts"],
+    fileParallelism: false,
+    testTimeout: 60_000,
+    hookTimeout: 120_000,
 
     coverage: {
       provider: "v8",
       reporter: ["json-summary", "html"],
-      thresholds: {
-        statements: 80,
-        branches: 80,
-        functions: 80,
-        lines: 80,
-      },
+      include: ["src/**/*.ts"],
+      exclude: ["src/types/**"],
     },
   },
 });

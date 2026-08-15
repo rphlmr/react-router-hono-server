@@ -9,7 +9,8 @@
       "!**/.changeset",
       "!**/.github",
       "!**/.vscode",
-      "!**/examples"
+      "!**/examples",
+      "!**/tests/fixtures"
     ]
   },
   "vcs": {

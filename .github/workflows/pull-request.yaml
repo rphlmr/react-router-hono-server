@@ -46,30 +46,30 @@ jobs:
       - name: 🔎 Type check
         run: pnpm typecheck
 
-  # vitest:
-  #   name: ⚡ Unit Tests
-  #   runs-on: ubuntu-latest
-  #   steps:
-  #     - name: 🛑 Cancel Previous Runs
-  #       uses: styfle/cancel-workflow-action@0.12.1
+  test:
+    name: ⚡ Integration Tests
+    runs-on: ubuntu-latest
+    steps:
+      - name: 🛑 Cancel Previous Runs
+        uses: styfle/cancel-workflow-action@0.12.1
 
-  #     - name: ⬇️ Checkout repo
-  #       uses: actions/checkout@v4
+      - name: ⬇️ Checkout repo
+        uses: actions/checkout@v7
 
-  #     - name: ⎔ Setup node
-  #       uses: actions/setup-node@v4
-  #       with:
-  #         node-version-file: "package.json"
+      - name: 👷 Install pnpm
+        uses: pnpm/action-setup@v6
 
-  #     - name: 📥 Download deps
-  #       uses: bahmutov/npm-install@v1
-  #       with:
-  #         useLockFile: false
+      - name: ⎔ Setup node
+        uses: actions/setup-node@v6
+        with:
+          node-version-file: "package.json"
+          cache: "pnpm"
 
-  #     - name: ⚡ Run vitest
-  #       run: npm run test:cov
+      - name: 📥 Install dependencies
+        run: pnpm install
 
-  #     - name: "Report Coverage"
-  #       # Only works if you set `reportOnFailure: true` in your vite config as specified above
-  #       if: always()
-  #       uses: davelosert/vitest-coverage-report-action@v2
+      - name: 📦 Build library
+        run: pnpm build
+
+      - name: ⚡ Run integration tests
+        run: pnpm test
