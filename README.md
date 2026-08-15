@@ -2,6 +2,18 @@
 
 `react-router-hono-server` is a Vite plugin and a set of Hono adapters for running a React Router framework-mode application on Node.js, Bun, Deno, Cloudflare Workers, or AWS Lambda. It owns the server entry, static-file handling, Hono middleware integration, and runtime startup while React Router continues to own routes and rendering.
 
+## Contents
+
+- [Runtime matrix](#runtime-matrix)
+- [Requirements and compatibility](#requirements-and-compatibility)
+- [Minimal Node quick start](#minimal-node-quick-start)
+- [Runtime selection](#runtime-selection)
+- [Reveal and entry files](#reveal-and-entry-files)
+- Runtime guides: [Node.js](#nodejs), [Bun](#bun), [Deno](#deno), [Cloudflare Workers](#cloudflare-workers), [AWS Lambda](#aws-lambda)
+- [Server customization](#server-customization)
+- [API and exports](#api-and-exports)
+- [Troubleshooting](#troubleshooting)
+
 ## Runtime matrix
 
 | Runtime | Development | Production | WebSockets | Static assets |
@@ -86,6 +98,38 @@ Set `runtime` in the Hono server Vite plugin and import the matching adapter in 
 
 The plugin must precede `reactRouter()`. On Cloudflare, `cloudflare()` must precede both.
 
+## Reveal and entry files
+
+React Router and this package each provide a default entry that keeps a new project small. Reveal an entry only when the application needs to own and customize it. The two reveal commands operate on different layers.
+
+### Hono server entry
+
+Without `app/server.ts` or `app/server/index.ts`, `reactRouterHonoServer()` supplies a virtual server that calls the selected runtime's `createHonoServer()` with default options. Reveal this package's server entry when you need Hono routes or middleware, a load context, WebSockets, static-file options, or runtime-specific server options:
+
+```sh
+npx react-router-hono-server reveal file
+```
+
+This creates `app/server.ts`. Use the folder form if the server will have colocated modules:
+
+```sh
+npx react-router-hono-server reveal folder
+```
+
+This creates `app/server/index.ts`. The CLI infers the runtime from the `runtime` option in `vite.config.ts` and defaults to Node.js when it cannot find one. Run it from the project root. It overwrites the target file, so do not run it over an existing customized server entry.
+
+### React Router rendering entries
+
+React Router normally supplies hidden `app/entry.client.tsx` and `app/entry.server.tsx` defaults. Reveal them when you need to control hydration or SSR streaming:
+
+```sh
+npx react-router reveal
+```
+
+React Router then generates both files and uses them instead of its defaults. Node.js, Bun, and AWS can use the standard Node streaming server entry. Deno and Cloudflare must use a server entry based on `renderToReadableStream`, so reveal the files before adapting `app/entry.server.tsx` for those runtimes. See the [React Router CLI documentation](https://reactrouter.com/api/other-api/dev#react-router-reveal).
+
+`app/server.ts` and `app/entry.server.tsx` are not alternatives: the first configures the Hono runtime server, while the second renders a React Router request into an HTTP response.
+
 ## Node.js
 
 Install:
@@ -95,7 +139,7 @@ pnpm add react-router-hono-server hono @hono/node-server
 pnpm add -D @react-router/dev vite
 ```
 
-Use the quick-start `vite.config.ts` and `app/server.ts` above. Node uses React Router's standard Node `app/entry.server.tsx`.
+Use the quick-start `vite.config.ts` and `app/server.ts` above. React Router's default Node rendering entry is compatible; reveal it only when the application needs custom SSR behavior.
 
 Package scripts:
 
@@ -145,7 +189,7 @@ import { createHonoServer } from "react-router-hono-server/bun";
 export default await createHonoServer();
 ```
 
-Use the standard React Router Node streaming entry for `app/entry.server.tsx`. Package scripts:
+React Router's default Node streaming entry is compatible; reveal it only when the application needs custom SSR behavior. Package scripts:
 
 <!-- canonical:bun-scripts -->
 
@@ -153,7 +197,7 @@ Use the standard React Router Node streaming entry for `app/entry.server.tsx`. P
 {
   "scripts": {
     "build": "react-router build",
-    "dev": "bun --conditions=development ./node_modules/.bin/react-router dev",
+    "dev": "bunx --bun vite",
     "start": "bun ./build/server/index.js",
     "typecheck": "react-router typegen && tsc --noEmit"
   }
@@ -194,7 +238,7 @@ import { createHonoServer } from "react-router-hono-server/deno";
 export default await createHonoServer();
 ```
 
-`app/entry.server.tsx` must use `renderToReadableStream` from `react-dom/server`. Package scripts:
+Run `react-router reveal`, then make `app/entry.server.tsx` use `renderToReadableStream` from `react-dom/server`. Package scripts:
 
 <!-- canonical:deno-scripts -->
 
@@ -249,7 +293,7 @@ import { createHonoServer } from "react-router-hono-server/cloudflare";
 export default await createHonoServer();
 ```
 
-Use a `renderToReadableStream` React server entry. Create `wrangler.jsonc`:
+Run `react-router reveal`, then use a `renderToReadableStream` React server entry. Create `wrangler.jsonc`:
 
 <!-- canonical:cloudflare-wrangler -->
 
@@ -319,7 +363,7 @@ import { createHonoServer } from "react-router-hono-server/aws-lambda";
 export default await createHonoServer({ invokeMode: "default" });
 ```
 
-For Lambda response streaming, set `invokeMode: "stream"`. Use the standard React Router Node server entry. Package scripts:
+For Lambda response streaming, set `invokeMode: "stream"`. React Router's default Node rendering entry is compatible; reveal it only for custom SSR behavior. Package scripts:
 
 <!-- canonical:aws-scripts -->
 
@@ -420,7 +464,7 @@ Configure `basename`, `prerender`, `appDirectory`, and `buildDirectory` in `reac
 | `/aws-lambda` | AWS handler factory, options, and `createGetLoadContext` |
 | `/middleware` | `cache(seconds)` static-response middleware |
 | `/http` | `redirect(c, location)`, deprecated `reactRouterRedirect(location)`, and `getPath(c)` |
-| CLI | `react-router-hono-server reveal file` or `reveal folder` |
+| CLI | [`react-router-hono-server reveal file` or `reveal folder`](#hono-server-entry) |
 
 The Vite plugin accepts `runtime`, `serverEntryPoint`, `dev.exclude`, and `dev.export`. Without a discovered `app/server.ts` or `app/server/index.ts`, it supplies a virtual default server for the selected runtime.
 

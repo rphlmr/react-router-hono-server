@@ -80,6 +80,10 @@ export class FixtureApp {
     await writeFile(filePath, contents);
   }
 
+  async read(relativePath: string) {
+    return await readFile(path.join(this.cwd, relativePath), "utf8");
+  }
+
   async eventually(assertion: () => Promise<void>, options?: { timeout?: number; interval?: number }) {
     await eventually(assertion, {
       ...options,

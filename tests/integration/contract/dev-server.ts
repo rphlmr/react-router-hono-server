@@ -98,7 +98,9 @@ export function registerDevServerTests(getApp: () => FixtureApp) {
 
   test("discovers a route added while the dev server is running", async () => {
     const app = getApp();
+    const generatedTypePath = ".react-router/types/app/routes/+types/dynamic.ts";
     expect((await app.fetch("/dynamic")).status).toBe(404);
+    await expect(app.read(generatedTypePath)).rejects.toMatchObject({ code: "ENOENT" });
 
     await app.edit("app/routes/dynamic.tsx", DYNAMIC_ROUTE);
 
@@ -106,6 +108,9 @@ export function registerDevServerTests(getApp: () => FixtureApp) {
       const response = await app.fetch("/dynamic");
       expect(response.status).toBe(200);
       expect(await response.text()).toContain("dynamic-route");
+    });
+    await app.eventually(async () => {
+      expect(await app.read(generatedTypePath)).toContain('file: "routes/dynamic.tsx"');
     });
   });
 
