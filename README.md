@@ -153,7 +153,7 @@ Use the standard React Router Node streaming entry for `app/entry.server.tsx`. P
 {
   "scripts": {
     "build": "react-router build",
-    "dev": "bunx --bun react-router dev",
+    "dev": "bun --conditions=development ./node_modules/.bin/react-router dev",
     "start": "bun ./build/server/index.js",
     "typecheck": "react-router typegen && tsc --noEmit"
   }
@@ -167,7 +167,7 @@ Run `bun run dev` or `bun run build && bun run start`. Bun supports `customBunSe
 Declare npm dependencies in `package.json`, then install them into an isolated Deno project:
 
 ```sh
-deno install --allow-scripts
+deno install --allow-scripts --minimum-dependency-age=0
 ```
 
 Create `vite.config.ts`:
@@ -202,7 +202,7 @@ export default await createHonoServer();
 {
   "scripts": {
     "build": "react-router build",
-    "dev": "deno run --allow-all npm:react-router dev",
+    "dev": "deno run --conditions=development --allow-all npm:@react-router/dev dev",
     "start": "deno run --allow-all ./build/server/index.js",
     "typecheck": "react-router typegen && tsc --noEmit"
   }

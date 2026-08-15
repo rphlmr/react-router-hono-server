@@ -34,16 +34,24 @@ export const runtimeDefinitions = {
   bun: {
     name: "bun",
     packageManager: { command: "bun", installArgs: ["install", "--exact"], lockfile: "bun.lock" },
-    scripts: { ...commonScripts, dev: "bunx --bun react-router dev", start: "bun ./build/server/index.js" },
+    scripts: {
+      ...commonScripts,
+      dev: "bun --conditions=development ./node_modules/.bin/react-router dev",
+      start: "bun ./build/server/index.js",
+    },
     environment: {},
     capabilities: { browser: true, webSocket: true, workerd: false },
   },
   deno: {
     name: "deno",
-    packageManager: { command: "deno", installArgs: ["install", "--allow-scripts"], lockfile: "deno.lock" },
+    packageManager: {
+      command: "deno",
+      installArgs: ["install", "--allow-scripts", "--minimum-dependency-age=0"],
+      lockfile: "deno.lock",
+    },
     scripts: {
       ...commonScripts,
-      dev: "deno run --allow-all npm:react-router dev",
+      dev: "deno run --conditions=development --allow-all npm:@react-router/dev dev",
       start: "deno run --allow-all ./build/server/index.js",
     },
     environment: {},

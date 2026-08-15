@@ -5,7 +5,7 @@ import path from "node:path";
 import { fileURLToPath } from "node:url";
 import { eventually } from "./eventually";
 import { getLauncher, type RuntimeLauncher, type RuntimeName } from "./launchers";
-import { BROWSER_UA, type CommandResult, getFreePort, type ManagedProcess, waitForHttp } from "./process";
+import { BROWSER_UA, type CommandResult, getFreePort, type ManagedProcess, runCommand, waitForHttp } from "./process";
 
 const REPO_ROOT = path.resolve(fileURLToPath(new URL("../..", import.meta.url)));
 const SKIP_COPY_DIRS = new Set(["node_modules", "build", ".react-router"]);
@@ -147,10 +147,25 @@ async function createPreparedFixture(name: FixtureName, runtime: RuntimeName) {
 
     const launcher = getLauncher(runtime);
     const artifact = await findPackageArtifact();
+    let packageSource = artifact;
+    if (runtime === "deno") {
+      // Deno links file: tarballs as files and does not install dependencies declared by local directories.
+      packageSource = path.join(cwd, ".package-artifact");
+      await mkdir(packageSource);
+      await runCommand({
+        command: "tar",
+        args: ["-xzf", artifact, "--strip-components=1", "-C", packageSource],
+        cwd,
+      });
+    }
     const manifestPath = path.join(cwd, "package.json");
     const manifest = JSON.parse(await readFile(manifestPath, "utf8"));
     manifest.scripts = launcher.scripts;
-    manifest.dependencies["react-router-hono-server"] = `file:${artifact}`;
+    manifest.dependencies["react-router-hono-server"] = `file:${packageSource}`;
+    if (runtime === "deno") {
+      const packageManifest = JSON.parse(await readFile(path.join(packageSource, "package.json"), "utf8"));
+      Object.assign(manifest.dependencies, packageManifest.dependencies);
+    }
     if (process.env.RRHS_LATEST_COMPATIBLE === "1") {
       const versions = JSON.parse(await readFile(path.join(ARTIFACT_DIRECTORY, "latest-versions.json"), "utf8"));
       for (const [dependency, version] of Object.entries(versions)) {
