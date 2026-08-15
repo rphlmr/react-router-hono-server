@@ -111,8 +111,7 @@
   "dependencies": {
     "@drizzle-team/brocli": "0.12.0",
     "@hono/node-server": "2.1.1",
-    "@hono/vite-dev-server": "0.26.0",
-    "ws": "8.21.0"
+    "@hono/vite-dev-server": "0.26.0"
   },
   "devDependencies": {
     "@arethetypeswrong/cli": "^0.18.5",
@@ -125,7 +124,7 @@
     "@types/deno": "^2.7.0",
     "@types/node": "^24.13.2",
     "@types/react-dom": "^19.2.3",
-    "@types/ws": "^8.18.1",
+    "@types/ws": "8.18.1",
     "@vitest/coverage-v8": "^4.1.9",
     "hono": "4.12.26",
     "npm-run-all": "^4.1.5",
@@ -134,7 +133,8 @@
     "react-dom": "^19.2.7",
     "tsdown": "^0.22.3",
     "typescript": "^6.0.3",
-    "vitest": "^4.1.9"
+    "vitest": "^4.1.9",
+    "ws": "8.21.0"
   },
   "peerDependencies": {
     "@cloudflare/workers-types": "^4.20260621.1",
@@ -147,7 +147,8 @@
     "react-dom": "^19.2.7",
     "react-router": "^8.3.0",
     "vite": ">=8.0.16",
-    "wrangler": "^4.103.0"
+    "wrangler": "^4.103.0",
+    "ws": "^8.21.0"
   },
   "peerDependenciesMeta": {
     "@hono/node-server": {
@@ -157,6 +158,9 @@
       "optional": true
     },
     "miniflare": {
+      "optional": true
+    },
+    "ws": {
       "optional": true
     },
     "wrangler": {

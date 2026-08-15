@@ -1,10 +1,11 @@
 import type { AddressInfo } from "node:net";
-import { type ServerType, serve } from "@hono/node-server";
+import { type ServerType, serve, type WebSocketServerLike } from "@hono/node-server";
 import { type ServeStaticOptions, serveStatic } from "@hono/node-server/serve-static";
 import { type Env, Hono } from "hono";
 import { createMiddleware } from "hono/factory";
 import { logger } from "hono/logger";
 import type { BlankEnv } from "hono/types";
+import type { UpgradeWebSocket } from "hono/ws";
 import { createRequestHandler } from "react-router";
 import {
   bindIncomingRequestSocketInfo,
@@ -74,7 +75,19 @@ interface HonoNodeServerOptions<E extends Env = BlankEnv> extends HonoServerOpti
   };
 }
 
-type HonoServerOptionsWithWebSocket<E extends Env = BlankEnv> = HonoNodeServerOptions<E> & WithWebsocket<E>;
+type WithNodeWebsocket<E extends Env> = Omit<WithWebsocket<E>, "configure"> & {
+  /**
+   * Customize the Hono server and access the underlying Node WebSocket server.
+   *
+   * It is applied after the default middleware and before the React Router middleware.
+   */
+  configure: (
+    app: Hono<E>,
+    options: { upgradeWebSocket: UpgradeWebSocket; wss: WebSocketServerLike }
+  ) => Promise<void> | void;
+};
+
+type HonoServerOptionsWithWebSocket<E extends Env = BlankEnv> = HonoNodeServerOptions<E> & WithNodeWebsocket<E>;
 
 type HonoServerOptionsWithoutWebSocket<E extends Env = BlankEnv> = HonoNodeServerOptions<E> & WithoutWebsocket<E>;
 
@@ -162,7 +175,11 @@ export async function createHonoServer<E extends Env = BlankEnv>(options?: HonoS
    * Add optional middleware
    */
   if (mergedOptions.useWebSocket) {
-    await mergedOptions.configure(app, { upgradeWebSocket });
+    if (!nodeWebSocket) {
+      throw new Error("Node WebSocket server was not created while WebSockets are enabled");
+    }
+
+    await mergedOptions.configure(app, { upgradeWebSocket, wss: nodeWebSocket.server });
   } else {
     await mergedOptions.configure?.(app);
   }

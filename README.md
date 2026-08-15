@@ -612,14 +612,25 @@ Each adapter also exports `createGetLoadContext` for separately declared callbac
 
 ### WebSockets
 
-Node and Bun support Hono WebSockets in development and production:
+Node and Bun support Hono WebSockets in development and production. Development uses `@hono/node-server` for both
+adapters, so install the optional `ws` peer dependency before enabling WebSockets with either adapter:
+
+```sh
+pnpm add ws
+```
+
+The Node adapter exposes its underlying WebSocket server as `wss`:
 
 ```ts
 import { createHonoServer } from "react-router-hono-server/node";
 
 export default await createHonoServer({
   useWebSocket: true,
-  configure(app, { upgradeWebSocket }) {
+  configure(app, { upgradeWebSocket, wss }) {
+    wss.on("connection", (socket) => {
+      socket.send("connected");
+    });
+
     app.get("/ws", upgradeWebSocket(() => ({
       onMessage(event, ws) {
         ws.send(`echo:${event.data}`);
@@ -629,7 +640,9 @@ export default await createHonoServer({
 });
 ```
 
-Node WebSockets use `@hono/node-server` 2 and coexist with Vite HMR.
+Node WebSockets use `@hono/node-server` 2 and coexist with Vite HMR. The `wss` value implements Hono's
+`WebSocketServerLike` contract for server-level connection handling. The Bun adapter's `configure` callback continues
+to expose only `upgradeWebSocket`.
 
 ### Basename and prerendering
 

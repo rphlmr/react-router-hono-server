@@ -35,9 +35,6 @@ importers:
       wrangler:
         specifier: ^4.103.0
         version: 4.123.0(@cloudflare/workers-types@4.20260621.1)
-      ws:
-        specifier: 8.21.0
-        version: 8.21.0
     devDependencies:
       '@arethetypeswrong/cli':
         specifier: ^0.18.5
@@ -70,7 +67,7 @@ importers:
         specifier: ^19.2.3
         version: 19.2.4(@types/react@19.2.17)
       '@types/ws':
-        specifier: ^8.18.1
+        specifier: 8.18.1
         version: 8.18.1
       '@vitest/coverage-v8':
         specifier: ^4.1.9
@@ -99,6 +96,9 @@ importers:
       vitest:
         specifier: ^4.1.9
         version: 4.1.9(@types/node@24.13.2)(@vitest/coverage-v8@4.1.9)(vite@8.2.1(@types/node@24.13.2)(esbuild@0.28.1))
+      ws:
+        specifier: 8.21.0
+        version: 8.21.0
 
 packages:
 

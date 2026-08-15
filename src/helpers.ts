@@ -27,6 +27,17 @@ const defaultWebSocket = {
 
 type Config = { app: Hono<any>; enabled: boolean };
 
+async function importNodeWebSocket() {
+  try {
+    return await import("ws");
+  } catch (cause) {
+    throw new Error(
+      'WebSocket support through @hono/node-server requires the optional "ws" peer dependency. Install "ws" before enabling useWebSocket.',
+      { cause }
+    );
+  }
+}
+
 /**
  * Create WebSocket factory
  *
@@ -49,9 +60,10 @@ export async function createWebSocket({ app, enabled }: Config): Promise<WebSock
   if (DEV || runtime === "node") {
     const [{ createAdaptorServer, upgradeWebSocket }, { WebSocketServer }] = await Promise.all([
       import("@hono/node-server"),
-      import("ws"),
+      importNodeWebSocket(),
     ]);
-    const websocket = { server: new WebSocketServer({ noServer: true }) };
+    const wss = new WebSocketServer({ noServer: true });
+    const websocket = { server: wss };
 
     return {
       upgradeWebSocket,
