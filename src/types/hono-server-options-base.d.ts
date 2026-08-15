@@ -71,7 +71,7 @@ export interface WithWebsocket<E extends Env> {
   /**
    * Enable WebSockets support in `configure`
    *
-   * For `bun` and `cloudflare` we will use the `@hono/node-ws`'s `injectWebSocket` on dev (only),
+   * In development, WebSockets use the implementation built into `@hono/node-server`.
    *
    * Defaults to `false`
    */
@@ -88,7 +88,7 @@ export interface WithoutWebsocket<E extends Env> {
   /**
    * Enable WebSockets support in `configure`
    *
-   * For `bun` and `cloudflare` we will use the `@hono/node-ws`'s `injectWebSocket` on dev (only),
+   * In development, WebSockets use the implementation built into `@hono/node-server`.
    *
    * Defaults to `false`
    */

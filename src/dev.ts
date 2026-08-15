@@ -53,26 +53,10 @@ type ReactRouterHonoServerPluginOptionsDefault = ReactRouterHonoServerPluginOpti
   runtime?: Runtime;
 };
 
-type ReactRouterHonoServerPluginOptionsCloudflare = ReactRouterHonoServerPluginOptionsBase & {
-  /**
-   * The runtime to use for the server.
-   *
-   * Defaults to `node`.
-   */
-  runtime: Extract<Runtime, "cloudflare">;
-  flag?: {
-    force_react_19?: boolean;
-  };
-};
-
-type ReactRouterHonoServerPluginOptions =
-  | ReactRouterHonoServerPluginOptionsDefault
-  | ReactRouterHonoServerPluginOptionsCloudflare;
+type ReactRouterHonoServerPluginOptions = ReactRouterHonoServerPluginOptionsDefault;
 
 const REACT_ROUTER_SERVER_BUILD_MODULE_ID = "\0virtual:react-router/server-build";
 const VIRTUAL_MODULE_ID = "\0virtual:react-router-hono-server/server";
-const REACT_ROUTER_EXPORT =
-  "export { serverManifest as assets, assetsBuildDirectory, basename, entry, future, isSpaMode, prerender, publicPath, routes, ssr, routeDiscovery };";
 
 export function reactRouterHonoServer(options: ReactRouterHonoServerPluginOptions = {}): Plugin {
   const runtime: Runtime = options.runtime || "node";
@@ -97,7 +81,19 @@ export function reactRouterHonoServer(options: ReactRouterHonoServerPluginOption
         `;
       }
     },
-    async config(config, env) {
+    configResolved(config) {
+      if (
+        runtime === "cloudflare" &&
+        !config.plugins.some(
+          (plugin) => plugin.name === "vite-plugin-cloudflare" || plugin.name.startsWith("vite-plugin-cloudflare:")
+        )
+      ) {
+        throw new Error(
+          'Missing cloudflare() in vite.config.ts. Add it with: import { cloudflare } from "@cloudflare/vite-plugin".'
+        );
+      }
+    },
+    config(config, env) {
       pluginConfig = resolvePluginConfig(config, options);
 
       if (!pluginConfig) {
@@ -106,17 +102,6 @@ export function reactRouterHonoServer(options: ReactRouterHonoServerPluginOption
 
       const serverEntryPoint = pluginConfig.serverEntryPoint;
       const denoDevReactExternals = runtime === "deno" && env.mode === "development" ? ["react", "react-dom"] : [];
-
-      if (
-        env.mode === "development" &&
-        runtime === "cloudflare" &&
-        !config.plugins?.find((p) => p && "name" in p && p.name === "react-router-cloudflare-vite-dev-proxy")
-      ) {
-        console.warn(
-          `\x1b[31mMissing cloudflareDevProxy() in your vite.config.ts.\nPlease add it to your plugins: import { cloudflareDevProxy } from "@react-router/dev/vite/cloudflare";\x1b[0m\n`
-        );
-        // throw new Error("Missing mandatory plugin cloudflareDevProxy() in vite.config.ts");
-      }
 
       const baseConfig = {
         // Define environment variables that are hot-swapped during development and SSR build
@@ -133,7 +118,7 @@ export function reactRouterHonoServer(options: ReactRouterHonoServerPluginOption
           noExternal: ["react-router-hono-server"],
           // Vite's ESM SSR runner cannot evaluate CJS `react-dom/server.*` (`require is not defined`).
           // In Deno dev, let Deno's npm loader handle React instead of inlining those files.
-          external: ["@hono/node-ws", ...denoDevReactExternals],
+          ...(runtime === "cloudflare" ? {} : { external: [...denoDevReactExternals] }),
           optimizeDeps: runtime === "bun" ? { include: ["react-dom/server"], exclude: ["react"] } : undefined,
         },
       } satisfies UserConfig;
@@ -147,10 +132,8 @@ export function reactRouterHonoServer(options: ReactRouterHonoServerPluginOption
       const resolve: UserConfig["resolve"] = {};
 
       if (runtime === "cloudflare") {
-        const reactVersion = await getReactVersion(pluginConfig);
-
         resolve.alias = {
-          "react-dom/server": reactVersion >= 19 ? "react-dom/server.edge" : "react-dom/server.browser",
+          "react-dom/server": "react-dom/server.edge",
         };
       }
 
@@ -180,7 +163,7 @@ export function reactRouterHonoServer(options: ReactRouterHonoServerPluginOption
         },
         build: {
           rollupOptions: {
-            input: serverEntryPoint,
+            ...(runtime === "cloudflare" ? {} : { input: serverEntryPoint }),
             output: {
               entryFileNames: (chunk) => {
                 // https://github.com/remix-run/react-router/issues/13226#issuecomment-2773364665
@@ -209,9 +192,6 @@ export function reactRouterHonoServer(options: ReactRouterHonoServerPluginOption
                       return undefined;
                     }
                   : undefined,
-              // We are doing that because we build a single file that only exports the Hono server
-              // RR needs its exports for prerendering
-              footer: runtime === "cloudflare" ? REACT_ROUTER_EXPORT : undefined,
             },
           },
         },
@@ -224,43 +204,6 @@ export function reactRouterHonoServer(options: ReactRouterHonoServerPluginOption
           ssr: ssrConfig as any,
         },
       };
-    },
-    async closeBundle() {
-      if (!pluginConfig?.isSsrBuild || runtime !== "cloudflare") {
-        return;
-      }
-
-      console.log("Cleaning up server exports...");
-
-      const buildPath = path.join(pluginConfig.rootDirectory, pluginConfig.buildDirectory, "server", "index.js");
-
-      let serverFile = await fs.promises.readFile(buildPath, "utf-8").catch((e) => {
-        if (e.code === "ENOENT") {
-          console.error("\x1b[31m\nThe server was not built\x1b[0m");
-          if (pluginConfig?.flag?.force_react_19) {
-            console.error(
-              "\x1b[31m\nYou are forcing React 19 but the server failed to be built by React Router.\nCheck your dependencies, but it's possible that your project is still using React 18 from a node_modules root (monorepo?)\n\x1b[0m"
-            );
-          }
-        }
-
-        return null;
-      });
-
-      if (!serverFile) {
-        return;
-      }
-
-      serverFile = serverFile.replace(REACT_ROUTER_EXPORT, "");
-
-      // Patch cloudflare server build for react 19 (#77)
-      if ((await getReactVersion(pluginConfig)) >= 19) {
-        serverFile = serverFile.replace(/react-dom\/server\.browser/g, "react-dom/server.edge");
-      }
-
-      await fs.promises.writeFile(buildPath, serverFile);
-
-      console.log("\x1b[32mAll done!\x1b[0m");
     },
     async configureServer(server) {
       // bind viteDevServer to global 🤫
@@ -392,7 +335,6 @@ function resolvePluginConfig(config: UserConfig, options: ReactRouterHonoServerP
     serverBuildFile,
     basename,
     future,
-    flag: isCloudflareOptions(options) ? options.flag : {},
   };
 }
 
@@ -422,27 +364,4 @@ function findDefaultServerEntry(appDirectory: string): string {
   }
   // If neither create a virtual module with a default Hono server
   return VIRTUAL_MODULE_ID;
-}
-
-/**
- * Retrieves the major React version from node_modules
- */
-async function getReactVersion(pluginConfig: PluginConfig) {
-  if (pluginConfig?.flag?.force_react_19) {
-    return 19;
-  }
-
-  const reactPackage = await import("react");
-  const version = reactPackage.default.version || reactPackage.version;
-
-  return Number.parseInt(version.split(".")[0], 10);
-}
-
-/**
- * Type guard to check if options is the Cloudflare variant
- */
-function isCloudflareOptions(
-  options: ReactRouterHonoServerPluginOptions
-): options is ReactRouterHonoServerPluginOptionsCloudflare {
-  return options.runtime === "cloudflare";
 }

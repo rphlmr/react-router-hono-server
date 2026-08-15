@@ -43,6 +43,8 @@ It presets a default Hono server config that you can [customize](#options)
 
 Install the following npm package.
 
+React 19.2.7 or newer is required.
+
 > [!NOTE]
 > This is not a dev dependency, as it creates the Hono server used in production.
 
@@ -125,7 +127,7 @@ export default defineConfig({
 > Check this [example](./examples/bun/simple/) to see how to use it.
 
 > [!IMPORTANT]
-> React 19 and `bun --bun` flag should work with the same `entry.server.tsx` file as Node. Check [Using `bun --bun` flag?](#using-bun---bun-flag)
+> The `bun --bun` flag works with the same `entry.server.tsx` file as Node. Check [Using `bun --bun` flag?](#using-bun---bun-flag)
 > Check this [example](./examples/bun/simple-bun-runtime/) to see how to use it.
 
 ```ts
@@ -150,7 +152,7 @@ export default defineConfig({
 
 If you are using the [`bun --bun` flag](https://bun.sh/docs/cli/run#bun), you need to have the same `entry.server.tsx` file as Node.
 
-When building for production, at least for React 19, it uses a special `react-dom/server.bun` import with only the `renderToReadableStream` function available.
+When building for production, Bun uses a special `react-dom/server.bun` import with only the `renderToReadableStream` function available.
 
 React Router Hono Server vite plugin will alias that to `react-dom/server.node`
 
@@ -233,37 +235,25 @@ export default function handleRequest(
 > Check this [example](./examples/cloudflare/simple/) to see how to use it.
 
 > [!IMPORTANT]
-> You need to add the `cloudflareDevProxy` plugin to use the Cloudflare Workers runtime on dev.
+> Add the Cloudflare Vite plugin before the Hono and React Router plugins. Configure its Vite environment as `ssr`.
 
 
 ```ts
 // vite.config.ts
 import { reactRouter } from "@react-router/dev/vite";
-import { cloudflareDevProxy } from "@react-router/dev/vite/cloudflare"; // add this
+import { cloudflare } from "@cloudflare/vite-plugin";
 import { reactRouterHonoServer } from "react-router-hono-server/dev"; // add this
 import { defineConfig } from "vite";
 import tsconfigPaths from "vite-tsconfig-paths";
 
 export default defineConfig({
   plugins: [
-    cloudflareDevProxy(),
+    cloudflare({ viteEnvironment: { name: "ssr" } }),
     reactRouterHonoServer({ runtime: "cloudflare"} ), // add this
     reactRouter(),
     tsconfigPaths()
   ],
 });
-```
-
-##### React 19
-> [!IMPORTANT]
-> Check this [example](./examples/cloudflare/simple-19/) to see how to use it.
-
-> [!TIP]
-> You may need to add the `force_react_19` flag to the `reactRouterHonoServer` plugin config.
-
-```ts
-// vite.config.ts
-reactRouterHonoServer({ runtime: "cloudflare", flag: { force_react_19: true } }), // add this
 ```
 
 #### AWS Lambda
@@ -649,7 +639,7 @@ export interface HonoServerOptions<E extends Env = BlankEnv> extends HonoServerO
    *
    * **Only applied to production mode**
    *
-   * For example, you can use this to bind `@hono/node-ws`'s `injectWebSocket`
+   * For example, you can use this to bind Socket.IO.
    */
   onServe?: (server: ServerType) => void;
   /**
@@ -963,13 +953,7 @@ Then, you can use the `use` function from `react-router` to access the context i
 
 ### Using WebSockets
 #### Node
-This package has a built-in helper to use `@hono/node-ws`.
-
-When using WebSockets with the Node adapter, install `@hono/node-ws` in your app:
-
-```bash
-npm install @hono/node-ws
-```
+This package uses the WebSocket support built into `@hono/node-server` v2.
 
 > [!TIP]
 > Check this [example](./examples/node/websocket/) to see how to use it.
@@ -983,7 +967,7 @@ const clients = new Set<WSContext>();
 
 export default createHonoServer({
   useWebSocket: true,
-  // 👆 Unlock this 👇 from @hono/node-ws
+  // 👆 Unlock this 👇 from @hono/node-server
   configure: (app, { upgradeWebSocket }) => {
     app.get(
       "/ws",
@@ -1015,7 +999,7 @@ export default createHonoServer({
 ```
 
 #### Bun
-This package has a built-in helper to use `hono/bun` in prod and `@hono/node-ws` in dev
+This package uses `hono/bun` in production and `@hono/node-server` during Vite development.
 
 > [!TIP]
 > Check this [example](./examples/bun/websocket/) to see how to use it.
@@ -1029,7 +1013,7 @@ const clients = new Set<WSContext>();
 
 export default createHonoServer({
   useWebSocket: true,
-  // 👆 Unlock this 👇 from @hono/node-ws in dev, hono/bun in prod
+  // 👆 Unlock this 👇 from @hono/node-server in dev, hono/bun in prod
   configure(app, { upgradeWebSocket }) {
     app.get(
       "/ws",

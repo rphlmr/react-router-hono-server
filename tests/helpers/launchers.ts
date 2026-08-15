@@ -1,7 +1,7 @@
 import path from "node:path";
 import { fixtureBin, type ManagedProcess, runCommand, spawnProcess } from "./process";
 
-export type RuntimeName = "node" | "bun" | "deno";
+export type RuntimeName = "node" | "bun" | "deno" | "cloudflare";
 
 export type RuntimeLauncher = {
   name: RuntimeName;
@@ -75,10 +75,57 @@ const bunLauncher: RuntimeLauncher = {
     });
   },
   startDev(cwd, port) {
-    // `bunx --bun vite` currently crashes React Router typegen (`generate is not a function`).
-    // Dev still uses `reactRouterHonoServer({ runtime: "bun" })` through Node Vite.
     return spawnProcess({
+      command: "bunx",
+      args: [
+        "--bun",
+        "vite",
+        "--configLoader",
+        "runner",
+        "--host",
+        "127.0.0.1",
+        "--port",
+        String(port),
+        "--strictPort",
+      ],
+      cwd,
+      env: {
+        ...process.env,
+        NODE_ENV: "development",
+        PORT: String(port),
+      },
+    });
+  },
+};
+
+const cloudflareLauncher: RuntimeLauncher = {
+  name: "cloudflare",
+  build(cwd) {
+    return runCommand({
       command: fixtureBin(cwd, "react-router"),
+      args: ["build"],
+      cwd,
+      env: {
+        ...process.env,
+        NODE_ENV: "production",
+      },
+    });
+  },
+  startProduction(cwd, port) {
+    return spawnProcess({
+      command: fixtureBin(cwd, "vite"),
+      args: ["preview", "--host", "127.0.0.1", "--port", String(port), "--strictPort"],
+      cwd,
+      env: {
+        ...process.env,
+        NODE_ENV: "production",
+        PORT: String(port),
+      },
+    });
+  },
+  startDev(cwd, port) {
+    return spawnProcess({
+      command: fixtureBin(cwd, "vite"),
       args: ["dev", "--host", "127.0.0.1", "--port", String(port), "--strictPort"],
       cwd,
       env: {
@@ -144,6 +191,7 @@ const launchers: Record<RuntimeName, RuntimeLauncher> = {
   node: nodeLauncher,
   bun: bunLauncher,
   deno: denoLauncher,
+  cloudflare: cloudflareLauncher,
 };
 
 export function getLauncher(runtime: RuntimeName) {

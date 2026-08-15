@@ -1,6 +1,6 @@
 import type { IncomingMessage, Server } from "node:http";
 import type { Http2SecureServer, Http2Server } from "node:http2";
-import type { ServerType } from "@hono/node-server";
+import type { ServerType, WebSocketServerLike } from "@hono/node-server";
 import type { Env, Hono } from "hono";
 import { createMiddleware } from "hono/factory";
 import type { UpgradeWebSocket } from "hono/ws";
@@ -17,6 +17,7 @@ type AnyServer = NodeServer | BunServeOptions;
 interface WebSocket {
   upgradeWebSocket: UpgradeWebSocket;
   injectWebSocket: <Server extends AnyServer>(server: Server) => Server;
+  nodeWebSocket?: { server: WebSocketServerLike };
 }
 
 const defaultWebSocket = {
@@ -31,7 +32,7 @@ type Config = { app: Hono<any>; enabled: boolean };
  *
  * It harmonizes the WebSocket implementation between `node`, `bun` and `cloudflare`
  *
- * For `bun` and `cloudflare`, in dev (which uses a node server), we hot-swap their native implementation with `@hono/node-ws`. This is the secret sauce!
+ * In development, all runtimes use the WebSocket implementation built into `@hono/node-server`.
  *
  * **Implementation details: It will strip unused code from other runtimes at build time**
  *
@@ -46,15 +47,25 @@ export async function createWebSocket({ app, enabled }: Config): Promise<WebSock
   const runtime = import.meta.env.REACT_ROUTER_HONO_SERVER_RUNTIME as Runtime;
 
   if (DEV || runtime === "node") {
-    const { createNodeWebSocket } = await import("@hono/node-ws");
-    const { injectWebSocket, upgradeWebSocket } = createNodeWebSocket({ app });
+    const [{ createAdaptorServer, upgradeWebSocket }, { WebSocketServer }] = await Promise.all([
+      import("@hono/node-server"),
+      import("ws"),
+    ]);
+    const websocket = { server: new WebSocketServer({ noServer: true }) };
 
     return {
       upgradeWebSocket,
       injectWebSocket(server) {
-        injectWebSocket(server as NodeServer);
+        createAdaptorServer({
+          fetch: app.fetch,
+          websocket,
+          // `createAdaptorServer` only uses this factory's return value to attach
+          // its WebSocket listeners to Vite's already-running HTTP server.
+          createServer: (() => server as NodeServer) as typeof import("node:http").createServer,
+        });
         return server;
       },
+      nodeWebSocket: websocket,
     };
   }
 
@@ -79,7 +90,7 @@ export async function createWebSocket({ app, enabled }: Config): Promise<WebSock
 /**
  * Clean all user-defined upgrade listeners, except HMR
  *
- * Avoid conflicts on `already upgraded connections` when using `@hono/node-ws` on dev
+ * Avoid conflicts on already-upgraded connections when using Node WebSockets in dev.
  *
  */
 export function cleanUpgradeListeners(httpServer: ServerType) {

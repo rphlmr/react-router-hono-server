@@ -1,7 +1,25 @@
-import { test } from "vitest";
+import { afterAll, beforeAll, test } from "vitest";
+import { DevServerFixture, type FixtureApp } from "../helpers/fixture";
+import { hasCommand } from "../helpers/runtime";
+import { registerDevServerTests } from "./contract/dev-server";
 
-// `bunx --bun vite` currently crashes React Router typegen:
-// `TypeError: generate is not a function`.
-// Running the Bun adapter under Node Vite fails with `Bun is not defined`.
-// Production Bun coverage lives in bun.production.test.ts.
-test.skip("bun development server is blocked by React Router typegen under Bun", () => {});
+const bunAvailable = hasCommand("bun");
+
+let app: FixtureApp;
+
+beforeAll(async () => {
+  if (!bunAvailable) {
+    return;
+  }
+  app = await DevServerFixture.start("basic", "bun");
+});
+
+afterAll(async () => {
+  await app?.stop();
+});
+
+if (bunAvailable) {
+  registerDevServerTests(() => app);
+} else {
+  test.skip("bun is not installed", () => {});
+}

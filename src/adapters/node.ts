@@ -118,7 +118,7 @@ export async function createHonoServer<E extends Env = BlankEnv>(options?: HonoS
   const PRODUCTION = mode === "production";
   const clientBuildPath = `${import.meta.env.REACT_ROUTER_HONO_SERVER_BUILD_DIRECTORY}/client`;
   const app = new Hono<E>(mergedOptions.app);
-  const { upgradeWebSocket, injectWebSocket } = await createWebSocket({
+  const { upgradeWebSocket, injectWebSocket, nodeWebSocket } = await createWebSocket({
     app,
     enabled: mergedOptions.useWebSocket ?? false,
   });
@@ -199,17 +199,15 @@ export async function createHonoServer<E extends Env = BlankEnv>(options?: HonoS
         port: mergedOptions.port,
         overrideGlobalObjects: mergedOptions.overrideGlobalObjects,
         hostname: mergedOptions.hostname,
+        websocket: nodeWebSocket,
       },
       mergedOptions.listeningListener
     );
     // Execute your onServe callback. Use case: socket.io binding
     mergedOptions.onServe?.(server);
-
-    // Bind `hono/node-ws` for you so you don't have to do it manually in `onServe`
-    injectWebSocket(server);
   } else if (globalThis.__viteDevServer?.httpServer) {
     // You wonder why I'm doing this?
-    // It is to make the dev server work with `hono/node-ws`
+    // It is to make the Node WebSocket handler coexist with Vite HMR.
     const httpServer = globalThis.__viteDevServer.httpServer;
 
     // Remove all user-defined upgrade listeners except HMR
@@ -218,7 +216,7 @@ export async function createHonoServer<E extends Env = BlankEnv>(options?: HonoS
     // Execute your onServe callback. Use case: socket.io binding
     mergedOptions.onServe?.(httpServer);
 
-    // Bind `hono/node-ws` for you so you don't have to do it manually in `onServe`
+    // Bind the Node WebSocket handler to Vite's existing HTTP server.
     injectWebSocket(httpServer);
 
     // Prevent user-defined upgrade listeners from upgrading `vite-hmr`
