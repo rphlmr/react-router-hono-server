@@ -2,4 +2,5 @@
 "react-router-hono-server": minor
 ---
 
-Expose the Node adapter's underlying `WebSocketServer` as `wss` in the WebSocket `configure` callback.
+Support Hono WebSockets in development and production across Node, Bun, Deno, and Cloudflare Workers. The Node adapter
+also exposes its underlying `WebSocketServer` as `wss` in the WebSocket `configure` callback.

@@ -41,8 +41,8 @@ It gives your application one clear server boundary:
 | --- | --- | --- | --- | --- |
 | Node.js | React Router dev server | Node HTTP/HTTPS | Yes | Node filesystem |
 | Bun | Bun-powered React Router dev server | `Bun.serve` | Yes | Bun filesystem |
-| Deno | Deno-powered Vite dev server | `Deno.serve` | No | Deno filesystem |
-| Cloudflare Workers | Cloudflare Vite plugin and Workerd | Worker + asset binding | Platform APIs | Workers assets |
+| Deno | Deno-powered Vite dev server | `Deno.serve` | Yes | Deno filesystem |
+| Cloudflare Workers | Cloudflare Vite plugin and Workerd | Worker + asset binding | Yes | Workers assets |
 | AWS Lambda | React Router dev server | Lambda handler or response streaming | No | Use CloudFront/S3 in production |
 
 Choose the runtime that matches your deployment target. Application routes and Hono configuration remain portable; runtime-specific server options stay isolated in `app/server.ts`.
@@ -379,7 +379,7 @@ deno task start
 - The development command enables the `development` export condition required by React Router.
 - `customDenoServer` forwards options to `Deno.serve`.
 - Graceful shutdown and static-file customization are supported.
-- WebSockets are not part of this adapter's support contract.
+- WebSockets use the optional `ws` peer in Vite development and Deno's native implementation in production.
 
 ### Cloudflare Workers
 
@@ -479,6 +479,7 @@ Deploy the generated Worker with your normal Cloudflare workflow.
 - Missing or unsuccessful asset responses fall through to Hono and React Router.
 - Prerendering and SPA mode are supported.
 - With `ssr: true`, a route without a generated asset falls through to runtime SSR.
+- WebSockets use Cloudflare's native `WebSocketPair` implementation in both workerd-backed development and production.
 
 ### AWS Lambda
 
@@ -612,14 +613,49 @@ Each adapter also exports `createGetLoadContext` for separately declared callbac
 
 ### WebSockets
 
-Node and Bun support Hono WebSockets in development and production. Development uses `@hono/node-server` for both
-adapters, so install the optional `ws` peer dependency before enabling WebSockets with either adapter:
+Node, Bun, Deno, and Cloudflare Workers support the
+[Hono WebSocket helper](https://hono.dev/docs/helpers/websocket) in development
+and production.
+
+> [!NOTE]
+> Node always uses `@hono/node-server`.
+> Bun and Deno use it only while running through Vite in development.
+> Install the optional `ws` peer and its TypeScript declarations for those modes.
+>
+> Bun and Deno production builds use their native Hono adapters.
+> They do not load `ws` in production.
+>
+> Cloudflare uses its native `WebSocketPair` implementation in workerd-backed
+> Vite development and production, so it never requires `ws`.
 
 ```sh
 pnpm add ws
+pnpm add -D @types/ws
 ```
 
-The Node adapter exposes its underlying WebSocket server as `wss`:
+The portable callback API exposes `upgradeWebSocket`:
+
+```ts
+import { createHonoServer } from "react-router-hono-server/deno";
+
+export default await createHonoServer({
+  useWebSocket: true,
+  configure(app, { upgradeWebSocket }) {
+    app.get("/ws", upgradeWebSocket(() => ({
+      onMessage(event, ws) {
+        ws.send(`echo:${event.data}`);
+      },
+    })));
+  },
+});
+```
+
+Use the matching `/bun`, `/deno`, or `/cloudflare` adapter import.
+
+Cloudflare's Hono helper does not support `onOpen`.
+Use `onMessage`, `onClose`, and `onError` there.
+
+The Node adapter exposes its underlying `ws.WebSocketServer` as `wss`:
 
 ```ts
 import { createHonoServer } from "react-router-hono-server/node";
@@ -640,9 +676,18 @@ export default await createHonoServer({
 });
 ```
 
-Node WebSockets use `@hono/node-server` 2 and coexist with Vite HMR. The `wss` value implements Hono's
-`WebSocketServerLike` contract for server-level connection handling. The Bun adapter's `configure` callback continues
-to expose only `upgradeWebSocket`.
+`wss` is Node-only because it is the concrete server created by the `ws` package.
+Bun, Deno, and Cloudflare use runtime-native, per-connection WebSocket APIs
+instead of an equivalent central `WebSocketServer`.
+
+The temporary `wss` used by Bun and Deno during Vite development is not exposed.
+Doing so would provide an API that disappears in production.
+
+Node WebSockets use `@hono/node-server` 2 and coexist with Vite HMR.
+Use `wss.on("connection")`, `wss.clients`, and the connection sockets' `ping()`
+method for server-level connection management and heartbeat handling.
+
+Bun, Deno, and Cloudflare expose only `upgradeWebSocket`.
 
 ### Basename and prerendering
 

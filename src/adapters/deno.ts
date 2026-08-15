@@ -4,10 +4,17 @@ import { logger } from "hono/logger";
 import type { ServeStaticOptions } from "hono/serve-static";
 import type { BlankEnv } from "hono/types";
 import { createRequestHandler } from "react-router";
-import { bindIncomingRequestSocketInfo, createGetLoadContext, getBuildMode, importBuild } from "../helpers";
+import {
+  attachWebSocketToVite,
+  bindIncomingRequestSocketInfo,
+  createGetLoadContext,
+  createWebSocket,
+  getBuildMode,
+  importBuild,
+} from "../helpers";
 import { cache } from "../middleware";
 import { isReactRouterBuildRequest } from "../react-router-build-request";
-import type { HonoServerOptionsBase, WithoutWebsocket } from "../types/hono-server-options-base";
+import type { HonoServerOptionsBase, WithoutWebsocket, WithWebsocket } from "../types/hono-server-options-base";
 
 export { createGetLoadContext };
 
@@ -54,8 +61,11 @@ interface HonoDenoServerOptions<E extends Env = BlankEnv> extends HonoServerOpti
 
 type HonoServerOptionsWithoutWebSocket<E extends Env = BlankEnv> = HonoDenoServerOptions<E> & WithoutWebsocket<E>;
 
-export type HonoServerOptions<E extends Env = BlankEnv> = HonoDenoServerOptions<E> &
-  Omit<WithoutWebsocket<E>, "useWebSocket">;
+type HonoServerOptionsWithWebSocket<E extends Env = BlankEnv> = HonoDenoServerOptions<E> & WithWebsocket<E>;
+
+export type HonoServerOptions<E extends Env = BlankEnv> =
+  | HonoServerOptionsWithWebSocket<E>
+  | HonoServerOptionsWithoutWebSocket<E>;
 
 /**
  * Create a Hono server
@@ -65,6 +75,9 @@ export type HonoServerOptions<E extends Env = BlankEnv> = HonoDenoServerOptions<
 
 export async function createHonoServer<E extends Env = BlankEnv>(
   options?: HonoServerOptionsWithoutWebSocket<E>
+): Promise<Hono<E>>;
+export async function createHonoServer<E extends Env = BlankEnv>(
+  options?: HonoServerOptionsWithWebSocket<E>
 ): Promise<Hono<E>>;
 
 export async function createHonoServer<E extends Env = BlankEnv>(options?: HonoServerOptions<E>) {
@@ -79,6 +92,10 @@ export async function createHonoServer<E extends Env = BlankEnv>(options?: HonoS
   const PRODUCTION = mode === "production";
   const clientBuildPath = `${import.meta.env.REACT_ROUTER_HONO_SERVER_BUILD_DIRECTORY}/client`;
   const app = new Hono<E>(mergedOptions.app);
+  const { upgradeWebSocket, injectWebSocket } = await createWebSocket({
+    app,
+    enabled: mergedOptions.useWebSocket ?? false,
+  });
   // Store the shutdown callback for use in gracefulShutdown()
   if (PRODUCTION && mergedOptions.onGracefulShutdown) {
     shutdownCallback = mergedOptions.onGracefulShutdown;
@@ -125,7 +142,11 @@ export async function createHonoServer<E extends Env = BlankEnv>(options?: HonoS
   /**
    * Add optional middleware
    */
-  await mergedOptions.configure?.(app);
+  if (mergedOptions.useWebSocket) {
+    await mergedOptions.configure(app, { upgradeWebSocket });
+  } else {
+    await mergedOptions.configure?.(app);
+  }
 
   /**
    * Create a React Router Hono app and bind it to the root Hono server using the React Router basename
@@ -193,6 +214,11 @@ export async function createHonoServer<E extends Env = BlankEnv>(options?: HonoS
         process.on("SIGINT", () => gracefulShutdown("SIGINT"));
         console.log("✅ Graceful shutdown enabled. Press Ctrl+C to shutdown gracefully.");
       }
+    }
+  } else if (mergedOptions.useWebSocket) {
+    const websocketAttached = attachWebSocketToVite(injectWebSocket);
+    if (websocketAttached) {
+      console.log("🚧 Running in development mode");
     }
   }
 

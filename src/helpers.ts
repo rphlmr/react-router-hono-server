@@ -1,6 +1,6 @@
 import type { IncomingMessage, Server } from "node:http";
 import type { Http2SecureServer, Http2Server } from "node:http2";
-import type { ServerType, WebSocketServerLike } from "@hono/node-server";
+import type { ServerType } from "@hono/node-server";
 import type { Env, Hono } from "hono";
 import { createMiddleware } from "hono/factory";
 import type { UpgradeWebSocket } from "hono/ws";
@@ -17,7 +17,7 @@ type AnyServer = NodeServer | BunServeOptions;
 interface WebSocket {
   upgradeWebSocket: UpgradeWebSocket;
   injectWebSocket: <Server extends AnyServer>(server: Server) => Server;
-  nodeWebSocket?: { server: WebSocketServerLike };
+  nodeWebSocket?: { server: import("ws").WebSocketServer };
 }
 
 const defaultWebSocket = {
@@ -27,12 +27,12 @@ const defaultWebSocket = {
 
 type Config = { app: Hono<any>; enabled: boolean };
 
-async function importNodeWebSocket() {
+async function importNodeWebSocket(runtime: Runtime, mode: "development" | "production") {
   try {
     return await import("ws");
   } catch (cause) {
     throw new Error(
-      'WebSocket support through @hono/node-server requires the optional "ws" peer dependency. Install "ws" before enabling useWebSocket.',
+      `WebSocket support for the "${runtime}" runtime in ${mode} requires the optional "ws" peer dependency. Install "ws" before enabling useWebSocket.`,
       { cause }
     );
   }
@@ -41,9 +41,10 @@ async function importNodeWebSocket() {
 /**
  * Create WebSocket factory
  *
- * It harmonizes the WebSocket implementation between `node`, `bun` and `cloudflare`
+ * It harmonizes the WebSocket implementation between supported runtimes.
  *
- * In development, all runtimes use the WebSocket implementation built into `@hono/node-server`.
+ * Node, Bun development, and Deno development use `@hono/node-server`.
+ * Cloudflare always uses Workerd's native implementation.
  *
  * **Implementation details: It will strip unused code from other runtimes at build time**
  *
@@ -57,10 +58,19 @@ export async function createWebSocket({ app, enabled }: Config): Promise<WebSock
   const DEV = mode === "development";
   const runtime = import.meta.env.REACT_ROUTER_HONO_SERVER_RUNTIME as Runtime;
 
-  if (DEV || runtime === "node") {
+  if (runtime === "cloudflare") {
+    const { upgradeWebSocket } = await import("hono/cloudflare-workers");
+
+    return {
+      upgradeWebSocket: upgradeWebSocket as UpgradeWebSocket,
+      injectWebSocket: (server) => server,
+    };
+  }
+
+  if (runtime === "node" || (DEV && (runtime === "bun" || runtime === "deno"))) {
     const [{ createAdaptorServer, upgradeWebSocket }, { WebSocketServer }] = await Promise.all([
       import("@hono/node-server"),
-      importNodeWebSocket(),
+      importNodeWebSocket(runtime, mode),
     ]);
     const wss = new WebSocketServer({ noServer: true });
     const websocket = { server: wss };
@@ -96,7 +106,37 @@ export async function createWebSocket({ app, enabled }: Config): Promise<WebSock
     };
   }
 
+  if (runtime === "deno") {
+    const { upgradeWebSocket } = await import("hono/deno");
+
+    return {
+      upgradeWebSocket: upgradeWebSocket as UpgradeWebSocket,
+      injectWebSocket: (server) => server,
+    };
+  }
+
   return defaultWebSocket;
+}
+
+/**
+ * Attach the Node WebSocket bridge to Vite's HTTP server without intercepting HMR.
+ */
+export function attachWebSocketToVite(
+  injectWebSocket: WebSocket["injectWebSocket"],
+  onServe?: (server: ServerType) => void
+) {
+  const httpServer = globalThis.__viteDevServer?.httpServer;
+
+  if (!httpServer) {
+    return false;
+  }
+
+  cleanUpgradeListeners(httpServer);
+  onServe?.(httpServer);
+  injectWebSocket(httpServer);
+  patchUpgradeListener(httpServer);
+
+  return true;
 }
 
 /**

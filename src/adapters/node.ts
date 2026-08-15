@@ -1,5 +1,5 @@
 import type { AddressInfo } from "node:net";
-import { type ServerType, serve, type WebSocketServerLike } from "@hono/node-server";
+import { type ServerType, serve } from "@hono/node-server";
 import { type ServeStaticOptions, serveStatic } from "@hono/node-server/serve-static";
 import { type Env, Hono } from "hono";
 import { createMiddleware } from "hono/factory";
@@ -7,14 +7,14 @@ import { logger } from "hono/logger";
 import type { BlankEnv } from "hono/types";
 import type { UpgradeWebSocket } from "hono/ws";
 import { createRequestHandler } from "react-router";
+import type { WebSocketServer } from "ws";
 import {
+  attachWebSocketToVite,
   bindIncomingRequestSocketInfo,
-  cleanUpgradeListeners,
   createGetLoadContext,
   createWebSocket,
   getBuildMode,
   importBuild,
-  patchUpgradeListener,
 } from "../helpers";
 import { cache } from "../middleware";
 import { isReactRouterBuildRequest } from "../react-router-build-request";
@@ -83,7 +83,7 @@ type WithNodeWebsocket<E extends Env> = Omit<WithWebsocket<E>, "configure"> & {
    */
   configure: (
     app: Hono<E>,
-    options: { upgradeWebSocket: UpgradeWebSocket; wss: WebSocketServerLike }
+    options: { upgradeWebSocket: UpgradeWebSocket; wss: WebSocketServer }
   ) => Promise<void> | void;
 };
 
@@ -223,24 +223,11 @@ export async function createHonoServer<E extends Env = BlankEnv>(options?: HonoS
     );
     // Execute your onServe callback. Use case: socket.io binding
     mergedOptions.onServe?.(server);
-  } else if (globalThis.__viteDevServer?.httpServer) {
-    // You wonder why I'm doing this?
-    // It is to make the Node WebSocket handler coexist with Vite HMR.
-    const httpServer = globalThis.__viteDevServer.httpServer;
-
-    // Remove all user-defined upgrade listeners except HMR
-    cleanUpgradeListeners(httpServer);
-
-    // Execute your onServe callback. Use case: socket.io binding
-    mergedOptions.onServe?.(httpServer);
-
-    // Bind the Node WebSocket handler to Vite's existing HTTP server.
-    injectWebSocket(httpServer);
-
-    // Prevent user-defined upgrade listeners from upgrading `vite-hmr`
-    patchUpgradeListener(httpServer);
-
-    console.log("🚧 Dev server started");
+  } else {
+    const websocketAttached = attachWebSocketToVite(injectWebSocket, mergedOptions.onServe);
+    if (websocketAttached) {
+      console.log("🚧 Dev server started");
+    }
   }
 
   return app;

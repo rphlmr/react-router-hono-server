@@ -5,13 +5,12 @@ import type { ServeStaticOptions } from "hono/serve-static";
 import type { BlankEnv } from "hono/types";
 import { createRequestHandler } from "react-router";
 import {
+  attachWebSocketToVite,
   bindIncomingRequestSocketInfo,
-  cleanUpgradeListeners,
   createGetLoadContext,
   createWebSocket,
   getBuildMode,
   importBuild,
-  patchUpgradeListener,
 } from "../helpers";
 import { cache } from "../middleware";
 import { isReactRouterBuildRequest } from "../react-router-build-request";
@@ -227,21 +226,11 @@ export async function createHonoServer<E extends Env = BlankEnv>(options?: HonoS
         console.log("✅ Graceful shutdown enabled. Press Ctrl+C to shutdown gracefully.");
       }
     }
-  } else if (globalThis.__viteDevServer?.httpServer) {
-    // You wonder why I'm doing this?
-    // It is to make the Node WebSocket handler coexist with Vite HMR.
-    const httpServer = globalThis.__viteDevServer.httpServer;
-
-    // // Remove all user-defined upgrade listeners except HMR
-    cleanUpgradeListeners(httpServer);
-
-    // Bind the Node WebSocket handler to Vite's existing HTTP server.
-    injectWebSocket(httpServer);
-
-    // // Prevent user-defined upgrade listeners from upgrading `vite-hmr`
-    patchUpgradeListener(httpServer);
-
-    console.log("🚧 Running in development mode");
+  } else if (mergedOptions.useWebSocket) {
+    const websocketAttached = attachWebSocketToVite(injectWebSocket);
+    if (websocketAttached) {
+      console.log("🚧 Running in development mode");
+    }
   }
 
   return server;

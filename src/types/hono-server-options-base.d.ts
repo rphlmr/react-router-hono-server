@@ -53,11 +53,11 @@ export interface HonoServerOptionsBase<E extends Env> {
   beforeAll?: (app: Hono<E>) => Promise<void> | void;
 }
 
-export interface WithWebsocket<E extends Env> {
+export interface WithWebsocket<E extends Env, TUpgradeWebSocket = UpgradeWebSocket> {
   /**
    * Enable WebSockets support in `configure`
    *
-   * In development, WebSockets use the implementation built into `@hono/node-server`.
+   * Development uses the runtime's native implementation or the `@hono/node-server` bridge.
    *
    * Defaults to `false`
    */
@@ -67,14 +67,14 @@ export interface WithWebsocket<E extends Env> {
    *
    * It is applied after the default middleware and before the React Router middleware
    */
-  configure: (app: Hono<E>, options: { upgradeWebSocket: UpgradeWebSocket }) => Promise<void> | void;
+  configure: (app: Hono<E>, options: { upgradeWebSocket: TUpgradeWebSocket }) => Promise<void> | void;
 }
 
 export interface WithoutWebsocket<E extends Env> {
   /**
    * Enable WebSockets support in `configure`
    *
-   * In development, WebSockets use the implementation built into `@hono/node-server`.
+   * Development uses the runtime's native implementation or the `@hono/node-server` bridge.
    *
    * Defaults to `false`
    */

@@ -25,12 +25,13 @@ const commonScripts = {
 };
 
 const commonDependencies = { "@react-router/node": "8.3.0" };
+const webSocketDependencies = { "@types/ws": "8.18.1", ws: "8.21.0" };
 
 export const runtimeDefinitions = {
   node: {
     name: "node",
     packageManager: { command: "pnpm", installArgs: ["install"], lockfile: "pnpm-lock.yaml" },
-    dependencies: { ...commonDependencies },
+    dependencies: { ...commonDependencies, ...webSocketDependencies },
     scripts: { ...commonScripts, start: "node ./build/server/index.js" },
     environment: {},
     capabilities: { browser: true, webSocket: true, workerd: false },
@@ -38,6 +39,7 @@ export const runtimeDefinitions = {
   bun: {
     name: "bun",
     packageManager: { command: "bun", installArgs: ["install", "--exact"], lockfile: "bun.lock" },
+    dependencies: { ...webSocketDependencies },
     scripts: {
       ...commonScripts,
       dev: "bunx --bun vite",
@@ -53,20 +55,21 @@ export const runtimeDefinitions = {
       installArgs: ["install", "--allow-scripts", "--minimum-dependency-age=0"],
       lockfile: "deno.lock",
     },
+    dependencies: { ...webSocketDependencies },
     scripts: {
       ...commonScripts,
       dev: "deno run --conditions=development --allow-all npm:@react-router/dev dev",
       start: "deno run --allow-all ./build/server/index.js",
     },
     environment: {},
-    capabilities: { browser: true, webSocket: false, workerd: false },
+    capabilities: { browser: true, webSocket: true, workerd: false },
   },
   cloudflare: {
     name: "cloudflare",
     packageManager: { command: "pnpm", installArgs: ["install"], lockfile: "pnpm-lock.yaml" },
     scripts: { ...commonScripts, dev: "vite dev", start: "vite preview" },
     environment: {},
-    capabilities: { browser: true, webSocket: false, workerd: true },
+    capabilities: { browser: true, webSocket: true, workerd: true },
   },
   aws: {
     name: "aws",

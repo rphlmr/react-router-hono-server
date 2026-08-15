@@ -4,22 +4,42 @@ import { createMiddleware } from "hono/factory";
 import { logger } from "hono/logger";
 import type { BlankEnv } from "hono/types";
 import { createRequestHandler } from "react-router";
-import { bindIncomingRequestSocketInfo, createGetLoadContext, getBuildMode, importBuild } from "../helpers";
+import {
+  bindIncomingRequestSocketInfo,
+  createGetLoadContext,
+  createWebSocket,
+  getBuildMode,
+  importBuild,
+} from "../helpers";
 import { cache } from "../middleware";
-import type { HonoServerOptionsBase, WithoutWebsocket } from "../types/hono-server-options-base";
+import type { HonoServerOptionsBase, WithoutWebsocket, WithWebsocket } from "../types/hono-server-options-base";
 
 export { createGetLoadContext };
 
 interface HonoCloudflareOptions<E extends Env = BlankEnv> extends Omit<HonoServerOptionsBase<E>, "port"> {}
 
-export type HonoServerOptions<E extends Env = BlankEnv> = HonoCloudflareOptions<E> &
-  Omit<WithoutWebsocket<E>, "useWebSocket">;
+type CloudflareUpgradeWebSocket = typeof import("hono/cloudflare-workers").upgradeWebSocket;
+
+type HonoServerOptionsWithWebSocket<E extends Env = BlankEnv> = HonoCloudflareOptions<E> &
+  WithWebsocket<E, CloudflareUpgradeWebSocket>;
+
+type HonoServerOptionsWithoutWebSocket<E extends Env = BlankEnv> = HonoCloudflareOptions<E> & WithoutWebsocket<E>;
+
+export type HonoServerOptions<E extends Env = BlankEnv> =
+  | HonoServerOptionsWithWebSocket<E>
+  | HonoServerOptionsWithoutWebSocket<E>;
 
 /**
  * Create a Hono server
  *
  * @param config {@link HonoServerOptions} - The configuration options for the server
  */
+export async function createHonoServer<E extends Env = BlankEnv>(
+  options?: HonoServerOptionsWithoutWebSocket<E>
+): Promise<Hono<E>>;
+export async function createHonoServer<E extends Env = BlankEnv>(
+  options?: HonoServerOptionsWithWebSocket<E>
+): Promise<Hono<E>>;
 export async function createHonoServer<E extends Env = BlankEnv>(options?: HonoServerOptions<E>) {
   const basename = import.meta.env.REACT_ROUTER_HONO_SERVER_BASENAME;
   const mergedOptions: HonoServerOptions<E> = {
@@ -29,6 +49,10 @@ export async function createHonoServer<E extends Env = BlankEnv>(options?: HonoS
   const mode = getBuildMode();
   const PRODUCTION = mode === "production";
   const app = new Hono<E>(mergedOptions.app);
+  const { upgradeWebSocket } = await createWebSocket({
+    app,
+    enabled: mergedOptions.useWebSocket ?? false,
+  });
 
   /**
    * Add optional middleware that runs before any built-in middleware, including assets serving.
@@ -75,7 +99,11 @@ export async function createHonoServer<E extends Env = BlankEnv>(options?: HonoS
   /**
    * Add optional middleware
    */
-  await mergedOptions.configure?.(app);
+  if (mergedOptions.useWebSocket) {
+    await mergedOptions.configure(app, { upgradeWebSocket: upgradeWebSocket as CloudflareUpgradeWebSocket });
+  } else {
+    await mergedOptions.configure?.(app);
+  }
 
   /**
    * Create a React Router Hono app and bind it to the root Hono server using the React Router basename
