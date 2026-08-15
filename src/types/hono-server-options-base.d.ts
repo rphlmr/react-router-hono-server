@@ -43,7 +43,7 @@ export interface HonoServerOptionsBase<E extends Env> {
     options: {
       build: ServerBuild;
       mode: string;
-    }
+    },
   ) => Promise<ReactRouterHonoServerAppLoadContext> | ReactRouterHonoServerAppLoadContext;
   /**
    * Hook to add middleware that runs before any built-in middleware, including assets serving.
@@ -67,7 +67,10 @@ export interface WithWebsocket<E extends Env, TUpgradeWebSocket = UpgradeWebSock
    *
    * It is applied after the default middleware and before the React Router middleware
    */
-  configure: (app: Hono<E>, options: { upgradeWebSocket: TUpgradeWebSocket }) => Promise<void> | void;
+  configure: (
+    app: Hono<E>,
+    options: { upgradeWebSocket: TUpgradeWebSocket },
+  ) => Promise<void> | void;
 }
 
 export interface WithoutWebsocket<E extends Env> {

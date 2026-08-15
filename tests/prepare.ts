@@ -12,7 +12,7 @@ await run("pnpm", ["pack", "--pack-destination", artifactDirectory]);
 if (process.env.RRHS_LATEST_COMPATIBLE === "1") {
   await writeFile(
     path.join(artifactDirectory, "latest-versions.json"),
-    `${JSON.stringify(await resolveLatestCompatibleVersions(), null, 2)}\n`
+    `${JSON.stringify(await resolveLatestCompatibleVersions(), null, 2)}\n`,
   );
 }
 
@@ -52,8 +52,8 @@ async function resolveLatestCompatibleVersions() {
         const output = await capture("pnpm", ["view", `${name}@${major}`, "version", "--json"]);
         const versions = JSON.parse(output);
         return [name, Array.isArray(versions) ? versions.at(-1) : versions];
-      })
-    )
+      }),
+    ),
   );
 }
 

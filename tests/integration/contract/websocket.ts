@@ -1,9 +1,13 @@
-import { afterEach, describe, expect, test } from "vitest";
-import { type FixtureApp, ProductionFixture } from "../../helpers/fixture";
+import { afterEach, describe, expect, test } from "vite-plus/test";
+
 import type { RuntimeName } from "../../helpers/launchers";
+
+import { type FixtureApp, ProductionFixture } from "../../helpers/fixture";
 import { requireCommand } from "../../helpers/runtime";
 
-export function registerWebSocketTests(runtime: Extract<RuntimeName, "bun" | "deno" | "cloudflare">) {
+export function registerWebSocketTests(
+  runtime: Extract<RuntimeName, "bun" | "deno" | "cloudflare">,
+) {
   const websocketServer = `import { createHonoServer } from "react-router-hono-server/${runtime}";
 
 export default await createHonoServer({
@@ -72,7 +76,7 @@ async function expectWebSocketEcho(fixture: FixtureApp) {
           clearTimeout(timeout);
           resolve(String(event.data));
         },
-        { once: true }
+        { once: true },
       );
       socket.addEventListener(
         "error",
@@ -80,7 +84,7 @@ async function expectWebSocketEcho(fixture: FixtureApp) {
           clearTimeout(timeout);
           reject(new Error(`WebSocket connection failed.\n\n${fixture.logs()}`));
         },
-        { once: true }
+        { once: true },
       );
     });
 

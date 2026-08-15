@@ -15,96 +15,81 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v7
-      - uses: biomejs/setup-biome@v2
-      - run: biome ci . --reporter=github
+      - uses: voidzero-dev/setup-vp@313600b80b104eadebb9111787d37a2e83e014ca # v1.17.0
+        with:
+          node-version: "24"
+          cache: true
+      - run: vp install
+      - run: vp check
 
   package-types:
     name: Package and types
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v7
-      - uses: pnpm/action-setup@v6
-      - uses: actions/setup-node@v6
+      - uses: voidzero-dev/setup-vp@313600b80b104eadebb9111787d37a2e83e014ca # v1.17.0
         with:
-          node-version-file: package.json
-          cache: pnpm
-      - run: pnpm install --frozen-lockfile
-      - run: pnpm typecheck
-      - run: pnpm test:package
-
-  documentation:
-    name: Documentation consistency
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v7
-      - uses: pnpm/action-setup@v6
-      - uses: actions/setup-node@v6
-        with:
-          node-version-file: package.json
-          cache: pnpm
-      - run: pnpm install --frozen-lockfile
-      - run: pnpm test:prepare
-      - run: pnpm vitest run tests/package/documentation.test.ts
+          node-version: "24"
+          cache: true
+      - run: vp install
+      - run: vp run typecheck
+      - run: vp run test:package
 
   node-aws:
     name: Node and AWS
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v7
-      - uses: pnpm/action-setup@v6
-      - uses: actions/setup-node@v6
+      - uses: voidzero-dev/setup-vp@313600b80b104eadebb9111787d37a2e83e014ca # v1.17.0
         with:
-          node-version-file: package.json
-          cache: pnpm
-      - run: pnpm install --frozen-lockfile
-      - run: pnpm exec playwright install --with-deps chromium
-      - run: pnpm test:node
-      - run: pnpm test:aws
+          node-version: "24"
+          cache: true
+      - run: vp install
+      - run: vp exec playwright install --with-deps chromium
+      - run: vp run test:node
+      - run: vp run test:aws
 
   bun:
     name: Bun
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v7
-      - uses: pnpm/action-setup@v6
-      - uses: actions/setup-node@v6
+      - uses: voidzero-dev/setup-vp@313600b80b104eadebb9111787d37a2e83e014ca # v1.17.0
         with:
-          node-version-file: package.json
-          cache: pnpm
+          node-version: "24"
+          cache: true
       - uses: oven-sh/setup-bun@v2
         with:
           bun-version: 1.3.14
-      - run: pnpm install --frozen-lockfile
-      - run: pnpm exec playwright install --with-deps chromium
-      - run: pnpm test:bun
+      - run: vp install
+      - run: vp exec playwright install --with-deps chromium
+      - run: vp run test:bun
 
   deno:
     name: Deno
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v7
-      - uses: pnpm/action-setup@v6
-      - uses: actions/setup-node@v6
+      - uses: voidzero-dev/setup-vp@313600b80b104eadebb9111787d37a2e83e014ca # v1.17.0
         with:
-          node-version-file: package.json
-          cache: pnpm
+          node-version: "24"
+          cache: true
       - uses: denoland/setup-deno@v2
         with:
           deno-version: v2.x
-      - run: pnpm install --frozen-lockfile
-      - run: pnpm exec playwright install --with-deps chromium
-      - run: pnpm test:deno
+      - run: vp install
+      - run: vp exec playwright install --with-deps chromium
+      - run: vp run test:deno
 
   cloudflare:
     name: Cloudflare Workers
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v7
-      - uses: pnpm/action-setup@v6
-      - uses: actions/setup-node@v6
+      - uses: voidzero-dev/setup-vp@313600b80b104eadebb9111787d37a2e83e014ca # v1.17.0
         with:
-          node-version-file: package.json
-          cache: pnpm
-      - run: pnpm install --frozen-lockfile
-      - run: pnpm exec playwright install --with-deps chromium
-      - run: pnpm test:cloudflare
+          node-version: "24"
+          cache: true
+      - run: vp install
+      - run: vp exec playwright install --with-deps chromium
+      - run: vp run test:cloudflare

@@ -1,7 +1,9 @@
 import { cp } from "node:fs/promises";
 import path from "node:path";
-import { type FixtureApp, ProductionFixture } from "../../helpers/fixture";
+
 import type { RuntimeName } from "../../helpers/launchers";
+
+import { type FixtureApp, ProductionFixture } from "../../helpers/fixture";
 
 const ALL_PRERENDER_CONFIG = `import type { Config } from "@react-router/dev/config";
 

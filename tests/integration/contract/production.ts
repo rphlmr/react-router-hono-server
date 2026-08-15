@@ -1,5 +1,7 @@
-import { expect, test } from "vitest";
+import { expect, test } from "vite-plus/test";
+
 import type { FixtureApp } from "../../helpers/fixture";
+
 import { prefixBefore } from "../../helpers/stream";
 import { registerProductionBrowserTests } from "./browser";
 
@@ -72,7 +74,9 @@ export function registerProductionTests(getApp: () => FixtureApp) {
     expect(response.status).toBe(200);
     expect(await response.text()).toBe("public-fixture\n");
     expect(response.headers.get("cache-control")).toBe(
-      getApp().runtime === "cloudflare" ? "public, max-age=0, must-revalidate" : "public, max-age=3600"
+      getApp().runtime === "cloudflare"
+        ? "public, max-age=0, must-revalidate"
+        : "public, max-age=3600",
     );
   });
 
@@ -105,7 +109,10 @@ export async function assertDeferredStreaming(app: FixtureApp) {
     }
 
     text += decoder.decode(value, { stream: true });
-    if ((text.includes("immediate-value") || text.includes("loading-deferred")) && !text.includes("deferred-value")) {
+    if (
+      (text.includes("immediate-value") || text.includes("loading-deferred")) &&
+      !text.includes("deferred-value")
+    ) {
       sawImmediateBeforeDeferred = true;
     }
   }

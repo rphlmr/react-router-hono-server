@@ -1,10 +1,12 @@
-import type { IncomingMessage, Server } from "node:http";
-import type { Http2SecureServer, Http2Server } from "node:http2";
 import type { ServerType } from "@hono/node-server";
 import type { Env, Hono } from "hono";
-import { createMiddleware } from "hono/factory";
 import type { UpgradeWebSocket } from "hono/ws";
+import type { IncomingMessage, Server } from "node:http";
+import type { Http2SecureServer, Http2Server } from "node:http2";
 import type { ServerBuild } from "react-router";
+
+import { createMiddleware } from "hono/factory";
+
 import type { HonoServerOptionsBase } from "./types/hono-server-options-base";
 import type { Runtime } from "./types/runtime";
 
@@ -33,7 +35,7 @@ async function importNodeWebSocket(runtime: Runtime, mode: "development" | "prod
   } catch (cause) {
     throw new Error(
       `WebSocket support for the "${runtime}" runtime in ${mode} requires the optional "ws" peer dependency. Install "ws" before enabling useWebSocket.`,
-      { cause }
+      { cause },
     );
   }
 }
@@ -99,6 +101,7 @@ export async function createWebSocket({ app, enabled }: Config): Promise<WebSock
       upgradeWebSocket,
       injectWebSocket: (server) => {
         return {
+          // oxlint-disable-next-line typescript/no-misused-spread
           ...server,
           websocket,
         };
@@ -123,7 +126,7 @@ export async function createWebSocket({ app, enabled }: Config): Promise<WebSock
  */
 export function attachWebSocketToVite(
   injectWebSocket: WebSocket["injectWebSocket"],
-  onServe?: (server: ServerType) => void
+  onServe?: (server: ServerType) => void,
 ) {
   const httpServer = globalThis.__viteDevServer?.httpServer;
 
@@ -154,7 +157,7 @@ export function cleanUpgradeListeners(httpServer: ServerType) {
     httpServer.removeListener(
       "upgrade",
       /* @ts-expect-error - we don't care */
-      listener
+      listener,
     );
   }
 }
@@ -175,7 +178,7 @@ export function patchUpgradeListener(httpServer: ServerType) {
     httpServer.removeListener(
       "upgrade",
       /* @ts-expect-error - we don't care */
-      listener
+      listener,
     );
 
     // re-add the listener back, filtering out `vite-hmr`
@@ -226,7 +229,7 @@ export function handleChromeDevToolsWorkspaceRequest<E extends Env>(app: Hono<E>
  * Import React Router server build
  */
 export async function importBuild(): Promise<ServerBuild> {
-  return await import(
+  return import(
     // @ts-expect-error - Virtual module provided by React Router at build time
     "virtual:react-router/server-build"
   );

@@ -31,8 +31,8 @@ export function reactRouterRedirect(location: string) {
               "reload",
               true,
               "replace",
-            ])
-          )
+            ]),
+          ),
         );
         controller.close();
       },
@@ -45,7 +45,7 @@ export function reactRouterRedirect(location: string) {
         "X-Remix-Response": "yes",
         "Content-Type": "text/x-script",
       },
-    }
+    },
   );
 }
 

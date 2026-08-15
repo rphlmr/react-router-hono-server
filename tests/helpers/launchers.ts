@@ -1,4 +1,5 @@
 import path from "node:path";
+
 import { fixtureBin, type ManagedProcess, runCommand, spawnProcess } from "./process";
 
 export type RuntimeName = "node" | "bun" | "deno" | "cloudflare" | "aws";
@@ -97,17 +98,26 @@ function commandParts(script: string) {
 function createLauncher(definition: RuntimeDefinition): RuntimeLauncher {
   const runScript = (cwd: string, script: string, environment: NodeJS.ProcessEnv = {}) => {
     const { command, args } = commandParts(script);
+    const executable =
+      command === "react-router" || command === "tsc" ? fixtureBin(cwd, command) : command;
+
     return runCommand({
-      command: command === "react-router" ? fixtureBin(cwd, command) : command,
+      command: executable,
       args,
       cwd,
       env: { ...process.env, ...definition.environment, ...environment },
     });
   };
 
-  const spawnScript = (cwd: string, script: string, port: number, mode: "development" | "production") => {
+  const spawnScript = (
+    cwd: string,
+    script: string,
+    port: number,
+    mode: "development" | "production",
+  ) => {
     const { command, args } = commandParts(script);
-    const executable = command === "react-router" || command === "vite" ? fixtureBin(cwd, command) : command;
+    const executable =
+      command === "react-router" || command === "vite" ? fixtureBin(cwd, command) : command;
     const hostArgs =
       mode === "development" || definition.name === "cloudflare"
         ? ["--host", "127.0.0.1", "--port", String(port), "--strictPort"]
@@ -116,7 +126,9 @@ function createLauncher(definition: RuntimeDefinition): RuntimeLauncher {
     return spawnProcess({
       command: executable,
       args: [
-        ...args.map((arg) => arg.replace("./build/server/index.js", path.join(cwd, "build/server/index.js"))),
+        ...args.map((arg) =>
+          arg.replace("./build/server/index.js", path.join(cwd, "build/server/index.js")),
+        ),
         ...hostArgs,
       ],
       cwd,
@@ -137,7 +149,7 @@ function createLauncher(definition: RuntimeDefinition): RuntimeLauncher {
     },
     async typecheck(cwd) {
       await runScript(cwd, "react-router typegen");
-      return await runScript(cwd, "tsc --noEmit");
+      return runScript(cwd, "tsc --noEmit");
     },
     build(cwd) {
       return runScript(cwd, definition.scripts.build, { NODE_ENV: "production" });
@@ -152,7 +164,10 @@ function createLauncher(definition: RuntimeDefinition): RuntimeLauncher {
 }
 
 const launchers = Object.fromEntries(
-  Object.entries(runtimeDefinitions).map(([runtime, definition]) => [runtime, createLauncher(definition)])
+  Object.entries(runtimeDefinitions).map(([runtime, definition]) => [
+    runtime,
+    createLauncher(definition),
+  ]),
 ) as Record<RuntimeName, RuntimeLauncher>;
 
 export function getLauncher(runtime: RuntimeName) {

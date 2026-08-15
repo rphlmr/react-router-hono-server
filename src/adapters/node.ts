@@ -1,13 +1,22 @@
+import type { BlankEnv } from "hono/types";
+import type { UpgradeWebSocket } from "hono/ws";
 import type { AddressInfo } from "node:net";
+import type { WebSocketServer } from "ws";
+
 import { type ServerType, serve } from "@hono/node-server";
 import { type ServeStaticOptions, serveStatic } from "@hono/node-server/serve-static";
 import { type Env, Hono } from "hono";
 import { createMiddleware } from "hono/factory";
 import { logger } from "hono/logger";
-import type { BlankEnv } from "hono/types";
-import type { UpgradeWebSocket } from "hono/ws";
 import { createRequestHandler } from "react-router";
-import type { WebSocketServer } from "ws";
+
+import type {
+  HonoServerOptionsBase,
+  WithoutWebsocket,
+  WithWebsocket,
+} from "../types/hono-server-options-base";
+import type { CreateNodeServerOptions } from "../types/node.https";
+
 import {
   attachWebSocketToVite,
   bindIncomingRequestSocketInfo,
@@ -19,8 +28,6 @@ import {
 } from "../helpers";
 import { cache } from "../middleware";
 import { isReactRouterBuildRequest } from "../react-router-build-request";
-import type { HonoServerOptionsBase, WithoutWebsocket, WithWebsocket } from "../types/hono-server-options-base";
-import type { CreateNodeServerOptions } from "../types/node.https";
 
 export { createGetLoadContext };
 
@@ -84,13 +91,15 @@ type WithNodeWebsocket<E extends Env> = Omit<WithWebsocket<E>, "configure"> & {
    */
   configure: (
     app: Hono<E>,
-    options: { upgradeWebSocket: UpgradeWebSocket; wss: WebSocketServer }
+    options: { upgradeWebSocket: UpgradeWebSocket; wss: WebSocketServer },
   ) => Promise<void> | void;
 };
 
-type HonoServerOptionsWithWebSocket<E extends Env = BlankEnv> = HonoNodeServerOptions<E> & WithNodeWebsocket<E>;
+type HonoServerOptionsWithWebSocket<E extends Env = BlankEnv> = HonoNodeServerOptions<E> &
+  WithNodeWebsocket<E>;
 
-type HonoServerOptionsWithoutWebSocket<E extends Env = BlankEnv> = HonoNodeServerOptions<E> & WithoutWebsocket<E>;
+type HonoServerOptionsWithoutWebSocket<E extends Env = BlankEnv> = HonoNodeServerOptions<E> &
+  WithoutWebsocket<E>;
 
 export type HonoServerOptions<E extends Env = BlankEnv> =
   | HonoServerOptionsWithWebSocket<E>
@@ -102,10 +111,10 @@ export type HonoServerOptions<E extends Env = BlankEnv> =
  * @param config {@link HonoServerOptions} - The configuration options for the server
  */
 export async function createHonoServer<E extends Env = BlankEnv>(
-  options?: HonoServerOptionsWithoutWebSocket<E>
+  options?: HonoServerOptionsWithoutWebSocket<E>,
 ): Promise<Hono<E>>;
 export async function createHonoServer<E extends Env = BlankEnv>(
-  options?: HonoServerOptionsWithWebSocket<E>
+  options?: HonoServerOptionsWithWebSocket<E>,
 ): Promise<Hono<E>>;
 export async function createHonoServer<E extends Env = BlankEnv>(options?: HonoServerOptions<E>) {
   const startTime = Date.now();
@@ -153,7 +162,7 @@ export async function createHonoServer<E extends Env = BlankEnv>(options?: HonoS
   app.use(
     `/${import.meta.env.REACT_ROUTER_HONO_SERVER_ASSETS_DIR}/*`,
     cache(60 * 60 * 24 * 365), // 1 year
-    serveStatic({ root: clientBuildPath, ...mergedOptions.serveStaticOptions?.clientAssets })
+    serveStatic({ root: clientBuildPath, ...mergedOptions.serveStaticOptions?.clientAssets }),
   );
 
   /**
@@ -162,7 +171,10 @@ export async function createHonoServer<E extends Env = BlankEnv>(options?: HonoS
   app.use(
     "*",
     cache(60 * 60), // 1 hour
-    serveStatic({ root: PRODUCTION ? clientBuildPath : "./public", ...mergedOptions.serveStaticOptions?.publicAssets })
+    serveStatic({
+      root: PRODUCTION ? clientBuildPath : "./public",
+      ...mergedOptions.serveStaticOptions?.publicAssets,
+    }),
   );
 
   /**
@@ -200,7 +212,10 @@ export async function createHonoServer<E extends Env = BlankEnv>(options?: HonoS
     return createMiddleware(async (c) => {
       const requestHandler = createRequestHandler(build, mode);
       const loadContext = mergedOptions.getLoadContext?.(c, { build, mode });
-      return requestHandler(c.req.raw, loadContext instanceof Promise ? await loadContext : loadContext);
+      return requestHandler(
+        c.req.raw,
+        loadContext instanceof Promise ? await loadContext : loadContext,
+      );
     })(c, next);
   });
 
@@ -217,6 +232,7 @@ export async function createHonoServer<E extends Env = BlankEnv>(options?: HonoS
   if (PRODUCTION && !isReactRouterBuildRequest()) {
     const server = serve(
       {
+        // oxlint-disable-next-line typescript/no-misused-spread
         ...app,
         ...mergedOptions.customNodeServer,
         port: mergedOptions.port,
@@ -224,7 +240,7 @@ export async function createHonoServer<E extends Env = BlankEnv>(options?: HonoS
         hostname: mergedOptions.hostname,
         websocket: nodeWebSocket,
       },
-      mergedOptions.listeningListener
+      mergedOptions.listeningListener,
     );
     // Execute your onServe callback. Use case: socket.io binding
     mergedOptions.onServe?.(server);

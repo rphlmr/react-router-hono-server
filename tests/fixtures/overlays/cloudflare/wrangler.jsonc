@@ -6,6 +6,6 @@
   "main": "./app/server.ts",
   "assets": {
     "directory": "./build/client",
-    "binding": "ASSETS"
-  }
+    "binding": "ASSETS",
+  },
 }

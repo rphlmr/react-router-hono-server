@@ -1,14 +1,16 @@
 import path from "node:path";
 import { pathToFileURL } from "node:url";
-import { afterAll, beforeAll, expect, test } from "vitest";
+import { afterAll, beforeAll, expect, test } from "vite-plus/test";
+
 import type { PrerenderFixture } from "./contract/prerender";
+
 import { preparePrerenderFixture, registerPrerenderBuildTests } from "./contract/prerender";
 
 type LambdaResponse = { statusCode: number; headers: Record<string, string>; body: string };
 type Handler = (
   event: ReturnType<typeof createEvent>,
   context: ReturnType<typeof createContext>,
-  callback: () => void
+  callback: () => void,
 ) => Promise<LambdaResponse>;
 
 let fixture: PrerenderFixture;
@@ -46,7 +48,13 @@ function createEvent(rawPath: string) {
       apiId: "test",
       domainName: "example.com",
       domainPrefix: "example",
-      http: { method: "GET", path: rawPath, protocol: "HTTP/1.1", sourceIp: "127.0.0.1", userAgent: "test" },
+      http: {
+        method: "GET",
+        path: rawPath,
+        protocol: "HTTP/1.1",
+        sourceIp: "127.0.0.1",
+        userAgent: "test",
+      },
       requestId: "test",
       routeKey: "$default",
       stage: "$default",

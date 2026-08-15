@@ -1,4 +1,5 @@
-import { afterAll, beforeAll } from "vitest";
+import { afterAll, beforeAll } from "vite-plus/test";
+
 import { DevServerFixture, type FixtureApp } from "../helpers/fixture";
 import { registerDevServerTests } from "./contract/dev-server";
 

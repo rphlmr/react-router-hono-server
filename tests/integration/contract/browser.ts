@@ -1,5 +1,6 @@
 import { chromium } from "@playwright/test";
-import { expect, test } from "vitest";
+import { expect, test } from "vite-plus/test";
+
 import type { FixtureApp } from "../../helpers/fixture";
 
 export function registerProductionBrowserTests(getApp: () => FixtureApp) {
@@ -22,7 +23,9 @@ export async function assertProductionBrowserBehavior(app: FixtureApp) {
     await page.locator("html[data-hydrated=true]").waitFor();
     await page.getByRole("button", { name: "count:0" }).click();
     await expect.poll(() => page.getByRole("button").textContent()).toBe("count:1");
-    await expect.poll(() => page.evaluate(() => getComputedStyle(document.body).color)).toBe("rgb(20, 30, 40)");
+    await expect
+      .poll(() => page.evaluate(() => getComputedStyle(document.body).color))
+      .toBe("rgb(20, 30, 40)");
 
     await page.getByRole("link", { name: "Loader" }).click();
     await expect.poll(() => page.getByRole("heading").textContent()).toBe("hello-from-loader");
@@ -55,16 +58,18 @@ export default function IndexRoute() {
   const [count, setCount] = useState(0);
   return <main><h1>HMR works</h1><button type="button" onClick={() => setCount((value) => value + 1)}>count:{count}</button></main>;
 }
-`
+`,
       );
       try {
-        await expect.poll(() => page.getByRole("heading").textContent(), { timeout: 15_000 }).toBe("HMR works");
+        await expect
+          .poll(() => page.getByRole("heading").textContent(), { timeout: 15_000 })
+          .toBe("HMR works");
       } catch (error) {
         const resources = await page.evaluate(() =>
-          performance.getEntriesByType("resource").map((entry) => entry.name)
+          performance.getEntriesByType("resource").map((entry) => entry.name),
         );
         throw new Error(
-          `${String(error)}\nBrowser messages:\n${messages.join("\n")}\nResources:\n${resources.join("\n")}`
+          `${String(error)}\nBrowser messages:\n${messages.join("\n")}\nResources:\n${resources.join("\n")}`,
         );
       }
       await expect.poll(() => page.getByRole("button").textContent()).toBe("count:1");

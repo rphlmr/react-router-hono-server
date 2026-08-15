@@ -7,11 +7,17 @@
     "forceConsistentCasingInFileNames": true /* Ensure that casing is correct in imports. */,
     "strict": true /* Enable all strict type-checking options. */,
     "skipLibCheck": true /* Skip type checking all .d.ts files. */,
-    "types": ["vitest/globals", "vite/client", "@types/bun", "@types/deno"],
+    "types": ["vite-plus/test/globals", "vite/client", "@types/bun", "@types/deno"],
     "rootDir": ".",
     "outDir": "./dist",
     "noEmit": true
   },
-  "include": ["src/**/*", "tests/**/*", "cli.ts", "tsdown.config.ts"],
-  "exclude": ["node_modules", "dist", "build", "virtual:react-router/server-build", "tests/fixtures"]
+  "include": ["src/**/*", "tests/**/*", "cli.ts", "vite.config.ts"],
+  "exclude": [
+    "node_modules",
+    "dist",
+    "build",
+    "virtual:react-router/server-build",
+    "tests/fixtures"
+  ]
 }

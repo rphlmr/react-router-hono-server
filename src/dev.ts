@@ -1,14 +1,17 @@
-import fs from "node:fs";
+import type { Config as ReactRouterConfig } from "@react-router/dev/config";
 import type { IncomingMessage, ServerResponse } from "node:http";
-import path from "node:path";
-import { pathToFileURL } from "node:url";
+import type { Plugin, UserConfig } from "vite";
+
 import honoDevServer, { type DevServerOptions } from "@hono/vite-dev-server";
 import bunAdapter from "@hono/vite-dev-server/bun";
 import nodeAdapter from "@hono/vite-dev-server/node";
-import type { Config as ReactRouterConfig } from "@react-router/dev/config";
-import type { Plugin, UserConfig } from "vite";
-import { isReactRouterBuildRequest } from "./react-router-build-request";
+import fs from "node:fs";
+import path from "node:path";
+import { pathToFileURL } from "node:url";
+
 import type { Runtime } from "./types/runtime";
+
+import { isReactRouterBuildRequest } from "./react-router-build-request";
 
 type MetaEnv<T> = {
   [K in keyof T as `import.meta.env.${string & K}`]: T[K];
@@ -65,7 +68,9 @@ export function reactRouterHonoServer(options: ReactRouterHonoServerPluginOption
   const adapterEntryPoint = runtime === "aws" ? "aws-lambda" : runtime;
   let pluginConfig: PluginConfig;
   let devServerPlugin: Plugin | undefined;
-  let previewAppPromise: Promise<{ fetch(request: Request): Response | Promise<Response> }> | undefined;
+  let previewAppPromise:
+    | Promise<{ fetch(request: Request): Response | Promise<Response> }>
+    | undefined;
 
   return {
     name: "react-router-hono-server",
@@ -89,11 +94,13 @@ export function reactRouterHonoServer(options: ReactRouterHonoServerPluginOption
       if (
         runtime === "cloudflare" &&
         !config.plugins.some(
-          (plugin) => plugin.name === "vite-plugin-cloudflare" || plugin.name.startsWith("vite-plugin-cloudflare:")
+          (plugin) =>
+            plugin.name === "vite-plugin-cloudflare" ||
+            plugin.name.startsWith("vite-plugin-cloudflare:"),
         )
       ) {
         throw new Error(
-          'Missing cloudflare() in vite.config.ts. Add it with: import { cloudflare } from "@cloudflare/vite-plugin".'
+          'Missing cloudflare() in vite.config.ts. Add it with: import { cloudflare } from "@cloudflare/vite-plugin".',
         );
       }
     },
@@ -105,15 +112,22 @@ export function reactRouterHonoServer(options: ReactRouterHonoServerPluginOption
       }
 
       const serverEntryPoint = pluginConfig.serverEntryPoint;
-      const denoDevReactExternals = runtime === "deno" && env.mode === "development" ? ["react", "react-dom"] : [];
+      const denoDevReactExternals =
+        runtime === "deno" && env.mode === "development" ? ["react", "react-dom"] : [];
 
       const baseConfig = {
         // Define environment variables that are hot-swapped during development and SSR build
         define: {
-          "import.meta.env.REACT_ROUTER_HONO_SERVER_BUILD_DIRECTORY": JSON.stringify(pluginConfig.buildDirectory),
-          "import.meta.env.REACT_ROUTER_HONO_SERVER_ASSETS_DIR": JSON.stringify(pluginConfig.assetsDir),
+          "import.meta.env.REACT_ROUTER_HONO_SERVER_BUILD_DIRECTORY": JSON.stringify(
+            pluginConfig.buildDirectory,
+          ),
+          "import.meta.env.REACT_ROUTER_HONO_SERVER_ASSETS_DIR": JSON.stringify(
+            pluginConfig.assetsDir,
+          ),
           "import.meta.env.REACT_ROUTER_HONO_SERVER_RUNTIME": JSON.stringify(runtime),
-          "import.meta.env.REACT_ROUTER_HONO_SERVER_BASENAME": JSON.stringify(pluginConfig.basename),
+          "import.meta.env.REACT_ROUTER_HONO_SERVER_BASENAME": JSON.stringify(
+            pluginConfig.basename,
+          ),
         } satisfies MetaEnv<ReactRouterHonoServerEnv>,
         ssr: {
           target: runtime === "cloudflare" ? "webworker" : undefined,
@@ -123,7 +137,8 @@ export function reactRouterHonoServer(options: ReactRouterHonoServerPluginOption
           // Vite's ESM SSR runner cannot evaluate CJS `react-dom/server.*` (`require is not defined`).
           // In Deno dev, let Deno's npm loader handle React instead of inlining those files.
           ...(runtime === "cloudflare" ? {} : { external: [...denoDevReactExternals] }),
-          optimizeDeps: runtime === "bun" ? { include: ["react-dom/server"], exclude: ["react"] } : undefined,
+          optimizeDeps:
+            runtime === "bun" ? { include: ["react-dom/server"], exclude: ["react"] } : undefined,
         },
       } satisfies UserConfig;
 
@@ -191,7 +206,11 @@ export function reactRouterHonoServer(options: ReactRouterHonoServerPluginOption
                 runtime !== "cloudflare"
                   ? (id, meta) => {
                       // Make modules that are imported by the server entry point a chunk
-                      if (meta.getModuleInfo(id)?.importers.some((id) => id.includes(serverEntryPoint))) {
+                      if (
+                        meta
+                          .getModuleInfo(id)
+                          ?.importers.some((id) => id.includes(serverEntryPoint))
+                      ) {
                         return path.basename(id, path.extname(id));
                       }
 
@@ -264,7 +283,7 @@ export function reactRouterHonoServer(options: ReactRouterHonoServerPluginOption
         export: options.dev?.export || "default",
         exclude: [
           new RegExp(
-            `^(?=\\/${pluginConfig.appDirectory.replace(/^[/\\]+|[/\\]+$/g, "").replaceAll(/[/\\]+/g, "/")}\\/)((?!.*\\.data(\\?|$)).*\\..*(\\?.*)?$)`
+            `^(?=\\/${pluginConfig.appDirectory.replace(/^[/\\]+|[/\\]+$/g, "").replaceAll(/[/\\]+/g, "/")}\\/)((?!.*\\.data(\\?|$)).*\\..*(\\?.*)?$)`,
           ),
           new RegExp(
             `^(?=\\/${
@@ -272,7 +291,7 @@ export function reactRouterHonoServer(options: ReactRouterHonoServerPluginOption
                 .replace(/^[/\\]+|[/\\]+$/g, "")
                 .replaceAll(/[/\\]+/g, "/")
                 .split("/")[0]
-            }\\/)((?!.*\\.data(\\?|$)).*\\..*(\\?.*)?$)`
+            }\\/)((?!.*\\.data(\\?|$)).*\\..*(\\?.*)?$)`,
           ),
           /\?import(\?.*)?$/,
           /^\/@.+$/,
@@ -300,9 +319,11 @@ export function reactRouterHonoServer(options: ReactRouterHonoServerPluginOption
       // Apply the dev server plugin's configureServer hook if it exists
       if (typeof devServerPlugin.configureServer === "function") {
         // @ts-expect-error - FIXME: Come back to this later
-        devServerPlugin.configureServer(server);
+        void devServerPlugin.configureServer(server);
       } else {
-        console.error("Dev server plugin configureServer hook is not a function. This is likely a bug, I guess 😅\n");
+        console.error(
+          "Dev server plugin configureServer hook is not a function. This is likely a bug, I guess 😅\n",
+        );
         throw new Error("Cannot apply dev server plugin configureServer hook");
       }
     },
@@ -315,7 +336,13 @@ export function reactRouterHonoServer(options: ReactRouterHonoServerPluginOption
 
         try {
           previewAppPromise ??= import(
-            pathToFileURL(path.resolve(pluginConfig.rootDirectory, pluginConfig.buildDirectory, "server/index.js")).href
+            pathToFileURL(
+              path.resolve(
+                pluginConfig.rootDirectory,
+                pluginConfig.buildDirectory,
+                "server/index.js",
+              ),
+            ).href
           ).then((module) => module.default);
           const app = await previewAppPromise;
           const headers = new Headers();
@@ -324,10 +351,13 @@ export function reactRouterHonoServer(options: ReactRouterHonoServerPluginOption
               if (item !== undefined) headers.append(name, item);
             }
           }
-          const request = new Request(`http://${req.headers.host ?? "localhost"}${req.url ?? "/"}`, {
-            method: req.method,
-            headers,
-          });
+          const request = new Request(
+            `http://${req.headers.host ?? "localhost"}${req.url ?? "/"}`,
+            {
+              method: req.method,
+              headers,
+            },
+          );
           const response = await app.fetch(request);
 
           res.statusCode = response.status;
@@ -400,7 +430,7 @@ function findDefaultServerEntry(appDirectory: string): string {
 
   if (!warned) {
     console.warn(
-      `\x1b[33mNo server entry point found.\nWill use a virtual module (${VIRTUAL_MODULE_ID}) with a default Hono server.\n\nTo customize the server, create one of the following files:\n - ${fileWay} (npx react-router-hono-server reveal file)\n - ${folderWay} (npx react-router-hono-server reveal folder)\nYou can also set the \`serverEntryPoint\` option in the reactRouterHonoServer plugin for more control.\x1b[0m\n`
+      `\x1b[33mNo server entry point found.\nWill use a virtual module (${VIRTUAL_MODULE_ID}) with a default Hono server.\n\nTo customize the server, create one of the following files:\n - ${fileWay} (npx react-router-hono-server reveal file)\n - ${folderWay} (npx react-router-hono-server reveal folder)\nYou can also set the \`serverEntryPoint\` option in the reactRouterHonoServer plugin for more control.\x1b[0m\n`,
     );
     warned = true;
   }

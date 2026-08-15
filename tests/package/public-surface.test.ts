@@ -1,8 +1,9 @@
+import { Hono } from "hono";
 import { execFileSync } from "node:child_process";
 import { readdir } from "node:fs/promises";
 import path from "node:path";
-import { Hono } from "hono";
-import { describe, expect, test } from "vitest";
+import { describe, expect, test } from "vite-plus/test";
+
 import { getPath, reactRouterRedirect, redirect } from "../../src/http";
 import { cache } from "../../src/middleware";
 
@@ -47,7 +48,9 @@ describe("utility exports", () => {
     app.use("*", cache(60));
     app.get("/asset.js", (c) => c.text("asset"));
     app.get("/route", (c) => c.text("route"));
-    expect((await app.request("/asset.js")).headers.get("cache-control")).toBe("public, max-age=60");
+    expect((await app.request("/asset.js")).headers.get("cache-control")).toBe(
+      "public, max-age=60",
+    );
     expect((await app.request("/route")).headers.get("cache-control")).toBeNull();
   });
 

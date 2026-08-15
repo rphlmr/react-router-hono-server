@@ -4,7 +4,7 @@ export async function eventually(
     timeout?: number;
     interval?: number;
     logs?: () => string;
-  } = {}
+  } = {},
 ) {
   const timeout = options.timeout ?? 10_000;
   const interval = options.interval ?? 100;
@@ -27,5 +27,6 @@ export async function eventually(
     throw lastError;
   }
 
+  // oxlint-disable-next-line typescript/only-throw-error
   throw lastError ?? new Error("eventually() timed out");
 }

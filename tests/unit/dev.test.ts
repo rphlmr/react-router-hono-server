@@ -1,9 +1,10 @@
+import type { Plugin, UserConfig } from "vite";
+
 import fs from "node:fs";
 import { mkdir, mkdtemp, rm, writeFile } from "node:fs/promises";
 import os from "node:os";
 import path from "node:path";
-import type { Plugin, UserConfig } from "vite";
-import { afterEach, beforeEach, describe, expect, test, vi } from "vitest";
+import { afterEach, beforeEach, describe, expect, test, vi } from "vite-plus/test";
 
 const mocks = vi.hoisted(() => ({
   bunAdapter: vi.fn(),
@@ -67,7 +68,11 @@ function makeReactRouterConfig({
   } as UserConfig;
 }
 
-function resolvePluginConfig(plugin: Plugin, config: UserConfig = makeReactRouterConfig(), mode = "development") {
+function resolvePluginConfig(
+  plugin: Plugin,
+  config: UserConfig = makeReactRouterConfig(),
+  mode = "development",
+) {
   return callHook(plugin, "config", config, { command: "serve", mode }) as any;
 }
 
@@ -112,20 +117,29 @@ describe("reactRouterHonoServer virtual module", () => {
     ["deno", "deno"],
     ["cloudflare", "cloudflare"],
     ["aws", "aws-lambda"],
-  ] as const)("generates the %s runtime fallback from the public %s adapter", (runtime, adapter) => {
-    const plugin = reactRouterHonoServer(runtime ? { runtime } : undefined);
+  ] as const)(
+    "generates the %s runtime fallback from the public %s adapter",
+    (runtime, adapter) => {
+      const plugin = reactRouterHonoServer(runtime ? { runtime } : undefined);
 
-    expect(callHook(plugin, "resolveId", VIRTUAL_MODULE_ID)).toBe(VIRTUAL_MODULE_ID);
-    expect(callHook(plugin, "load", VIRTUAL_MODULE_ID)).toContain(`from "react-router-hono-server/${adapter}"`);
-    expect(callHook(plugin, "load", VIRTUAL_MODULE_ID)).toContain("export default await createHonoServer()");
-  });
+      expect(callHook(plugin, "resolveId", VIRTUAL_MODULE_ID)).toBe(VIRTUAL_MODULE_ID);
+      expect(callHook(plugin, "load", VIRTUAL_MODULE_ID)).toContain(
+        `from "react-router-hono-server/${adapter}"`,
+      );
+      expect(callHook(plugin, "load", VIRTUAL_MODULE_ID)).toContain(
+        "export default await createHonoServer()",
+      );
+    },
+  );
 });
 
 describe("reactRouterHonoServer config hook", () => {
   test("does nothing outside a React Router Vite configuration", () => {
     const plugin = reactRouterHonoServer();
 
-    expect(callHook(plugin, "config", {}, { command: "serve", mode: "development" })).toBeUndefined();
+    expect(
+      callHook(plugin, "config", {}, { command: "serve", mode: "development" }),
+    ).toBeUndefined();
   });
 
   test("defines the React Router environment and custom project paths", () => {
@@ -138,7 +152,7 @@ describe("reactRouterHonoServer config hook", () => {
         basename: "/admin",
         buildDirectory: "/workspace/output",
         rootDirectory: "/workspace",
-      })
+      }),
     );
 
     expect(result.define).toEqual({
@@ -200,25 +214,28 @@ describe("reactRouterHonoServer config hook", () => {
       optimizeDeps: undefined,
       target: undefined,
     },
-  ] as const)("returns the $runtime configuration in $mode mode", ({ runtime, mode, ...expected }) => {
-    const plugin = reactRouterHonoServer({ runtime, serverEntryPoint: "app/server.ts" });
-    const result = resolvePluginConfig(plugin, makeReactRouterConfig(), mode);
+  ] as const)(
+    "returns the $runtime configuration in $mode mode",
+    ({ runtime, mode, ...expected }) => {
+      const plugin = reactRouterHonoServer({ runtime, serverEntryPoint: "app/server.ts" });
+      const result = resolvePluginConfig(plugin, makeReactRouterConfig(), mode);
 
-    expect(result.resolve.alias).toEqual(expected.alias);
-    expect(result.ssr.external).toEqual(expected.external);
-    expect(result.ssr.optimizeDeps).toEqual(expected.optimizeDeps);
-    expect(result.ssr.target).toBe(expected.target);
-    expect(result.environments.ssr.resolve.alias).toEqual(expected.alias);
-    expect(result.environments.ssr.resolve.external).toEqual(
-      runtime === "deno" && mode === "development" ? ["react", "react-dom"] : undefined
-    );
-    expect(result.environments.ssr.build.rollupOptions.input).toBe(
-      runtime === "cloudflare" ? undefined : "app/server.ts"
-    );
-    expect(result.environments.ssr.build.rollupOptions.output.manualChunks).toEqual(
-      runtime === "cloudflare" ? undefined : expect.any(Function)
-    );
-  });
+      expect(result.resolve.alias).toEqual(expected.alias);
+      expect(result.ssr.external).toEqual(expected.external);
+      expect(result.ssr.optimizeDeps).toEqual(expected.optimizeDeps);
+      expect(result.ssr.target).toBe(expected.target);
+      expect(result.environments.ssr.resolve.alias).toEqual(expected.alias);
+      expect(result.environments.ssr.resolve.external).toEqual(
+        runtime === "deno" && mode === "development" ? ["react", "react-dom"] : undefined,
+      );
+      expect(result.environments.ssr.build.rollupOptions.input).toBe(
+        runtime === "cloudflare" ? undefined : "app/server.ts",
+      );
+      expect(result.environments.ssr.build.rollupOptions.output.manualChunks).toEqual(
+        runtime === "cloudflare" ? undefined : expect.any(Function),
+      );
+    },
+  );
 
   test("preserves React Router manifest and chunk naming requirements", () => {
     const plugin = reactRouterHonoServer({ serverEntryPoint: "app/server.ts" });
@@ -233,22 +250,25 @@ describe("reactRouterHonoServer config hook", () => {
     expect(
       output.manualChunks("/project/app/session.ts", {
         getModuleInfo: () => ({ importers: ["/project/app/server.ts"] }),
-      })
+      }),
     ).toBe("session");
     expect(
       output.manualChunks("/project/app/session.ts", {
         getModuleInfo: () => ({ importers: ["/project/app/route.ts"] }),
-      })
+      }),
     ).toBeUndefined();
   });
 
   test("uses a custom React Router server build filename", () => {
     const plugin = reactRouterHonoServer({ serverEntryPoint: "app/server.ts" });
-    const result = resolvePluginConfig(plugin, makeReactRouterConfig({ serverBuildFile: "chunks/router.js" }));
-
-    expect(result.environments.ssr.build.rollupOptions.output.chunkFileNames({ name: "server-build" })).toBe(
-      "chunks/router.js"
+    const result = resolvePluginConfig(
+      plugin,
+      makeReactRouterConfig({ serverBuildFile: "chunks/router.js" }),
     );
+
+    expect(
+      result.environments.ssr.build.rollupOptions.output.chunkFileNames({ name: "server-build" }),
+    ).toBe("chunks/router.js");
   });
 
   test("discovers a file entry before a folder entry and otherwise warns once before using the virtual module", () => {
@@ -273,21 +293,21 @@ describe("reactRouterHonoServer config hook", () => {
 });
 
 describe("reactRouterHonoServer configResolved hook", () => {
-  test.each([
-    "vite-plugin-cloudflare",
-    "vite-plugin-cloudflare:ssr",
-  ])("accepts the Cloudflare plugin named %s", (name) => {
-    const plugin = reactRouterHonoServer({ runtime: "cloudflare" });
+  test.each(["vite-plugin-cloudflare", "vite-plugin-cloudflare:ssr"])(
+    "accepts the Cloudflare plugin named %s",
+    (name) => {
+      const plugin = reactRouterHonoServer({ runtime: "cloudflare" });
 
-    expect(() => callHook(plugin, "configResolved", { plugins: [{ name }] })).not.toThrow();
-  });
+      expect(() => callHook(plugin, "configResolved", { plugins: [{ name }] })).not.toThrow();
+    },
+  );
 
   test("rejects a Cloudflare configuration without the official plugin", () => {
     const plugin = reactRouterHonoServer({ runtime: "cloudflare" });
 
-    expect(() => callHook(plugin, "configResolved", { plugins: [{ name: "react-router" }] })).toThrow(
-      "Missing cloudflare() in vite.config.ts"
-    );
+    expect(() =>
+      callHook(plugin, "configResolved", { plugins: [{ name: "react-router" }] }),
+    ).toThrow("Missing cloudflare() in vite.config.ts");
   });
 
   test("does not require the Cloudflare plugin for other runtimes", () => {
@@ -304,7 +324,10 @@ describe("reactRouterHonoServer configureServer hook", () => {
       dev: { exclude: [customExclude], export: "development" },
       serverEntryPoint: "src/web/server.ts",
     });
-    resolvePluginConfig(plugin, makeReactRouterConfig({ appDirectory: "/project/src/web", rootDirectory: "/project" }));
+    resolvePluginConfig(
+      plugin,
+      makeReactRouterConfig({ appDirectory: "/project/src/web", rootDirectory: "/project" }),
+    );
     const server = makeServer();
 
     callHook(plugin, "configureServer", server);
@@ -328,7 +351,7 @@ describe("reactRouterHonoServer configureServer hook", () => {
     expect(sourceAssetPattern.test("/src/shared/image.png?raw")).toBe(true);
     expect(sourceAssetPattern.test("/src/shared/route.data?index")).toBe(false);
     expect(options.exclude).toEqual(
-      expect.arrayContaining([/\?import(\?.*)?$/, /^\/@.+$/, /^\/node_modules\/.*/, customExclude])
+      expect.arrayContaining([/\?import(\?.*)?$/, /^\/@.+$/, /^\/node_modules\/.*/, customExclude]),
     );
     expect(options.exclude).toContain("^(?=\\/src/web/**/.*/**)");
     expect(options.exclude).toContain("^(?=\\/src/**/.*/**)");
@@ -377,13 +400,19 @@ describe("reactRouterHonoServer configureServer hook", () => {
 
     callHook(plugin, "configureServer", makeServer());
 
-    expect(mocks.honoDevServer).toHaveBeenCalledWith(expect.objectContaining({ adapter: mocks.bunAdapter }));
+    expect(mocks.honoDevServer).toHaveBeenCalledWith(
+      expect.objectContaining({ adapter: mocks.bunAdapter }),
+    );
   });
 
   test("creates a Deno adapter that exposes Deno environment variables", () => {
     const navigatorDescriptor = Object.getOwnPropertyDescriptor(globalThis, "navigator");
     const denoDescriptor = Object.getOwnPropertyDescriptor(globalThis, "Deno");
-    Object.defineProperty(globalThis, "navigator", { configurable: true, value: undefined, writable: true });
+    Object.defineProperty(globalThis, "navigator", {
+      configurable: true,
+      value: undefined,
+      writable: true,
+    });
     Object.defineProperty(globalThis, "Deno", {
       configurable: true,
       value: { env: { toObject: vi.fn(() => ({ TOKEN: "secret" })) } },
@@ -413,7 +442,10 @@ describe("reactRouterHonoServer configureServer hook", () => {
     callHook(plainPlugin, "configureServer", plainServer);
     expect(globalThis.__viteDevServer).toBe(plainServer);
 
-    const cloudflarePlugin = reactRouterHonoServer({ runtime: "cloudflare", serverEntryPoint: "app/server.ts" });
+    const cloudflarePlugin = reactRouterHonoServer({
+      runtime: "cloudflare",
+      serverEntryPoint: "app/server.ts",
+    });
     resolvePluginConfig(cloudflarePlugin);
     const cloudflareServer = makeServer();
     callHook(cloudflarePlugin, "configureServer", cloudflareServer);
@@ -428,9 +460,11 @@ describe("reactRouterHonoServer configureServer hook", () => {
     resolvePluginConfig(plugin);
 
     expect(() => callHook(plugin, "configureServer", makeServer())).toThrow(
-      "Cannot apply dev server plugin configureServer hook"
+      "Cannot apply dev server plugin configureServer hook",
     );
-    expect(error).toHaveBeenCalledWith(expect.stringContaining("configureServer hook is not a function"));
+    expect(error).toHaveBeenCalledWith(
+      expect.stringContaining("configureServer hook is not a function"),
+    );
   });
 });
 
@@ -457,7 +491,7 @@ describe("reactRouterHonoServer configurePreviewServer hook", () => {
             });
           },
         };
-      `
+      `,
     );
     const plugin = reactRouterHonoServer({ serverEntryPoint: "app/server.ts" });
     resolvePluginConfig(
@@ -466,7 +500,7 @@ describe("reactRouterHonoServer configurePreviewServer hook", () => {
         appDirectory: path.join(rootDirectory, "app"),
         buildDirectory: path.join(rootDirectory, "build"),
         rootDirectory,
-      })
+      }),
     );
     const server = makeServer();
     callHook(plugin, "configurePreviewServer", server);
@@ -507,7 +541,11 @@ describe("reactRouterHonoServer configurePreviewServer hook", () => {
       const server = makeServer();
       callHook(plugin, "configurePreviewServer", server);
       const next = vi.fn();
-      await server.middlewares.use.mock.calls[0][0]({ headers: {}, method: "GET", url: "/" }, {}, next);
+      await server.middlewares.use.mock.calls[0][0](
+        { headers: {}, method: "GET", url: "/" },
+        {},
+        next,
+      );
       expect(next).toHaveBeenCalledOnce();
     }
   });
@@ -522,7 +560,7 @@ describe("reactRouterHonoServer configurePreviewServer hook", () => {
         appDirectory: path.join(rootDirectory, "app"),
         buildDirectory: path.join(rootDirectory, "missing-build"),
         rootDirectory,
-      })
+      }),
     );
     const server = makeServer();
     callHook(plugin, "configurePreviewServer", server);
@@ -530,7 +568,11 @@ describe("reactRouterHonoServer configurePreviewServer hook", () => {
     const next = vi.fn();
     const error = vi.spyOn(console, "error").mockImplementation(() => undefined);
 
-    await server.middlewares.use.mock.calls[0][0]({ headers: {}, method: "GET", url: "/" }, {}, next);
+    await server.middlewares.use.mock.calls[0][0](
+      { headers: {}, method: "GET", url: "/" },
+      {},
+      next,
+    );
 
     expect(error).toHaveBeenCalledOnce();
     expect(next).toHaveBeenCalledWith(expect.any(Error));

@@ -3,9 +3,17 @@ import { createRequire } from "node:module";
 import os from "node:os";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
+
 import { eventually } from "./eventually";
 import { getLauncher, type RuntimeLauncher, type RuntimeName } from "./launchers";
-import { BROWSER_UA, type CommandResult, getFreePort, type ManagedProcess, runCommand, waitForHttp } from "./process";
+import {
+  BROWSER_UA,
+  type CommandResult,
+  getFreePort,
+  type ManagedProcess,
+  runCommand,
+  waitForHttp,
+} from "./process";
 
 const REPO_ROOT = path.resolve(fileURLToPath(new URL("../..", import.meta.url)));
 const SKIP_COPY_DIRS = new Set(["node_modules", "build", ".react-router"]);
@@ -63,7 +71,7 @@ export class FixtureApp {
       headers.set("user-agent", BROWSER_UA);
     }
 
-    return await fetch(new URL(pathname, this.url), {
+    return fetch(new URL(pathname, this.url), {
       ...init,
       headers,
     });
@@ -71,7 +79,7 @@ export class FixtureApp {
 
   async text(pathname: string, init?: RequestInit) {
     const response = await this.fetch(pathname, init);
-    return await response.text();
+    return response.text();
   }
 
   async edit(relativePath: string, contents: string) {
@@ -81,10 +89,13 @@ export class FixtureApp {
   }
 
   async read(relativePath: string) {
-    return await readFile(path.join(this.cwd, relativePath), "utf8");
+    return readFile(path.join(this.cwd, relativePath), "utf8");
   }
 
-  async eventually(assertion: () => Promise<void>, options?: { timeout?: number; interval?: number }) {
+  async eventually(
+    assertion: () => Promise<void>,
+    options?: { timeout?: number; interval?: number },
+  ) {
     await eventually(assertion, {
       ...options,
       logs: () => this.logs(),
@@ -109,7 +120,7 @@ export class FixtureApp {
 
 export class ProductionFixture extends FixtureApp {
   static async create(name: FixtureName, runtime: RuntimeName = "node") {
-    return await createPreparedFixture(name, runtime);
+    return createPreparedFixture(name, runtime);
   }
 
   static async start(name: FixtureName, runtime: RuntimeName = "node") {
@@ -164,11 +175,15 @@ async function createPreparedFixture(name: FixtureName, runtime: RuntimeName) {
     Object.assign(manifest.dependencies, launcher.dependencies);
     manifest.dependencies["react-router-hono-server"] = `file:${packageSource}`;
     if (runtime === "deno") {
-      const packageManifest = JSON.parse(await readFile(path.join(packageSource, "package.json"), "utf8"));
+      const packageManifest = JSON.parse(
+        await readFile(path.join(packageSource, "package.json"), "utf8"),
+      );
       Object.assign(manifest.dependencies, packageManifest.dependencies);
     }
     if (process.env.RRHS_LATEST_COMPATIBLE === "1") {
-      const versions = JSON.parse(await readFile(path.join(ARTIFACT_DIRECTORY, "latest-versions.json"), "utf8"));
+      const versions = JSON.parse(
+        await readFile(path.join(ARTIFACT_DIRECTORY, "latest-versions.json"), "utf8"),
+      );
       for (const [dependency, version] of Object.entries(versions)) {
         if (dependency in manifest.dependencies) manifest.dependencies[dependency] = version;
         if (dependency in manifest.devDependencies) manifest.devDependencies[dependency] = version;
@@ -200,7 +215,9 @@ async function copyFixture(source: string, cwd: string) {
 async function findPackageArtifact() {
   const artifacts = (await readdir(ARTIFACT_DIRECTORY)).filter((file) => file.endsWith(".tgz"));
   if (artifacts.length !== 1) {
-    throw new Error(`Expected one packed package in ${ARTIFACT_DIRECTORY}; run pnpm test:prepare first.`);
+    throw new Error(
+      `Expected one packed package in ${ARTIFACT_DIRECTORY}; run pnpm test:prepare first.`,
+    );
   }
   return path.join(ARTIFACT_DIRECTORY, artifacts[0]);
 }
@@ -214,10 +231,12 @@ async function assertIsolatedInstall(cwd: string, artifact: string) {
   }
 
   const resolvedPackagePath = await realpath(
-    path.join(cwd, "node_modules/react-router-hono-server/dist/adapters/node.js")
+    path.join(cwd, "node_modules/react-router-hono-server/dist/adapters/node.js"),
   );
   if (resolvedPackagePath.startsWith(REPO_ROOT)) {
-    throw new Error(`Fixture resolved the package through the repository root: ${resolvedPackagePath}`);
+    throw new Error(
+      `Fixture resolved the package through the repository root: ${resolvedPackagePath}`,
+    );
   }
 
   const appRequire = createRequire(path.join(cwd, "package.json"));
@@ -227,7 +246,7 @@ async function assertIsolatedInstall(cwd: string, artifact: string) {
     const packageResolution = await realpath(packageRequire.resolve(dependency));
     if (appResolution !== packageResolution) {
       throw new Error(
-        `${dependency} is duplicated: application resolved ${appResolution}, package resolved ${packageResolution}.`
+        `${dependency} is duplicated: application resolved ${appResolution}, package resolved ${packageResolution}.`,
       );
     }
   }

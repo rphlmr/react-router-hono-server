@@ -37,13 +37,13 @@ It gives your application one clear server boundary:
 
 ## Runtime matrix
 
-| Runtime | Development | Production | WebSockets | Static assets |
-| --- | --- | --- | --- | --- |
-| Node.js | React Router dev server | Node HTTP/HTTPS | Yes | Node filesystem |
-| Bun | Bun-powered React Router dev server | `Bun.serve` | Yes | Bun filesystem |
-| Deno | Deno-powered Vite dev server | `Deno.serve` | Yes | Deno filesystem |
-| Cloudflare Workers | Cloudflare Vite plugin and Workerd | Worker + asset binding | Yes | Workers assets |
-| AWS Lambda | React Router dev server | Lambda handler or response streaming | No | Use CloudFront/S3 in production |
+| Runtime            | Development                         | Production                           | WebSockets | Static assets                   |
+| ------------------ | ----------------------------------- | ------------------------------------ | ---------- | ------------------------------- |
+| Node.js            | React Router dev server             | Node HTTP/HTTPS                      | Yes        | Node filesystem                 |
+| Bun                | Bun-powered React Router dev server | `Bun.serve`                          | Yes        | Bun filesystem                  |
+| Deno               | Deno-powered Vite dev server        | `Deno.serve`                         | Yes        | Deno filesystem                 |
+| Cloudflare Workers | Cloudflare Vite plugin and Workerd  | Worker + asset binding               | Yes        | Workers assets                  |
+| AWS Lambda         | React Router dev server             | Lambda handler or response streaming | No         | Use CloudFront/S3 in production |
 
 Choose the runtime that matches your deployment target. Application routes and Hono configuration remain portable; runtime-specific server options stay isolated in `app/server.ts`.
 
@@ -136,13 +136,13 @@ The runtime is selected in two places:
 1. Set `runtime` in `reactRouterHonoServer()`.
 2. Import the matching adapter from the server entry.
 
-| Runtime | Plugin option | Server import |
-| --- | --- | --- |
-| Node.js | omitted or `node` | `react-router-hono-server/node` |
-| Bun | `bun` | `react-router-hono-server/bun` |
-| Deno | `deno` | `react-router-hono-server/deno` |
-| Cloudflare | `cloudflare` | `react-router-hono-server/cloudflare` |
-| AWS Lambda | `aws` | `react-router-hono-server/aws-lambda` |
+| Runtime    | Plugin option     | Server import                         |
+| ---------- | ----------------- | ------------------------------------- |
+| Node.js    | omitted or `node` | `react-router-hono-server/node`       |
+| Bun        | `bun`             | `react-router-hono-server/bun`        |
+| Deno       | `deno`            | `react-router-hono-server/deno`       |
+| Cloudflare | `cloudflare`      | `react-router-hono-server/cloudflare` |
+| AWS Lambda | `aws`             | `react-router-hono-server/aws-lambda` |
 
 > [!IMPORTANT]
 > The plugin must precede `reactRouter()`. On Cloudflare, `cloudflare()` must precede both plugins.
@@ -151,11 +151,11 @@ The runtime is selected in two places:
 
 React Router and this package each provide a default entry file. These entries operate at different layers and solve different problems.
 
-| Entry | Owned by | Responsibility |
-| --- | --- | --- |
-| `app/server.ts` | `react-router-hono-server` | Hono middleware, API routes, load context, assets, and runtime startup |
-| `app/entry.server.tsx` | React Router | Rendering a matched React Router request into a response |
-| `app/entry.client.tsx` | React Router | Browser hydration |
+| Entry                  | Owned by                   | Responsibility                                                         |
+| ---------------------- | -------------------------- | ---------------------------------------------------------------------- |
+| `app/server.ts`        | `react-router-hono-server` | Hono middleware, API routes, load context, assets, and runtime startup |
+| `app/entry.server.tsx` | React Router               | Rendering a matched React Router request into a response               |
+| `app/entry.client.tsx` | React Router               | Browser hydration                                                      |
 
 Reveal only the entry you need to customize.
 
@@ -438,8 +438,8 @@ Create `wrangler.jsonc`:
   "main": "./app/server.ts",
   "assets": {
     "directory": "./build/client",
-    "binding": "ASSETS"
-  }
+    "binding": "ASSETS",
+  },
 }
 ```
 
@@ -561,13 +561,13 @@ npx react-router-hono-server reveal file
 
 Pass `app` to use an existing Hono instance. Hooks execute in this order:
 
-| Order | Hook or middleware | Typical use |
-| --- | --- | --- |
-| 1 | `beforeAll(app)` | Authentication or request policy that must run before assets |
-| 2 | Built-in asset handling | Public files and generated client assets |
-| 3 | Built-in logger | Request logging when `defaultLogger` is enabled |
-| 4 | `configure(app)` | API routes and application middleware |
-| 5 | React Router handler | Loaders, actions, and rendered routes |
+| Order | Hook or middleware      | Typical use                                                  |
+| ----- | ----------------------- | ------------------------------------------------------------ |
+| 1     | `beforeAll(app)`        | Authentication or request policy that must run before assets |
+| 2     | Built-in asset handling | Public files and generated client assets                     |
+| 3     | Built-in logger         | Request logging when `defaultLogger` is enabled              |
+| 4     | `configure(app)`        | API routes and application middleware                        |
+| 5     | React Router handler    | Loaders, actions, and rendered routes                        |
 
 ```ts
 import { Hono } from "hono";
@@ -659,11 +659,14 @@ import { createHonoServer } from "react-router-hono-server/deno";
 export default await createHonoServer({
   useWebSocket: true,
   configure(app, { upgradeWebSocket }) {
-    app.get("/ws", upgradeWebSocket(() => ({
-      onMessage(event, ws) {
-        ws.send(`echo:${event.data}`);
-      },
-    })));
+    app.get(
+      "/ws",
+      upgradeWebSocket(() => ({
+        onMessage(event, ws) {
+          ws.send(`echo:${event.data}`);
+        },
+      })),
+    );
   },
 });
 ```
@@ -685,11 +688,14 @@ export default await createHonoServer({
       socket.send("connected");
     });
 
-    app.get("/ws", upgradeWebSocket(() => ({
-      onMessage(event, ws) {
-        ws.send(`echo:${event.data}`);
-      },
-    })));
+    app.get(
+      "/ws",
+      upgradeWebSocket(() => ({
+        onMessage(event, ws) {
+          ws.send(`echo:${event.data}`);
+        },
+      })),
+    );
   },
 });
 ```
@@ -754,10 +760,10 @@ React Router also accepts `basename`, `appDirectory`, and `buildDirectory` in th
 
 #### Deployment behavior
 
-| Configuration | Node, Bun, Deno, and Cloudflare Workers | AWS Lambda |
-| --- | --- | --- |
+| Configuration                | Node, Bun, Deno, and Cloudflare Workers                                                   | AWS Lambda                                                                                                              |
+| ---------------------------- | ----------------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------- |
 | `ssr: true` with `prerender` | Generates and serves static documents and route data.<br>Unmatched paths use runtime SSR. | Generates the same static output, but a separate AWS asset service must serve it.<br>Unmatched Lambda requests use SSR. |
-| `ssr: false` | Generates static output and an SPA fallback for static hosting | Generates static output and an SPA fallback for static hosting |
+| `ssr: false`                 | Generates static output and an SPA fallback for static hosting                            | Generates static output and an SPA fallback for static hosting                                                          |
 
 - With `ssr: true`, generated files are used first and unmatched routes continue to runtime SSR.
 - With `ssr: false`, React Router emits static output and an SPA fallback for static hosting.
@@ -771,36 +777,36 @@ The plugin reads React Router's resolved configuration and mounts the Hono-backe
 
 ## API and exports
 
-| Export | Purpose |
-| --- | --- |
-| `react-router-hono-server/dev` | `reactRouterHonoServer(options)` Vite plugin |
-| `/node` | Node `createHonoServer`, options, and `createGetLoadContext` |
-| `/bun` | Bun `createHonoServer`, options, and `createGetLoadContext` |
-| `/deno` | Deno `createHonoServer`, options, and `createGetLoadContext` |
-| `/cloudflare` | Cloudflare `createHonoServer`, options, and `createGetLoadContext` |
-| `/aws-lambda` | AWS handler factory, options, and `createGetLoadContext` |
-| `/middleware` | `cache(seconds)` static-response middleware |
-| `/http` | `redirect(c, location)`, deprecated `reactRouterRedirect(location)`, and `getPath(c)` |
-| CLI | [`react-router-hono-server reveal file` or `reveal folder`](#hono-server-entry) |
+| Export                         | Purpose                                                                               |
+| ------------------------------ | ------------------------------------------------------------------------------------- |
+| `react-router-hono-server/dev` | `reactRouterHonoServer(options)` Vite plugin                                          |
+| `/node`                        | Node `createHonoServer`, options, and `createGetLoadContext`                          |
+| `/bun`                         | Bun `createHonoServer`, options, and `createGetLoadContext`                           |
+| `/deno`                        | Deno `createHonoServer`, options, and `createGetLoadContext`                          |
+| `/cloudflare`                  | Cloudflare `createHonoServer`, options, and `createGetLoadContext`                    |
+| `/aws-lambda`                  | AWS handler factory, options, and `createGetLoadContext`                              |
+| `/middleware`                  | `cache(seconds)` static-response middleware                                           |
+| `/http`                        | `redirect(c, location)`, deprecated `reactRouterRedirect(location)`, and `getPath(c)` |
+| CLI                            | [`react-router-hono-server reveal file` or `reveal folder`](#hono-server-entry)       |
 
 ### Vite plugin options
 
-| Option | Purpose |
-| --- | --- |
-| `runtime` | Selects the production adapter; defaults to `node` |
+| Option             | Purpose                                                         |
+| ------------------ | --------------------------------------------------------------- |
+| `runtime`          | Selects the production adapter; defaults to `node`              |
 | `serverEntryPoint` | Overrides discovery of `app/server.ts` or `app/server/index.ts` |
-| `dev.exclude` | Extends the paths excluded from Hono dev-server handling |
-| `dev.export` | Selects a named export from the server entry during development |
+| `dev.exclude`      | Extends the paths excluded from Hono dev-server handling        |
+| `dev.export`       | Selects a named export from the server entry during development |
 
 When no server entry is discovered, the plugin supplies a virtual default server for the selected runtime.
 
 ## Troubleshooting
 
-| Problem | Resolution |
-| --- | --- |
-| Cloudflare plugin is missing | Add `cloudflare()` before both `reactRouterHonoServer()` and `reactRouter()` |
+| Problem                                     | Resolution                                                                           |
+| ------------------------------------------- | ------------------------------------------------------------------------------------ |
+| Cloudflare plugin is missing                | Add `cloudflare()` before both `reactRouterHonoServer()` and `reactRouter()`         |
 | Invalid hook calls or incompatible contexts | Remove aliases and duplicate framework installations, then perform one clean install |
-| Server entry is not discovered | Create `app/server.ts`, create `app/server/index.ts`, or set `serverEntryPoint` |
-| Load context fails at runtime | Return a `RouterContextProvider`, not a plain object |
-| An asset request returns application HTML | Verify `buildDirectory`; on Cloudflare, also verify the `ASSETS` binding |
-| Upgrading from the previous major | Follow [MIGRATION.md](./MIGRATION.md) and complete its clean-install checklist |
+| Server entry is not discovered              | Create `app/server.ts`, create `app/server/index.ts`, or set `serverEntryPoint`      |
+| Load context fails at runtime               | Return a `RouterContextProvider`, not a plain object                                 |
+| An asset request returns application HTML   | Verify `buildDirectory`; on Cloudflare, also verify the `ASSETS` binding             |
+| Upgrading from the previous major           | Follow [MIGRATION.md](./MIGRATION.md) and complete its clean-install checklist       |

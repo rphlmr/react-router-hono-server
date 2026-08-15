@@ -1,6 +1,8 @@
-import { afterAll, beforeAll, expect, test } from "vitest";
-import { requireCommand } from "../helpers/runtime";
+import { afterAll, beforeAll, expect, test } from "vite-plus/test";
+
 import type { PrerenderFixture } from "./contract/prerender";
+
+import { requireCommand } from "../helpers/runtime";
 import { preparePrerenderFixture, registerPrerenderBuildTests } from "./contract/prerender";
 
 let fixture: PrerenderFixture;

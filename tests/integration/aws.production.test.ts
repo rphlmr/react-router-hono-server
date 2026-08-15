@@ -1,6 +1,7 @@
 import path from "node:path";
 import { pathToFileURL } from "node:url";
-import { afterAll, beforeAll, describe, expect, test } from "vitest";
+import { afterAll, beforeAll, describe, expect, test } from "vite-plus/test";
+
 import { type FixtureApp, ProductionFixture } from "../helpers/fixture";
 
 let app: FixtureApp;
@@ -8,14 +9,16 @@ type LambdaResponse = { statusCode: number; headers: Record<string, string>; bod
 type Handler = (
   lambdaEvent: ReturnType<typeof event>,
   lambdaContext: ReturnType<typeof context>,
-  callback: () => void
+  callback: () => void,
 ) => Promise<LambdaResponse>;
 let handler: Handler;
 
 beforeAll(async () => {
   app = await ProductionFixture.create("basic", "aws");
   await app.build();
-  const build = await import(`${pathToFileURL(path.join(app.cwd, "build/server/index.js")).href}?test=${Date.now()}`);
+  const build = await import(
+    `${pathToFileURL(path.join(app.cwd, "build/server/index.js")).href}?test=${Date.now()}`
+  );
   handler = build.default as Handler;
 });
 
@@ -54,7 +57,13 @@ function event(rawPath: string) {
       apiId: "test",
       domainName: "example.com",
       domainPrefix: "example",
-      http: { method: "GET", path: rawPath, protocol: "HTTP/1.1", sourceIp: "127.0.0.1", userAgent: "test" },
+      http: {
+        method: "GET",
+        path: rawPath,
+        protocol: "HTTP/1.1",
+        sourceIp: "127.0.0.1",
+        userAgent: "test",
+      },
       requestId: "test",
       routeKey: "$default",
       stage: "$default",

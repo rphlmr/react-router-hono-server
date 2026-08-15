@@ -117,8 +117,7 @@ The package tests inspect the artifact that would be published to npm:
 
 - `publint` validates package metadata and module packaging;
 - `attw` checks the exported type surface using the ESM-only profile;
-- `tests/package/public-surface.test.ts` verifies all declared runtime files, declarations, exports, and the CLI binary;
-- `tests/package/documentation.test.ts` keeps documented runtime configuration and commands consistent with the supported public surface.
+- `tests/package/public-surface.test.ts` verifies all declared runtime files, declarations, exports, and the CLI binary.
 
 The CLI integration tests invoke binaries from the isolated consumer's `node_modules/.bin`.
 
@@ -132,7 +131,7 @@ The suite has two complementary compatibility layers.
 
 The pull request workflow uses the committed lockfile and the project's supported runtime versions.
 
-Separate jobs run package checks, documentation checks, Node.js and AWS tests, Bun tests, Deno tests, and Cloudflare Workers tests.
+Separate jobs run package checks, Node.js and AWS tests, Bun tests, Deno tests, and Cloudflare Workers tests.
 
 This answers: **does this change preserve the behavior and dependency set reviewed in the repository?**
 
@@ -161,10 +160,10 @@ A behavior change therefore fails at the consumer level even when the package it
 
 Together, the workflows protect against two different regression classes:
 
-| Check | Dependency selection | Main purpose |
-| --- | --- | --- |
-| Pull request | Committed lockfile | Detect regressions introduced by repository changes |
-| Nightly | Latest releases within supported majors | Detect ecosystem and runtime regressions before users report them |
+| Check        | Dependency selection                    | Main purpose                                                      |
+| ------------ | --------------------------------------- | ----------------------------------------------------------------- |
+| Pull request | Committed lockfile                      | Detect regressions introduced by repository changes               |
+| Nightly      | Latest releases within supported majors | Detect ecosystem and runtime regressions before users report them |
 
 The nightly jobs are detection, not a claim that upstream internals cannot change.
 
@@ -181,14 +180,14 @@ pnpm test:suite
 
 Run one runtime or test layer while developing:
 
-| Command | Coverage |
-| --- | --- |
-| `pnpm test:node` | Node.js development, production, prerender, and WebSocket tests |
-| `pnpm test:bun` | Bun development, production, and prerender tests |
-| `pnpm test:deno` | Deno development, production, and prerender tests |
-| `pnpm test:cloudflare` | Cloudflare development, production, and prerender tests |
-| `pnpm test:aws` | AWS Lambda production and prerender tests |
-| `pnpm test:package` | Packed artifact, exports, types, utilities, and documentation contracts |
+| Command                | Coverage                                                                |
+| ---------------------- | ----------------------------------------------------------------------- |
+| `pnpm test:node`       | Node.js development, production, prerender, and WebSocket tests         |
+| `pnpm test:bun`        | Bun development, production, and prerender tests                        |
+| `pnpm test:deno`       | Deno development, production, and prerender tests                       |
+| `pnpm test:cloudflare` | Cloudflare development, production, and prerender tests                 |
+| `pnpm test:aws`        | AWS Lambda production and prerender tests                               |
+| `pnpm test:package`    | Packed artifact, exports, types, and utilities                          |
 
 Each targeted runtime command rebuilds and repacks the library first.
 

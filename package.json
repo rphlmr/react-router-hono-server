@@ -1,12 +1,24 @@
 {
   "name": "react-router-hono-server",
   "version": "3.0.0",
-  "type": "module",
   "description": "The Vite plugin you need to create a Hono server for your React Router app in less than 10 seconds.",
-  "publishConfig": {
-    "access": "public",
-    "provenance": true
+  "homepage": "https://github.com/rphlmr/react-router-hono-server#readme",
+  "bugs": {
+    "url": "https://github.com/rphlmr/react-router-hono-server/issues"
   },
+  "license": "ISC",
+  "author": "",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/rphlmr/react-router-hono-server.git"
+  },
+  "bin": {
+    "react-router-hono-server": "dist/cli.js"
+  },
+  "files": [
+    "dist"
+  ],
+  "type": "module",
   "exports": {
     "./node": {
       "import": {
@@ -65,50 +77,39 @@
       }
     }
   },
+  "publishConfig": {
+    "access": "public",
+    "provenance": true
+  },
   "scripts": {
-    "test": "vitest run",
-    "test:unit": "vitest run --project unit",
-    "test:prepare": "node tests/prepare.ts",
-    "test:package:prepared": "publint out/test-artifacts/*.tgz && attw out/test-artifacts/*.tgz --profile esm-only",
-    "test:package": "pnpm test:prepare && pnpm test:package:prepared && vitest run tests/package/*.test.ts",
-    "test:suite": "pnpm test:prepare && pnpm test:package:prepared && vitest run",
-    "test:node": "pnpm test:prepare && vitest run tests/integration/node.*.test.ts",
-    "test:bun": "pnpm test:prepare && vitest run tests/integration/bun.*.test.ts",
-    "test:deno": "pnpm test:prepare && vitest run tests/integration/deno.*.test.ts",
-    "test:cloudflare": "pnpm test:prepare && vitest run tests/integration/cloudflare.*.test.ts",
-    "test:aws": "pnpm test:prepare && vitest run tests/integration/aws.*.test.ts",
-    "test:cov": "vitest run --coverage",
-    "build": "tsdown",
-    "build:watch": "pnpm run build -- --watch",
+    "build": "vp pack",
     "build:pack": "pnpm test:prepare",
-    "prepublishOnly": "pnpm run build",
-    "check": "biome check .",
-    "check:fix": "biome check --fix .",
-    "typecheck": "tsc",
-    "validate": "pnpm run check && pnpm run typecheck",
-    "clear-all": "rm -rf node_modules pnpm-lock.yaml",
+    "build:watch": "pnpm run build -- --watch",
     "changeset": "changeset",
-    "version": "changeset version && biome format --write package.json",
-    "release": "changeset publish",
     "changeset:next": "changeset pre enter next",
-    "changeset:next:exit": "changeset pre exit"
+    "changeset:next:exit": "changeset pre exit",
+    "check": "vp check",
+    "check:fix": "vp check --fix",
+    "clear-all": "rm -rf node_modules pnpm-lock.yaml",
+    "prepare": "vp config",
+    "prepublishOnly": "pnpm run build",
+    "release": "changeset publish",
+    "test": "vp test run",
+    "test:aws": "pnpm test:prepare && vp test run tests/integration/aws.*.test.ts",
+    "test:bun": "pnpm test:prepare && vp test run tests/integration/bun.*.test.ts",
+    "test:cloudflare": "pnpm test:prepare && vp test run tests/integration/cloudflare.*.test.ts",
+    "test:cov": "vp test run --coverage",
+    "test:deno": "pnpm test:prepare && vp test run tests/integration/deno.*.test.ts",
+    "test:node": "pnpm test:prepare && vp test run tests/integration/node.*.test.ts",
+    "test:package": "pnpm test:prepare && pnpm test:package:prepared && vp test run tests/package/*.test.ts",
+    "test:package:prepared": "publint out/test-artifacts/*.tgz && attw out/test-artifacts/*.tgz --profile esm-only",
+    "test:prepare": "node tests/prepare.ts",
+    "test:suite": "pnpm test:prepare && pnpm test:package:prepared && vp test run",
+    "test:unit": "vp test run --project unit",
+    "typecheck": "tsc",
+    "validate": "vp check",
+    "version": "changeset version && vp fmt package.json"
   },
-  "author": "",
-  "license": "ISC",
-  "repository": {
-    "type": "git",
-    "url": "git+https://github.com/rphlmr/react-router-hono-server.git"
-  },
-  "bugs": {
-    "url": "https://github.com/rphlmr/react-router-hono-server/issues"
-  },
-  "bin": {
-    "react-router-hono-server": "dist/cli.js"
-  },
-  "files": [
-    "dist"
-  ],
-  "homepage": "https://github.com/rphlmr/react-router-hono-server#readme",
   "dependencies": {
     "@drizzle-team/brocli": "0.12.0",
     "@hono/node-server": "2.1.1",
@@ -116,7 +117,6 @@
   },
   "devDependencies": {
     "@arethetypeswrong/cli": "0.18.5",
-    "@biomejs/biome": "2.5.8",
     "@changesets/changelog-github": "1.0.0",
     "@changesets/cli": "3.0.0",
     "@cloudflare/workers-types": "5.20260814.1",
@@ -126,15 +126,14 @@
     "@types/node": "24.13.3",
     "@types/react-dom": "19.2.4",
     "@types/ws": "8.18.1",
-    "@vitest/coverage-v8": "4.1.10",
+    "@vitest/coverage-v8": "catalog:",
     "hono": "4.13.2",
     "npm-run-all": "4.1.5",
     "publint": "0.3.23",
     "react": "19.2.8",
     "react-dom": "19.2.8",
-    "tsdown": "0.22.14",
     "typescript": "6.0.3",
-    "vitest": "4.1.10",
+    "vite-plus": "catalog:",
     "ws": "8.21.3"
   },
   "peerDependencies": {

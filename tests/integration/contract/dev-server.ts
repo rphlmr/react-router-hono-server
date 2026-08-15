@@ -1,5 +1,7 @@
-import { expect, test } from "vitest";
+import { expect, test } from "vite-plus/test";
+
 import type { FixtureApp } from "../../helpers/fixture";
+
 import { registerDevBrowserTests } from "./browser";
 
 function loaderSource(message: string) {
@@ -55,7 +57,9 @@ export function registerDevServerTests(getApp: () => FixtureApp) {
     const response = await app.fetch("/.well-known/appspecific/com.chrome.devtools.json");
 
     expect(response.status).toBe(404);
-    expect(app.logs()).not.toContain('No route matches URL "/.well-known/appspecific/com.chrome.devtools.json"');
+    expect(app.logs()).not.toContain(
+      'No route matches URL "/.well-known/appspecific/com.chrome.devtools.json"',
+    );
   });
 
   test("runs a loader in development", async () => {

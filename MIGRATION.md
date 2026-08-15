@@ -72,11 +72,14 @@ import { createHonoServer } from "react-router-hono-server/node";
 export default await createHonoServer({
   useWebSocket: true,
   configure(app, { upgradeWebSocket }) {
-    app.get("/ws", upgradeWebSocket(() => ({
-      onMessage(event, ws) {
-        ws.send(String(event.data));
-      },
-    })));
+    app.get(
+      "/ws",
+      upgradeWebSocket(() => ({
+        onMessage(event, ws) {
+          ws.send(String(event.data));
+        },
+      })),
+    );
   },
 });
 ```
@@ -121,8 +124,8 @@ Use an assets binding and Node compatibility in `wrangler.jsonc`:
   "main": "./app/server.ts",
   "assets": {
     "directory": "./build/client",
-    "binding": "ASSETS"
-  }
+    "binding": "ASSETS",
+  },
 }
 ```
 
@@ -131,31 +134,55 @@ Use an assets binding and Node compatibility in `wrangler.jsonc`:
 Node:
 
 ```json
-{ "build": "react-router build", "dev": "react-router dev", "start": "node ./build/server/index.js", "typecheck": "react-router typegen && tsc --noEmit" }
+{
+  "build": "react-router build",
+  "dev": "react-router dev",
+  "start": "node ./build/server/index.js",
+  "typecheck": "react-router typegen && tsc --noEmit"
+}
 ```
 
 Bun:
 
 ```json
-{ "build": "react-router build", "dev": "bunx --bun react-router dev", "start": "bun ./build/server/index.js", "typecheck": "react-router typegen && tsc --noEmit" }
+{
+  "build": "react-router build",
+  "dev": "bunx --bun react-router dev",
+  "start": "bun ./build/server/index.js",
+  "typecheck": "react-router typegen && tsc --noEmit"
+}
 ```
 
 Deno:
 
 ```json
-{ "build": "react-router build", "dev": "deno run --allow-all npm:react-router dev", "start": "deno run --allow-all ./build/server/index.js", "typecheck": "react-router typegen && tsc --noEmit" }
+{
+  "build": "react-router build",
+  "dev": "deno run --allow-all npm:react-router dev",
+  "start": "deno run --allow-all ./build/server/index.js",
+  "typecheck": "react-router typegen && tsc --noEmit"
+}
 ```
 
 Cloudflare:
 
 ```json
-{ "build": "react-router build", "dev": "vite dev", "start": "vite preview", "typecheck": "react-router typegen && tsc --noEmit" }
+{
+  "build": "react-router build",
+  "dev": "vite dev",
+  "start": "vite preview",
+  "typecheck": "react-router typegen && tsc --noEmit"
+}
 ```
 
 AWS Lambda:
 
 ```json
-{ "build": "react-router build", "dev": "react-router dev", "typecheck": "react-router typegen && tsc --noEmit" }
+{
+  "build": "react-router build",
+  "dev": "react-router dev",
+  "typecheck": "react-router typegen && tsc --noEmit"
+}
 ```
 
 ## Configuration changes

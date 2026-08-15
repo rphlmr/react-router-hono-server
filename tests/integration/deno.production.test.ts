@@ -1,4 +1,5 @@
-import { afterAll, beforeAll } from "vitest";
+import { afterAll, beforeAll } from "vite-plus/test";
+
 import { type FixtureApp, ProductionFixture } from "../helpers/fixture";
 import { requireCommand } from "../helpers/runtime";
 import { registerProductionTests } from "./contract/production";

@@ -1,4 +1,5 @@
-import { afterEach, describe, expect, test } from "vitest";
+import { afterEach, describe, expect, test } from "vite-plus/test";
+
 import { type FixtureApp, ProductionFixture } from "../helpers/fixture";
 
 const websocketServer = `import { createHonoServer } from "react-router-hono-server/node";

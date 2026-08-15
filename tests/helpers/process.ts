@@ -22,7 +22,7 @@ export class CommandFailedError extends Error {
         result.stderr ? `stderr:\n${result.stderr}` : "",
       ]
         .filter(Boolean)
-        .join("\n\n")
+        .join("\n\n"),
     );
     this.result = result;
   }
@@ -65,7 +65,7 @@ export class ManagedProcess {
 }
 
 export async function getFreePort() {
-  return await new Promise<number>((resolve, reject) => {
+  return new Promise<number>((resolve, reject) => {
     const server = createServer();
     server.unref();
     server.on("error", reject);
@@ -124,7 +124,12 @@ export async function runCommand(options: {
   return result;
 }
 
-export function spawnProcess(options: { command: string; args: string[]; cwd: string; env?: NodeJS.ProcessEnv }) {
+export function spawnProcess(options: {
+  command: string;
+  args: string[];
+  cwd: string;
+  env?: NodeJS.ProcessEnv;
+}) {
   const child = spawn(options.command, options.args, {
     cwd: options.cwd,
     env: options.env,
@@ -137,7 +142,12 @@ export function spawnProcess(options: { command: string; args: string[]; cwd: st
 
 export async function waitForHttp(
   url: string,
-  options: { timeout?: number; interval?: number; logs?: () => string; process?: ManagedProcess } = {}
+  options: {
+    timeout?: number;
+    interval?: number;
+    logs?: () => string;
+    process?: ManagedProcess;
+  } = {},
 ) {
   const timeout = options.timeout ?? 30_000;
   const interval = options.interval ?? 100;

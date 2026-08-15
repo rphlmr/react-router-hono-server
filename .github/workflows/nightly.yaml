@@ -16,15 +16,14 @@ jobs:
       RRHS_LATEST_COMPATIBLE: "1"
     steps:
       - uses: actions/checkout@v7
-      - uses: pnpm/action-setup@v6
-      - uses: actions/setup-node@v6
+      - uses: voidzero-dev/setup-vp@313600b80b104eadebb9111787d37a2e83e014ca # v1.17.0
         with:
           node-version: latest
-          cache: pnpm
-      - run: pnpm install --frozen-lockfile
-      - run: pnpm typecheck
-      - run: pnpm test:package
-      - run: pnpm test:unit
+          cache: true
+      - run: vp install
+      - run: vp run typecheck
+      - run: vp run test:package
+      - run: vp run test:unit
 
   runtime:
     name: ${{ matrix.name }}
@@ -47,11 +46,10 @@ jobs:
       RRHS_LATEST_COMPATIBLE: "1"
     steps:
       - uses: actions/checkout@v7
-      - uses: pnpm/action-setup@v6
-      - uses: actions/setup-node@v6
+      - uses: voidzero-dev/setup-vp@313600b80b104eadebb9111787d37a2e83e014ca # v1.17.0
         with:
           node-version: latest
-          cache: pnpm
+          cache: true
       - uses: oven-sh/setup-bun@v2
         if: matrix.runtime == 'bun'
         with:
@@ -60,6 +58,6 @@ jobs:
         if: matrix.runtime == 'deno'
         with:
           deno-version: latest
-      - run: pnpm install --frozen-lockfile
-      - run: pnpm exec playwright install --with-deps chromium
-      - run: pnpm test:${{ matrix.runtime }}
+      - run: vp install
+      - run: vp exec playwright install --with-deps chromium
+      - run: vp run test:${{ matrix.runtime }}

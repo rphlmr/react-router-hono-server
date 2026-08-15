@@ -1,6 +1,6 @@
+import { command, run } from "@drizzle-team/brocli";
 import fs from "node:fs";
 import path from "node:path";
-import { command, run } from "@drizzle-team/brocli";
 
 const runtimeRegex = /runtime:\s*(['"])([^'"]*)\1/;
 
@@ -52,6 +52,6 @@ const reveal = command({
   subcommands: [file, folder],
 });
 
-run([reveal], {
+void run([reveal], {
   name: "React Router Hono Server CLI",
 });

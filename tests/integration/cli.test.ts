@@ -1,6 +1,7 @@
 import { readFile, rm } from "node:fs/promises";
 import path from "node:path";
-import { afterEach, expect, test } from "vitest";
+import { afterEach, expect, test } from "vite-plus/test";
+
 import { type FixtureApp, ProductionFixture } from "../helpers/fixture";
 import { fixtureBin, runCommand } from "../helpers/process";
 import { assertProductionBrowserBehavior } from "./contract/browser";
@@ -17,7 +18,7 @@ export default await createHonoServer();`;
 
 async function runCli(...args: string[]) {
   if (!app) throw new Error("Fixture is not initialized.");
-  return await runCommand({
+  return runCommand({
     command: fixtureBin(app.cwd, "react-router-hono-server"),
     args,
     cwd: app.cwd,
@@ -26,7 +27,7 @@ async function runCli(...args: string[]) {
 
 async function runReactRouterCli(...args: string[]) {
   if (!app) throw new Error("Fixture is not initialized.");
-  return await runCommand({
+  return runCommand({
     command: fixtureBin(app.cwd, "react-router"),
     args,
     cwd: app.cwd,
@@ -73,7 +74,7 @@ test("installed CLI reveals a folder and infers every explicit runtime", async (
   for (const [runtime, adapter] of cases) {
     await app.edit(
       "vite.config.ts",
-      `import { reactRouterHonoServer } from "react-router-hono-server/dev";\nreactRouterHonoServer({ runtime: "${runtime}" });\n`
+      `import { reactRouterHonoServer } from "react-router-hono-server/dev";\nreactRouterHonoServer({ runtime: "${runtime}" });\n`,
     );
     await runCli("reveal", "folder");
     expect(await app.read("app/server/index.ts")).toBe(serverSource(adapter));
@@ -119,8 +120,8 @@ test("a revealed server entry takes precedence over the readable stream flag", a
     "app/entry.server.tsx",
     entryServer.replace(
       'responseHeaders.set("Content-Type", "text/html");',
-      'responseHeaders.set("Content-Type", "text/html");\n          responseHeaders.set("x-entry-server", "custom");'
-    )
+      'responseHeaders.set("Content-Type", "text/html");\n          responseHeaders.set("x-entry-server", "custom");',
+    ),
   );
   await app.edit("react-router.config.ts", readableStreamConfig);
 

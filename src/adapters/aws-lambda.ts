@@ -1,10 +1,14 @@
+import type { BlankEnv } from "hono/types";
+
 import { serveStatic } from "@hono/node-server/serve-static";
 import { type Env, Hono } from "hono";
 import { handle, type LambdaContext, type LambdaEvent, streamHandle } from "hono/aws-lambda";
 import { createMiddleware } from "hono/factory";
 import { logger } from "hono/logger";
-import type { BlankEnv } from "hono/types";
 import { createRequestHandler } from "react-router";
+
+import type { HonoServerOptionsBase, WithoutWebsocket } from "../types/hono-server-options-base";
+
 import {
   bindIncomingRequestSocketInfo,
   createGetLoadContext,
@@ -14,7 +18,6 @@ import {
 } from "../helpers";
 import { cache } from "../middleware";
 import { isReactRouterBuildRequest } from "../react-router-build-request";
-import type { HonoServerOptionsBase, WithoutWebsocket } from "../types/hono-server-options-base";
 
 export { createGetLoadContext };
 
@@ -23,10 +26,13 @@ type InvokeMode = "default" | "stream";
 type AWSLambdaHandler = (
   event: LambdaEvent,
   lambdaContext: LambdaContext,
-  callback: (error?: Error | string | null, result?: unknown) => void
-) => unknown | Promise<unknown>;
+  callback: (error?: Error | string | null, result?: unknown) => void,
+) => unknown;
 
-interface HonoAWSServerOptions<E extends Env = BlankEnv> extends Omit<HonoServerOptionsBase<E>, "port"> {
+interface HonoAWSServerOptions<E extends Env = BlankEnv> extends Omit<
+  HonoServerOptionsBase<E>,
+  "port"
+> {
   /**
    * The invoke mode to use
    *
@@ -46,7 +52,7 @@ export type HonoServerOptions<E extends Env = BlankEnv> = HonoAWSServerOptions<E
  * @param config {@link HonoServerOptions} - The configuration options for the server
  */
 export async function createHonoServer<E extends Env = BlankEnv>(
-  options?: HonoServerOptions<E>
+  options?: HonoServerOptions<E>,
 ): Promise<Hono<E> | AWSLambdaHandler> {
   const basename = import.meta.env.REACT_ROUTER_HONO_SERVER_BASENAME;
   const mergedOptions: HonoServerOptions<E> = {
@@ -78,7 +84,7 @@ export async function createHonoServer<E extends Env = BlankEnv>(
     app.use(
       `/${import.meta.env.REACT_ROUTER_HONO_SERVER_ASSETS_DIR}/*`,
       cache(60 * 60 * 24 * 365), // 1 year
-      serveStatic({ root: clientBuildPath })
+      serveStatic({ root: clientBuildPath }),
     );
 
     /**
@@ -87,7 +93,7 @@ export async function createHonoServer<E extends Env = BlankEnv>(
     app.use(
       "*",
       cache(60 * 60), // 1 hour
-      serveStatic({ root: PRODUCTION ? clientBuildPath : "./public" })
+      serveStatic({ root: PRODUCTION ? clientBuildPath : "./public" }),
     );
   }
 
@@ -120,7 +126,10 @@ export async function createHonoServer<E extends Env = BlankEnv>(
     return createMiddleware(async (c) => {
       const requestHandler = createRequestHandler(build, mode);
       const loadContext = mergedOptions.getLoadContext?.(c, { build, mode });
-      return requestHandler(c.req.raw, loadContext instanceof Promise ? await loadContext : loadContext);
+      return requestHandler(
+        c.req.raw,
+        loadContext instanceof Promise ? await loadContext : loadContext,
+      );
     })(c, next);
   });
 
