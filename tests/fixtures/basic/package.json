@@ -22,7 +22,7 @@
     "@cloudflare/vite-plugin": "1.52.1",
     "@cloudflare/workers-types": "5.20260815.1",
     "@react-router/dev": "8.3.0",
-    "@types/node": "24.13.2",
+    "@types/node": "24.13.3",
     "@types/react": "19.2.18",
     "@types/react-dom": "19.2.4",
     "typescript": "6.0.3",

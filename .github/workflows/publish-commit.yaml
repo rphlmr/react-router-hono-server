@@ -27,7 +27,10 @@ jobs:
         run: pnpm install
 
       - name: 📋 Version packages
-        run: pnpm changeset version
+        run: |
+          if find .changeset -maxdepth 1 -type f -name '*.md' ! -name 'README.md' -print -quit | grep -q .; then
+            pnpm changeset version
+          fi
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 

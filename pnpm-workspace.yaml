@@ -4,3 +4,4 @@ allowBuilds:
   workerd: true
 minimumReleaseAgeExclude:
   - "@hono/node-server@2.0.6"
+  - '@cloudflare/workers-types@5.20260815.1'

@@ -39,11 +39,11 @@ jobs:
 
       - name: 🦋 Create Release Pull Request or Publish
         id: changesets
-        uses: changesets/action@v1
+        uses: changesets/action@v2
         with:
-          version: pnpm run version
-          publish: pnpm run release
-          title: "chore: release package"
-          commit: "chore: release package"
+          version-script: pnpm run version
+          publish-script: pnpm run release
+          pr-title: "chore: release package"
+          commit-message: "chore: release package"
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
