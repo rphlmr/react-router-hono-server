@@ -138,6 +138,8 @@ export function registerDevServerTests(getApp: () => FixtureApp) {
     });
     expect(app.alive).toBe(true);
 
+    // Let Vite finish its debounced hot-update cycle before writing the recovery update.
+    await new Promise((resolve) => setTimeout(resolve, 200));
     await app.edit("app/routes/recover.tsx", RECOVERED);
 
     await app.eventually(async () => {
