@@ -1,24 +1,14 @@
-# Integration tests
+# Trusted runtime tests
 
-Black-box tests that start a real React Router + Hono app through the public API.
+The suite builds and packs the library once, copies a consumer fixture to a temporary directory, injects the generated tarball, installs it with the selected runtime package manager, runs React Router type generation and TypeScript, and then exercises the documented commands.
 
 ```sh
 pnpm install
 pnpm test:suite
 ```
 
-`test:suite` builds the library, then runs Vitest. Use `pnpm test:node`, `pnpm test:bun`, `pnpm test:deno`, or `pnpm test:cloudflare` to target one runtime.
+Targeted commands are `pnpm test:node`, `pnpm test:bun`, `pnpm test:deno`, `pnpm test:cloudflare`, `pnpm test:aws`, and `pnpm test:package`. Runtime binaries and Playwright Chromium are required; their absence fails the relevant suite.
 
-The Node fixture lives in `tests/fixtures/basic`. Runtime overlays live in `tests/fixtures/overlays/<runtime>` and replace `vite.config.ts` / `app/server.ts` after the fixture is copied to a temp directory.
+The common source fixture is `tests/fixtures/basic`. Runtime overlays in `tests/fixtures/overlays` replace only runtime-specific Vite, server-entry, React server-entry, and platform configuration files. Each temporary consumer owns its manifest, generated lockfile, and `node_modules`; nothing links to the repository installation.
 
-Helpers spawn:
-
-- Node production: `react-router build` then `node ./build/server/index.js`
-- Node development: `react-router dev --host 127.0.0.1 --port <free> --strictPort`
-- Bun production: `bun ./build/server/index.js`
-- Bun development: `bunx --bun vite --configLoader runner --host 127.0.0.1 --port <free> --strictPort`
-- Deno production: `deno run --unstable-cron -A ./build/server/index.js`
-- Deno development: `deno run --unstable-cron -A npm:vite dev --host 127.0.0.1 --port <free> --strictPort`
-
-- Cloudflare production: `react-router build` then `vite preview --host 127.0.0.1 --port <free> --strictPort`
-- Cloudflare development: `vite dev --host 127.0.0.1 --port <free> --strictPort`
+The typed definitions in `tests/helpers/launchers.ts` are the source of truth for install, build, development, production, and typecheck commands. The harness adds only a loopback host, allocated port, and strict-port arguments to server commands.

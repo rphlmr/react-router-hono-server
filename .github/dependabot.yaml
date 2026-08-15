@@ -8,5 +8,3 @@ updates:
     # Restrict updates to direct deps to avoid failing runs (e.g. vite transitive attempts).
     allow:
       - dependency-type: "direct"
-    exclude-paths:
-      - "examples/**"

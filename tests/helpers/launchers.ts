@@ -1,198 +1,143 @@
 import path from "node:path";
 import { fixtureBin, type ManagedProcess, runCommand, spawnProcess } from "./process";
 
-export type RuntimeName = "node" | "bun" | "deno" | "cloudflare";
+export type RuntimeName = "node" | "bun" | "deno" | "cloudflare" | "aws";
 
-export type RuntimeLauncher = {
+export type RuntimeCapabilities = {
+  browser: boolean;
+  webSocket: boolean;
+  workerd: boolean;
+};
+
+export type RuntimeDefinition = {
   name: RuntimeName;
+  packageManager: { command: string; installArgs: string[]; lockfile: string };
+  scripts: { build: string; dev: string; start: string; typecheck: string };
+  environment: NodeJS.ProcessEnv;
+  capabilities: RuntimeCapabilities;
+};
+
+const commonScripts = {
+  build: "react-router build",
+  dev: "react-router dev",
+  typecheck: "react-router typegen && tsc --noEmit",
+};
+
+export const runtimeDefinitions = {
+  node: {
+    name: "node",
+    packageManager: { command: "pnpm", installArgs: ["install"], lockfile: "pnpm-lock.yaml" },
+    scripts: { ...commonScripts, start: "node ./build/server/index.js" },
+    environment: {},
+    capabilities: { browser: true, webSocket: true, workerd: false },
+  },
+  bun: {
+    name: "bun",
+    packageManager: { command: "bun", installArgs: ["install", "--exact"], lockfile: "bun.lock" },
+    scripts: { ...commonScripts, dev: "bunx --bun react-router dev", start: "bun ./build/server/index.js" },
+    environment: {},
+    capabilities: { browser: true, webSocket: true, workerd: false },
+  },
+  deno: {
+    name: "deno",
+    packageManager: { command: "deno", installArgs: ["install", "--allow-scripts"], lockfile: "deno.lock" },
+    scripts: {
+      ...commonScripts,
+      dev: "deno run --allow-all npm:react-router dev",
+      start: "deno run --allow-all ./build/server/index.js",
+    },
+    environment: {},
+    capabilities: { browser: true, webSocket: false, workerd: false },
+  },
+  cloudflare: {
+    name: "cloudflare",
+    packageManager: { command: "pnpm", installArgs: ["install"], lockfile: "pnpm-lock.yaml" },
+    scripts: { ...commonScripts, dev: "vite dev", start: "vite preview" },
+    environment: {},
+    capabilities: { browser: true, webSocket: false, workerd: true },
+  },
+  aws: {
+    name: "aws",
+    packageManager: { command: "pnpm", installArgs: ["install"], lockfile: "pnpm-lock.yaml" },
+    scripts: { ...commonScripts, dev: "react-router dev", start: "node ./build/server/index.js" },
+    environment: {},
+    capabilities: { browser: false, webSocket: false, workerd: false },
+  },
+} as const satisfies Record<RuntimeName, RuntimeDefinition>;
+
+export type RuntimeLauncher = RuntimeDefinition & {
+  install(cwd: string): ReturnType<typeof runCommand>;
+  typecheck(cwd: string): Promise<Awaited<ReturnType<typeof runCommand>>>;
   build(cwd: string): ReturnType<typeof runCommand>;
   startProduction(cwd: string, port: number): ManagedProcess;
   startDev(cwd: string, port: number): ManagedProcess;
 };
 
-const nodeLauncher: RuntimeLauncher = {
-  name: "node",
-  build(cwd) {
-    return runCommand({
-      command: fixtureBin(cwd, "react-router"),
-      args: ["build"],
-      cwd,
-      env: {
-        ...process.env,
-        NODE_ENV: "production",
-      },
-    });
-  },
-  startProduction(cwd, port) {
-    return spawnProcess({
-      command: process.execPath,
-      args: [path.join(cwd, "build/server/index.js")],
-      cwd,
-      env: {
-        ...process.env,
-        NODE_ENV: "production",
-        PORT: String(port),
-      },
-    });
-  },
-  startDev(cwd, port) {
-    return spawnProcess({
-      command: fixtureBin(cwd, "react-router"),
-      args: ["dev", "--host", "127.0.0.1", "--port", String(port), "--strictPort"],
-      cwd,
-      env: {
-        ...process.env,
-        NODE_ENV: "development",
-        PORT: String(port),
-      },
-    });
-  },
-};
+function commandParts(script: string) {
+  const [command, ...args] = script.split(" ");
+  return { command, args };
+}
 
-const bunLauncher: RuntimeLauncher = {
-  name: "bun",
-  build(cwd) {
+function createLauncher(definition: RuntimeDefinition): RuntimeLauncher {
+  const runScript = (cwd: string, script: string, environment: NodeJS.ProcessEnv = {}) => {
+    const { command, args } = commandParts(script);
     return runCommand({
-      command: fixtureBin(cwd, "react-router"),
-      args: ["build"],
+      command: command === "react-router" ? fixtureBin(cwd, command) : command,
+      args,
       cwd,
-      env: {
-        ...process.env,
-        NODE_ENV: "production",
-      },
+      env: { ...process.env, ...definition.environment, ...environment },
     });
-  },
-  startProduction(cwd, port) {
+  };
+
+  const spawnScript = (cwd: string, script: string, port: number, mode: "development" | "production") => {
+    const { command, args } = commandParts(script);
+    const executable = command === "react-router" || command === "vite" ? fixtureBin(cwd, command) : command;
+    const hostArgs =
+      mode === "development" || definition.name === "cloudflare"
+        ? ["--host", "127.0.0.1", "--port", String(port), "--strictPort"]
+        : [];
+
     return spawnProcess({
-      command: "bun",
-      args: [path.join(cwd, "build/server/index.js")],
-      cwd,
-      env: {
-        ...process.env,
-        NODE_ENV: "production",
-        PORT: String(port),
-      },
-    });
-  },
-  startDev(cwd, port) {
-    return spawnProcess({
-      command: "bunx",
+      command: executable,
       args: [
-        "--bun",
-        "vite",
-        "--configLoader",
-        "runner",
-        "--host",
-        "127.0.0.1",
-        "--port",
-        String(port),
-        "--strictPort",
+        ...args.map((arg) => arg.replace("./build/server/index.js", path.join(cwd, "build/server/index.js"))),
+        ...hostArgs,
       ],
       cwd,
-      env: {
-        ...process.env,
-        NODE_ENV: "development",
-        PORT: String(port),
-      },
+      env: { ...process.env, ...definition.environment, NODE_ENV: mode, PORT: String(port) },
     });
-  },
-};
+  };
 
-const cloudflareLauncher: RuntimeLauncher = {
-  name: "cloudflare",
-  build(cwd) {
-    return runCommand({
-      command: fixtureBin(cwd, "react-router"),
-      args: ["build"],
-      cwd,
-      env: {
-        ...process.env,
-        NODE_ENV: "production",
-      },
-    });
-  },
-  startProduction(cwd, port) {
-    return spawnProcess({
-      command: fixtureBin(cwd, "vite"),
-      args: ["preview", "--host", "127.0.0.1", "--port", String(port), "--strictPort"],
-      cwd,
-      env: {
-        ...process.env,
-        NODE_ENV: "production",
-        PORT: String(port),
-      },
-    });
-  },
-  startDev(cwd, port) {
-    return spawnProcess({
-      command: fixtureBin(cwd, "vite"),
-      args: ["dev", "--host", "127.0.0.1", "--port", String(port), "--strictPort"],
-      cwd,
-      env: {
-        ...process.env,
-        NODE_ENV: "development",
-        PORT: String(port),
-      },
-    });
-  },
-};
+  return {
+    ...definition,
+    install(cwd) {
+      return runCommand({
+        command: definition.packageManager.command,
+        args: definition.packageManager.installArgs,
+        cwd,
+        env: { ...process.env, ...definition.environment },
+        timeout: 180_000,
+      });
+    },
+    async typecheck(cwd) {
+      await runScript(cwd, "react-router typegen");
+      return await runScript(cwd, "tsc --noEmit");
+    },
+    build(cwd) {
+      return runScript(cwd, definition.scripts.build, { NODE_ENV: "production" });
+    },
+    startProduction(cwd, port) {
+      return spawnScript(cwd, definition.scripts.start, port, "production");
+    },
+    startDev(cwd, port) {
+      return spawnScript(cwd, definition.scripts.dev, port, "development");
+    },
+  };
+}
 
-const denoLauncher: RuntimeLauncher = {
-  name: "deno",
-  build(cwd) {
-    return runCommand({
-      command: fixtureBin(cwd, "react-router"),
-      args: ["build"],
-      cwd,
-      env: {
-        ...process.env,
-        NODE_ENV: "production",
-      },
-    });
-  },
-  startProduction(cwd, port) {
-    return spawnProcess({
-      command: "deno",
-      args: ["run", "--unstable-cron", "-A", path.join(cwd, "build/server/index.js")],
-      cwd,
-      env: {
-        ...process.env,
-        NODE_ENV: "production",
-        PORT: String(port),
-      },
-    });
-  },
-  startDev(cwd, port) {
-    return spawnProcess({
-      command: "deno",
-      args: [
-        "run",
-        "--unstable-cron",
-        "-A",
-        "npm:vite",
-        "dev",
-        "--host",
-        "127.0.0.1",
-        "--port",
-        String(port),
-        "--strictPort",
-      ],
-      cwd,
-      env: {
-        ...process.env,
-        NODE_ENV: "development",
-        PORT: String(port),
-      },
-    });
-  },
-};
-
-const launchers: Record<RuntimeName, RuntimeLauncher> = {
-  node: nodeLauncher,
-  bun: bunLauncher,
-  deno: denoLauncher,
-  cloudflare: cloudflareLauncher,
-};
+const launchers = Object.fromEntries(
+  Object.entries(runtimeDefinitions).map(([runtime, definition]) => [runtime, createLauncher(definition)])
+) as Record<RuntimeName, RuntimeLauncher>;
 
 export function getLauncher(runtime: RuntimeName) {
   return launchers[runtime];

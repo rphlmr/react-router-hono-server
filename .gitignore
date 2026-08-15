@@ -135,5 +135,5 @@ dist
 build
 .wrangler
 
-/examples/**/package-lock.json
 .idea
+.pnpm_store

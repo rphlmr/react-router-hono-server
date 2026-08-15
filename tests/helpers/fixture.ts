@@ -1,4 +1,5 @@
-import { cp, lstat, mkdir, mkdtemp, rm, symlink, writeFile } from "node:fs/promises";
+import { cp, mkdir, mkdtemp, readdir, readFile, realpath, rm, writeFile } from "node:fs/promises";
+import { createRequire } from "node:module";
 import os from "node:os";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
@@ -8,6 +9,7 @@ import { BROWSER_UA, type CommandResult, getFreePort, type ManagedProcess, waitF
 
 const REPO_ROOT = path.resolve(fileURLToPath(new URL("../..", import.meta.url)));
 const SKIP_COPY_DIRS = new Set(["node_modules", "build", ".react-router"]);
+const ARTIFACT_DIRECTORY = path.join(REPO_ROOT, "out", "test-artifacts");
 
 export type FixtureName = "basic";
 
@@ -37,12 +39,22 @@ export class FixtureApp {
 
   async startProduction() {
     this.server = this.launcher.startProduction(this.cwd, this.port);
-    await waitForHttp(this.url, { logs: () => this.logs() });
+    try {
+      await waitForHttp(this.url, { logs: () => this.logs(), process: this.server });
+    } catch (error) {
+      await this.stop();
+      throw error;
+    }
   }
 
   async startDev() {
     this.server = this.launcher.startDev(this.cwd, this.port);
-    await waitForHttp(this.url, { logs: () => this.logs() });
+    try {
+      await waitForHttp(this.url, { logs: () => this.logs(), process: this.server });
+    } catch (error) {
+      await this.stop();
+      throw error;
+    }
   }
 
   async fetch(pathname: string, init?: RequestInit) {
@@ -118,32 +130,79 @@ export class DevServerFixture extends FixtureApp {
 
 async function createPreparedFixture(name: FixtureName, runtime: RuntimeName) {
   const source = path.join(REPO_ROOT, "tests/fixtures", name);
-  const nodeModules = path.join(source, "node_modules");
+  const cwd = await mkdtemp(path.join(os.tmpdir(), `react-router-hono-server-${runtime}-${name}-`));
 
   try {
-    await lstat(nodeModules);
-  } catch {
-    throw new Error(`Fixture ${name} is missing node_modules. Run pnpm install from the repo root first.`);
+    await cp(source, cwd, {
+      recursive: true,
+      filter: (sourcePath) => {
+        const relative = path.relative(source, sourcePath);
+        return !relative.split(path.sep).some((part) => SKIP_COPY_DIRS.has(part));
+      },
+    });
+
+    if (runtime !== "node") {
+      await cp(path.join(REPO_ROOT, "tests/fixtures/overlays", runtime), cwd, { recursive: true });
+    }
+
+    const launcher = getLauncher(runtime);
+    const artifact = await findPackageArtifact();
+    const manifestPath = path.join(cwd, "package.json");
+    const manifest = JSON.parse(await readFile(manifestPath, "utf8"));
+    manifest.scripts = launcher.scripts;
+    manifest.dependencies["react-router-hono-server"] = `file:${artifact}`;
+    if (process.env.RRHS_LATEST_COMPATIBLE === "1") {
+      const versions = JSON.parse(await readFile(path.join(ARTIFACT_DIRECTORY, "latest-versions.json"), "utf8"));
+      for (const [dependency, version] of Object.entries(versions)) {
+        if (dependency in manifest.dependencies) manifest.dependencies[dependency] = version;
+        if (dependency in manifest.devDependencies) manifest.devDependencies[dependency] = version;
+      }
+    }
+    await writeFile(manifestPath, `${JSON.stringify(manifest, null, 2)}\n`);
+
+    await launcher.install(cwd);
+    await assertIsolatedInstall(cwd, artifact);
+    await launcher.typecheck(cwd);
+
+    return new FixtureApp({ name, runtime, cwd, port: await getFreePort() });
+  } catch (error) {
+    await rm(cwd, { recursive: true, force: true });
+    throw error;
+  }
+}
+
+async function findPackageArtifact() {
+  const artifacts = (await readdir(ARTIFACT_DIRECTORY)).filter((file) => file.endsWith(".tgz"));
+  if (artifacts.length !== 1) {
+    throw new Error(`Expected one packed package in ${ARTIFACT_DIRECTORY}; run pnpm test:prepare first.`);
+  }
+  return path.join(ARTIFACT_DIRECTORY, artifacts[0]);
+}
+
+async function assertIsolatedInstall(cwd: string, artifact: string) {
+  const packagePath = path.join(cwd, "node_modules", "react-router-hono-server", "package.json");
+  const installed = JSON.parse(await readFile(packagePath, "utf8"));
+  const root = await readFile(path.join(REPO_ROOT, "package.json"), "utf8").then(JSON.parse);
+  if (installed.name !== root.name || installed.version !== root.version) {
+    throw new Error(`Fixture did not install ${artifact}.`);
   }
 
-  const cwd = await mkdtemp(path.join(os.tmpdir(), `react-router-hono-server-${runtime}-${name}-`));
-  await cp(source, cwd, {
-    recursive: true,
-    filter: (sourcePath) => {
-      const relative = path.relative(source, sourcePath);
-      return !relative.split(path.sep).some((part) => SKIP_COPY_DIRS.has(part));
-    },
-  });
-  await symlink(nodeModules, path.join(cwd, "node_modules"), "dir");
-
-  if (runtime !== "node") {
-    await cp(path.join(REPO_ROOT, "tests/fixtures/overlays", runtime), cwd, { recursive: true });
+  const resolvedPackagePath = await realpath(
+    path.join(cwd, "node_modules/react-router-hono-server/dist/adapters/node.js")
+  );
+  if (resolvedPackagePath.startsWith(REPO_ROOT)) {
+    throw new Error(`Fixture resolved the package through the repository root: ${resolvedPackagePath}`);
   }
 
-  return new FixtureApp({
-    name,
-    runtime,
-    cwd,
-    port: await getFreePort(),
-  });
+  const appRequire = createRequire(path.join(cwd, "package.json"));
+  const packageRequire = createRequire(packagePath);
+  for (const dependency of ["react", "react-dom", "react-router", "hono", "vite"]) {
+    const appResolution = await realpath(appRequire.resolve(dependency));
+    const packageResolution = await realpath(packageRequire.resolve(dependency));
+    if (appResolution !== packageResolution) {
+      throw new Error(
+        `${dependency} is duplicated: application resolved ${appResolution}, package resolved ${packageResolution}.`
+      );
+    }
+  }
 }

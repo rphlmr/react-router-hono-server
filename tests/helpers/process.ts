@@ -3,6 +3,7 @@ import { createServer } from "node:net";
 import path from "node:path";
 
 const tracked = new Set<ManagedProcess>();
+const MAX_LOG_LENGTH = 64 * 1024;
 
 export type CommandResult = {
   exitCode: number;
@@ -35,10 +36,10 @@ export class ManagedProcess {
   constructor(child: ChildProcess) {
     this.child = child;
     child.stdout?.on("data", (chunk) => {
-      this.stdout += String(chunk);
+      this.stdout = appendBounded(this.stdout, String(chunk));
     });
     child.stderr?.on("data", (chunk) => {
-      this.stderr += String(chunk);
+      this.stderr = appendBounded(this.stderr, String(chunk));
     });
     tracked.add(this);
   }
@@ -91,14 +92,24 @@ export function fixtureBin(cwd: string, name: string) {
   return path.join(cwd, "node_modules", ".bin", name);
 }
 
-export async function runCommand(options: { command: string; args: string[]; cwd: string; env?: NodeJS.ProcessEnv }) {
+export async function runCommand(options: {
+  command: string;
+  args: string[];
+  cwd: string;
+  env?: NodeJS.ProcessEnv;
+  timeout?: number;
+}) {
   const child = spawn(options.command, options.args, {
     cwd: options.cwd,
     env: options.env,
     stdio: ["ignore", "pipe", "pipe"],
   });
   const managed = new ManagedProcess(child);
+  const timer = setTimeout(() => {
+    if (child.pid) killProcessTree(child.pid, "SIGKILL");
+  }, options.timeout ?? 120_000);
   const exitCode = await waitForExitCode(child);
+  clearTimeout(timer);
   const result: CommandResult = {
     exitCode: exitCode ?? 1,
     stdout: managed.stdout,
@@ -126,7 +137,7 @@ export function spawnProcess(options: { command: string; args: string[]; cwd: st
 
 export async function waitForHttp(
   url: string,
-  options: { timeout?: number; interval?: number; logs?: () => string } = {}
+  options: { timeout?: number; interval?: number; logs?: () => string; process?: ManagedProcess } = {}
 ) {
   const timeout = options.timeout ?? 30_000;
   const interval = options.interval ?? 100;
@@ -134,6 +145,9 @@ export async function waitForHttp(
   let lastError: unknown;
 
   while (Date.now() < deadline) {
+    if (options.process && options.process.child.exitCode !== null) {
+      throw new Error(`Process exited before ${url} became ready.\n\n${options.logs?.() ?? ""}`);
+    }
     try {
       await fetch(url, {
         redirect: "manual",
@@ -150,6 +164,11 @@ export async function waitForHttp(
   const logs = options.logs?.();
   const detail = lastError instanceof Error ? lastError.message : String(lastError);
   throw new Error([`Timed out waiting for ${url}: ${detail}`, logs].filter(Boolean).join("\n\n"));
+}
+
+function appendBounded(current: string, chunk: string) {
+  const combined = current + chunk;
+  return combined.length > MAX_LOG_LENGTH ? combined.slice(-MAX_LOG_LENGTH) : combined;
 }
 
 export const BROWSER_UA =

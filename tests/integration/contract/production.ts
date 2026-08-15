@@ -1,8 +1,10 @@
 import { expect, test } from "vitest";
 import type { FixtureApp } from "../../helpers/fixture";
 import { prefixBefore } from "../../helpers/stream";
+import { registerProductionBrowserTests } from "./browser";
 
 export function registerProductionTests(getApp: () => FixtureApp) {
+  registerProductionBrowserTests(getApp);
   test("builds a React Router application", () => {
     expect(getApp().buildResult?.exitCode).toBe(0);
   });
@@ -94,5 +96,20 @@ export function registerProductionTests(getApp: () => FixtureApp) {
 
     expect(response.status).toBe(418);
     expect(await response.text()).toContain("explicit-error");
+  });
+
+  test("serves public files with cache headers", async () => {
+    const response = await getApp().fetch("/fixture.txt");
+    expect(response.status).toBe(200);
+    expect(await response.text()).toBe("public-fixture\n");
+    expect(response.headers.get("cache-control")).toBe(
+      getApp().runtime === "cloudflare" ? "public, max-age=0, must-revalidate" : "public, max-age=3600"
+    );
+  });
+
+  test("serves React Router data requests", async () => {
+    const response = await getApp().fetch("/loader.data");
+    expect(response.status).toBe(200);
+    expect(await response.text()).toContain("hello-from-loader");
   });
 }

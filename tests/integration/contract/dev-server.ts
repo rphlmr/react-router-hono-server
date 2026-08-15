@@ -1,5 +1,6 @@
 import { expect, test } from "vitest";
 import type { FixtureApp } from "../../helpers/fixture";
+import { registerDevBrowserTests } from "./browser";
 
 function loaderSource(message: string) {
   return `import { message as serverMessage } from "../message.server";
@@ -70,6 +71,8 @@ export function registerDevServerTests(getApp: () => FixtureApp) {
     expect(response.status).toBe(200);
     expect(await response.text()).toContain("hello-from-action");
   });
+
+  registerDevBrowserTests(getApp);
 
   test("reloads component SSR after the route file changes", async () => {
     const app = getApp();

@@ -205,11 +205,19 @@ export function reactRouterHonoServer(options: ReactRouterHonoServerPluginOption
         },
       };
     },
-    async configureServer(server) {
+    configureServer(server) {
       // bind viteDevServer to global 🤫
       globalThis.__viteDevServer = server;
 
       if (!pluginConfig) {
+        return;
+      }
+
+      // The official Cloudflare Vite plugin owns the Workerd-backed dev
+      // environment and loads the Wrangler main entry. Installing Hono's Node
+      // dev middleware as well would route requests through a non-runnable Vite
+      // environment and prevent Vite client modules from reaching the browser.
+      if (runtime === "cloudflare") {
         return;
       }
 
@@ -221,11 +229,6 @@ export function reactRouterHonoServer(options: ReactRouterHonoServerPluginOption
 
       if (runtime === "bun") {
         adapter = bunAdapter;
-      }
-
-      if (runtime === "cloudflare") {
-        const { cloudflareAdapter } = await import("@hono/vite-dev-server/cloudflare");
-        adapter = cloudflareAdapter;
       }
 
       if (runtime === "deno") {

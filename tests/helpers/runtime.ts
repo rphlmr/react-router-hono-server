@@ -6,3 +6,9 @@ export function hasCommand(command: string) {
   });
   return result.status === 0;
 }
+
+export function requireCommand(command: string, runtime = command) {
+  if (!hasCommand(command)) {
+    throw new Error(`${runtime} is required for this suite but ${command} is not available.`);
+  }
+}

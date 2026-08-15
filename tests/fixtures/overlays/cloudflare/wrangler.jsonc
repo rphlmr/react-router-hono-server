@@ -1,12 +1,11 @@
 {
   "$schema": "./node_modules/wrangler/config-schema.json",
   "name": "react-router-hono-server-integration",
-  "compatibility_date": "2026-08-15",
+  "compatibility_date": "2026-08-11",
   "compatibility_flags": ["nodejs_compat"],
   "main": "./app/server.ts",
   "assets": {
     "directory": "./build/client",
-    "binding": "ASSETS",
-    "run_worker_first": true
+    "binding": "ASSETS"
   }
 }

@@ -1,16 +1,12 @@
-import { afterAll, beforeAll, test } from "vitest";
+import { afterAll, beforeAll } from "vitest";
 import { type FixtureApp, ProductionFixture } from "../helpers/fixture";
-import { hasCommand } from "../helpers/runtime";
+import { requireCommand } from "../helpers/runtime";
 import { registerProductionTests } from "./contract/production";
-
-const bunAvailable = hasCommand("bun");
 
 let app: FixtureApp;
 
 beforeAll(async () => {
-  if (!bunAvailable) {
-    return;
-  }
+  requireCommand("bun");
   app = await ProductionFixture.create("basic", "bun");
   await app.build();
   await app.startProduction();
@@ -20,8 +16,4 @@ afterAll(async () => {
   await app?.stop();
 });
 
-if (bunAvailable) {
-  registerProductionTests(() => app);
-} else {
-  test.skip("bun is not installed", () => {});
-}
+registerProductionTests(() => app);

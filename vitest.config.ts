@@ -3,13 +3,29 @@ import { defineConfig } from "vitest/config";
 
 export default defineConfig({
   test: {
-    setupFiles: [],
-    environment: "node",
-    globals: true,
-    include: ["tests/**/*.test.ts"],
-    fileParallelism: false,
-    testTimeout: 60_000,
-    hookTimeout: 120_000,
+    projects: [
+      {
+        test: {
+          name: "package",
+          environment: "node",
+          globals: true,
+          include: ["tests/package/**/*.test.ts"],
+          fileParallelism: true,
+          testTimeout: 60_000,
+        },
+      },
+      {
+        test: {
+          name: "runtime",
+          environment: "node",
+          globals: true,
+          include: ["tests/integration/**/*.test.ts"],
+          fileParallelism: false,
+          testTimeout: 60_000,
+          hookTimeout: 240_000,
+        },
+      },
+    ],
 
     coverage: {
       provider: "v8",

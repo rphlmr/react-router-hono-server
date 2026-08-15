@@ -9,25 +9,26 @@
     "start": "node ./build/server/index.js"
   },
   "dependencies": {
-    "@hono/node-server": "^2.1.1",
-    "@react-router/fs-routes": "^8.2.0",
-    "@react-router/node": "^8.2.0",
-    "hono": "^4.12.26",
-    "isbot": "^5.1.44",
-    "react": "^19.2.7",
-    "react-dom": "^19.2.7",
-    "react-router": "^8.2.0",
-    "react-router-hono-server": "workspace:*"
+    "@hono/node-server": "2.1.1",
+    "@react-router/fs-routes": "8.3.0",
+    "@react-router/node": "8.3.0",
+    "hono": "4.13.2",
+    "isbot": "5.2.1",
+    "react": "19.2.8",
+    "react-dom": "19.2.8",
+    "react-router": "8.3.0",
+    "react-router-hono-server": "0.0.0-test-artifact"
   },
   "devDependencies": {
-    "@cloudflare/vite-plugin": "^1.47.0",
-    "@cloudflare/workers-types": "^5.20260811.1",
-    "@react-router/dev": "^8.2.0",
-    "@types/react": "^19.2.17",
-    "@types/react-dom": "^19.2.3",
-    "typescript": "^6.0.3",
-    "vite": "^8.1.5",
-    "wrangler": "^4.123.0"
+    "@cloudflare/vite-plugin": "1.52.1",
+    "@cloudflare/workers-types": "5.20260815.1",
+    "@react-router/dev": "8.3.0",
+    "@types/node": "24.13.2",
+    "@types/react": "19.2.18",
+    "@types/react-dom": "19.2.4",
+    "typescript": "6.0.3",
+    "vite": "8.2.1",
+    "wrangler": "4.123.0"
   },
   "engines": {
     "node": ">=24.17.0"
