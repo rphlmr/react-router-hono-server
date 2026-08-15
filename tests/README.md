@@ -4,15 +4,18 @@ Black-box tests that start a real React Router + Hono app through the public API
 
 ```sh
 pnpm install
-pnpm build
-pnpm test
+pnpm test:suite
 ```
 
-The Node fixture lives in `tests/fixtures/basic`. Helpers copy it to a temp directory, symlink `node_modules`, and spawn:
+`test:suite` builds the library, then runs Vitest. Use `pnpm test:node` or `pnpm test:bun` to target one runtime.
 
-- production: `react-router build` then `node ./build/server/index.js`
-- development: `react-router dev --host 127.0.0.1 --port <free> --strictPort`
+The Node fixture lives in `tests/fixtures/basic`. Runtime overlays live in `tests/fixtures/overlays/<runtime>` and replace `vite.config.ts` / `app/server.ts` after the fixture is copied to a temp directory.
 
-Production also covers deferred streaming, Hono load context, redirects, and non-200 responses. Dev also covers component/server-module invalidation, added routes, syntax-error recovery, and Hono routes surviving React Router reloads.
+Helpers spawn:
 
-Bun / Deno / Cloudflare launchers are not in this wave.
+- Node production: `react-router build` then `node ./build/server/index.js`
+- Node development: `react-router dev --host 127.0.0.1 --port <free> --strictPort`
+- Bun production: `bun ./build/server/index.js`
+- Bun development is skipped for now: `bunx --bun vite` crashes React Router typegen (`generate is not a function`), and the Bun adapter cannot boot under Node Vite (`Bun is not defined`).
+
+Deno / Cloudflare launchers are not in this wave.

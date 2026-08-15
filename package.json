@@ -67,6 +67,9 @@
   },
   "scripts": {
     "test": "vitest run",
+    "test:suite": "pnpm build && vitest run",
+    "test:node": "vitest run tests/integration/node.*.test.ts",
+    "test:bun": "vitest run tests/integration/bun.*.test.ts",
     "test:cov": "vitest run --coverage",
     "build": "tsdown",
     "build:watch": "pnpm run build -- --watch",

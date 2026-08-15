@@ -3,75 +3,45 @@ import os from "node:os";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 import { eventually } from "./eventually";
-import {
-  BROWSER_UA,
-  type CommandResult,
-  fixtureBin,
-  getFreePort,
-  type ManagedProcess,
-  runCommand,
-  spawnProcess,
-  waitForHttp,
-} from "./process";
+import { getLauncher, type RuntimeLauncher, type RuntimeName } from "./launchers";
+import { BROWSER_UA, type CommandResult, getFreePort, type ManagedProcess, waitForHttp } from "./process";
 
 const REPO_ROOT = path.resolve(fileURLToPath(new URL("../..", import.meta.url)));
 const SKIP_COPY_DIRS = new Set(["node_modules", "build", ".react-router"]);
 
 export type FixtureName = "basic";
 
-class FixtureApp {
+export class FixtureApp {
   readonly name: FixtureName;
+  readonly runtime: RuntimeName;
   readonly cwd: string;
   readonly port: number;
   readonly url: string;
   buildResult?: CommandResult;
+  private readonly launcher: RuntimeLauncher;
   private server?: ManagedProcess;
 
-  constructor(options: { name: FixtureName; cwd: string; port: number }) {
+  constructor(options: { name: FixtureName; runtime: RuntimeName; cwd: string; port: number }) {
     this.name = options.name;
+    this.runtime = options.runtime;
     this.cwd = options.cwd;
     this.port = options.port;
     this.url = `http://127.0.0.1:${options.port}`;
+    this.launcher = getLauncher(options.runtime);
   }
 
   async build() {
-    this.buildResult = await runCommand({
-      command: fixtureBin(this.cwd, "react-router"),
-      args: ["build"],
-      cwd: this.cwd,
-      env: {
-        ...process.env,
-        NODE_ENV: "production",
-      },
-    });
+    this.buildResult = await this.launcher.build(this.cwd);
     return this.buildResult;
   }
 
   async startProduction() {
-    this.server = spawnProcess({
-      command: process.execPath,
-      args: [path.join(this.cwd, "build/server/index.js")],
-      cwd: this.cwd,
-      env: {
-        ...process.env,
-        NODE_ENV: "production",
-        PORT: String(this.port),
-      },
-    });
+    this.server = this.launcher.startProduction(this.cwd, this.port);
     await waitForHttp(this.url, { logs: () => this.logs() });
   }
 
   async startDev() {
-    this.server = spawnProcess({
-      command: fixtureBin(this.cwd, "react-router"),
-      args: ["dev", "--host", "127.0.0.1", "--port", String(this.port), "--strictPort"],
-      cwd: this.cwd,
-      env: {
-        ...process.env,
-        NODE_ENV: "development",
-        PORT: String(this.port),
-      },
-    });
+    this.server = this.launcher.startDev(this.cwd, this.port);
     await waitForHttp(this.url, { logs: () => this.logs() });
   }
 
@@ -122,12 +92,12 @@ class FixtureApp {
 }
 
 export class ProductionFixture extends FixtureApp {
-  static async create(name: FixtureName) {
-    return await createPreparedFixture(ProductionFixture, name);
+  static async create(name: FixtureName, runtime: RuntimeName = "node") {
+    return await createPreparedFixture(name, runtime);
   }
 
-  static async start(name: FixtureName) {
-    const app = await ProductionFixture.create(name);
+  static async start(name: FixtureName, runtime: RuntimeName = "node") {
+    const app = await ProductionFixture.create(name, runtime);
     await app.build();
     await app.startProduction();
     return app;
@@ -139,17 +109,14 @@ export class ProductionFixture extends FixtureApp {
 }
 
 export class DevServerFixture extends FixtureApp {
-  static async start(name: FixtureName) {
-    const app = await createPreparedFixture(DevServerFixture, name);
+  static async start(name: FixtureName, runtime: RuntimeName = "node") {
+    const app = await createPreparedFixture(name, runtime);
     await app.startDev();
     return app;
   }
 }
 
-async function createPreparedFixture<T extends FixtureApp>(
-  Fixture: new (options: { name: FixtureName; cwd: string; port: number }) => T,
-  name: FixtureName
-) {
+async function createPreparedFixture(name: FixtureName, runtime: RuntimeName) {
   const source = path.join(REPO_ROOT, "tests/fixtures", name);
   const nodeModules = path.join(source, "node_modules");
 
@@ -159,7 +126,7 @@ async function createPreparedFixture<T extends FixtureApp>(
     throw new Error(`Fixture ${name} is missing node_modules. Run pnpm install from the repo root first.`);
   }
 
-  const cwd = await mkdtemp(path.join(os.tmpdir(), `react-router-hono-server-${name}-`));
+  const cwd = await mkdtemp(path.join(os.tmpdir(), `react-router-hono-server-${runtime}-${name}-`));
   await cp(source, cwd, {
     recursive: true,
     filter: (sourcePath) => {
@@ -169,8 +136,13 @@ async function createPreparedFixture<T extends FixtureApp>(
   });
   await symlink(nodeModules, path.join(cwd, "node_modules"), "dir");
 
-  return new Fixture({
+  if (runtime !== "node") {
+    await cp(path.join(REPO_ROOT, "tests/fixtures/overlays", runtime), cwd, { recursive: true });
+  }
+
+  return new FixtureApp({
     name,
+    runtime,
     cwd,
     port: await getFreePort(),
   });
