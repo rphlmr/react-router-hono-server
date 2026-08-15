@@ -142,7 +142,8 @@ Splitting runtimes into jobs makes failures attributable to a platform and preve
 
 The `Latest compatible runtimes` workflow runs every day at 03:00 UTC and can also be started manually.
 
-It installs the latest stable Node.js, Bun, and Deno releases, then runs the complete suite.
+It installs the latest stable Node.js, Bun, and Deno releases, then runs package checks and each runtime suite in
+parallel jobs.
 
 The workflow sets `RRHS_LATEST_COMPATIBLE=1`.
 
@@ -165,7 +166,7 @@ Together, the workflows protect against two different regression classes:
 | Pull request | Committed lockfile | Detect regressions introduced by repository changes |
 | Nightly | Latest releases within supported majors | Detect ecosystem and runtime regressions before users report them |
 
-The nightly job is detection, not a claim that upstream internals cannot change.
+The nightly jobs are detection, not a claim that upstream internals cannot change.
 
 Its value is that failures appear within the daily compatibility cycle and identify which real consumer behavior stopped working.
 
@@ -227,7 +228,9 @@ Runtime coverage is not silently skipped.
 
 If a requested Bun or Deno suite cannot find its binary, the suite fails with an explicit requirement error. The CI workflows install every required runtime and Chromium before running their tests.
 
-Integration test files run serially because they create builds and managed servers. Package tests may run in parallel.
+Integration tests within a file run serially when they share a managed server. Isolated integration files run with at
+most two workers because each fixture owns its temporary directory, build output, and allocated loopback port. Package
+tests may run in parallel.
 
 Servers use allocated loopback ports, and startup failures include captured process logs to make diagnosis practical.
 

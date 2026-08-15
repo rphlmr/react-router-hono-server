@@ -3,6 +3,7 @@ import { defineConfig } from "vitest/config";
 
 export default defineConfig({
   test: {
+    maxWorkers: 2,
     projects: [
       {
         test: {
@@ -29,7 +30,7 @@ export default defineConfig({
           environment: "node",
           globals: true,
           include: ["tests/integration/**/*.test.ts"],
-          fileParallelism: false,
+          fileParallelism: true,
           testTimeout: 60_000,
           hookTimeout: 240_000,
         },

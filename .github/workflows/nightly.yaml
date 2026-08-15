@@ -9,8 +9,8 @@ permissions:
   contents: read
 
 jobs:
-  latest-compatible:
-    name: Latest stable runtimes and supported majors
+  package-types:
+    name: Package and types
     runs-on: ubuntu-latest
     env:
       RRHS_LATEST_COMPATIBLE: "1"
@@ -21,12 +21,45 @@ jobs:
         with:
           node-version: latest
           cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm typecheck
+      - run: pnpm test:package
+      - run: pnpm test:unit
+
+  runtime:
+    name: ${{ matrix.name }}
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - name: Node.js
+            runtime: node
+          - name: Bun
+            runtime: bun
+          - name: Deno
+            runtime: deno
+          - name: Cloudflare Workers
+            runtime: cloudflare
+          - name: AWS Lambda
+            runtime: aws
+    env:
+      RRHS_LATEST_COMPATIBLE: "1"
+    steps:
+      - uses: actions/checkout@v7
+      - uses: pnpm/action-setup@v6
+      - uses: actions/setup-node@v6
+        with:
+          node-version: latest
+          cache: pnpm
       - uses: oven-sh/setup-bun@v2
+        if: matrix.runtime == 'bun'
         with:
           bun-version: latest
       - uses: denoland/setup-deno@v2
+        if: matrix.runtime == 'deno'
         with:
           deno-version: latest
       - run: pnpm install --frozen-lockfile
       - run: pnpm exec playwright install --with-deps chromium
-      - run: pnpm test:suite
+      - run: pnpm test:${{ matrix.runtime }}
