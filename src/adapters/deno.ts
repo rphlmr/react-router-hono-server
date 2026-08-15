@@ -1,5 +1,4 @@
 import { type Env, Hono } from "hono";
-import { serveStatic } from "hono/deno";
 import { createMiddleware } from "hono/factory";
 import { logger } from "hono/logger";
 import type { ServeStaticOptions } from "hono/serve-static";
@@ -7,6 +6,7 @@ import type { BlankEnv } from "hono/types";
 import { createRequestHandler } from "react-router";
 import { bindIncomingRequestSocketInfo, createGetLoadContext, getBuildMode, importBuild } from "../helpers";
 import { cache } from "../middleware";
+import { isReactRouterBuildRequest } from "../react-router-build-request";
 import type { HonoServerOptionsBase, WithoutWebsocket } from "../types/hono-server-options-base";
 
 export { createGetLoadContext };
@@ -94,20 +94,26 @@ export async function createHonoServer<E extends Env = BlankEnv>(options?: HonoS
   /**
    * Serve assets files from build/client/assets
    */
-  app.use(
-    `/${import.meta.env.REACT_ROUTER_HONO_SERVER_ASSETS_DIR}/*`,
-    cache(60 * 60 * 24 * 365), // 1 year
-    serveStatic({ root: clientBuildPath, ...mergedOptions.serveStaticOptions?.clientAssets })
-  );
+  if (!isReactRouterBuildRequest()) {
+    const { serveStatic } = await import("hono/deno");
+    app.use(
+      `/${import.meta.env.REACT_ROUTER_HONO_SERVER_ASSETS_DIR}/*`,
+      cache(60 * 60 * 24 * 365), // 1 year
+      serveStatic({ root: clientBuildPath, ...mergedOptions.serveStaticOptions?.clientAssets })
+    );
 
-  /**
-   * Serve public files
-   */
-  app.use(
-    "*",
-    cache(60 * 60), // 1 hour
-    serveStatic({ root: PRODUCTION ? clientBuildPath : "./public", ...mergedOptions.serveStaticOptions?.publicAssets })
-  );
+    /**
+     * Serve public files
+     */
+    app.use(
+      "*",
+      cache(60 * 60), // 1 hour
+      serveStatic({
+        root: PRODUCTION ? clientBuildPath : "./public",
+        ...mergedOptions.serveStaticOptions?.publicAssets,
+      })
+    );
+  }
   /**
    * Add logger middleware
    */
@@ -149,7 +155,7 @@ export async function createHonoServer<E extends Env = BlankEnv>(options?: HonoS
     port: mergedOptions.port,
   };
 
-  if (PRODUCTION) {
+  if (PRODUCTION && !isReactRouterBuildRequest()) {
     serverInstance = Deno.serve(server, app.fetch);
 
     // Automatically register signal handlers if graceful shutdown is enabled

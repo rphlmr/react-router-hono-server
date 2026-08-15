@@ -1,11 +1,13 @@
 import fs from "node:fs";
 import type { IncomingMessage, ServerResponse } from "node:http";
 import path from "node:path";
+import { pathToFileURL } from "node:url";
 import honoDevServer, { type DevServerOptions } from "@hono/vite-dev-server";
 import bunAdapter from "@hono/vite-dev-server/bun";
 import nodeAdapter from "@hono/vite-dev-server/node";
 import type { Config as ReactRouterConfig } from "@react-router/dev/config";
 import type { Plugin, UserConfig } from "vite";
+import { isReactRouterBuildRequest } from "./react-router-build-request";
 import type { Runtime } from "./types/runtime";
 
 type MetaEnv<T> = {
@@ -62,6 +64,7 @@ export function reactRouterHonoServer(options: ReactRouterHonoServerPluginOption
   const runtime: Runtime = options.runtime || "node";
   let pluginConfig: PluginConfig;
   let devServerPlugin: Plugin | undefined;
+  let previewAppPromise: Promise<{ fetch(request: Request): Response | Promise<Response> }> | undefined;
 
   return {
     name: "react-router-hono-server",
@@ -299,6 +302,41 @@ export function reactRouterHonoServer(options: ReactRouterHonoServerPluginOption
         console.error("Dev server plugin configureServer hook is not a function. This is likely a bug, I guess 😅\n");
         throw new Error("Cannot apply dev server plugin configureServer hook");
       }
+    },
+    configurePreviewServer(server) {
+      server.middlewares.use(async (req, res, next) => {
+        if (runtime === "cloudflare" || !isReactRouterBuildRequest() || !pluginConfig) {
+          next();
+          return;
+        }
+
+        try {
+          previewAppPromise ??= import(
+            pathToFileURL(path.resolve(pluginConfig.rootDirectory, pluginConfig.buildDirectory, "server/index.js")).href
+          ).then((module) => module.default);
+          const app = await previewAppPromise;
+          const headers = new Headers();
+          for (const [name, value] of Object.entries(req.headers)) {
+            for (const item of Array.isArray(value) ? value : [value]) {
+              if (item !== undefined) headers.append(name, item);
+            }
+          }
+          const request = new Request(`http://${req.headers.host ?? "localhost"}${req.url ?? "/"}`, {
+            method: req.method,
+            headers,
+          });
+          const response = await app.fetch(request);
+
+          res.statusCode = response.status;
+          response.headers.forEach((value, name) => {
+            res.setHeader(name, value);
+          });
+          res.end(Buffer.from(await response.arrayBuffer()));
+        } catch (error) {
+          console.error(error);
+          next(error);
+        }
+      });
     },
   };
 }

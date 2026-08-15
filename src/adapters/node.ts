@@ -16,6 +16,7 @@ import {
   patchUpgradeListener,
 } from "../helpers";
 import { cache } from "../middleware";
+import { isReactRouterBuildRequest } from "../react-router-build-request";
 import type { HonoServerOptionsBase, WithoutWebsocket, WithWebsocket } from "../types/hono-server-options-base";
 import type { CreateNodeServerOptions } from "../types/node.https";
 
@@ -191,7 +192,7 @@ export async function createHonoServer<E extends Env = BlankEnv>(options?: HonoS
   /**
    * Start the production server
    */
-  if (PRODUCTION) {
+  if (PRODUCTION && !isReactRouterBuildRequest()) {
     const server = serve(
       {
         ...app,

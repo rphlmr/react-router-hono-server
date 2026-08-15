@@ -7,6 +7,7 @@ import type { BlankEnv } from "hono/types";
 import { createRequestHandler } from "react-router";
 import { bindIncomingRequestSocketInfo, createGetLoadContext, getBuildMode, importBuild } from "../helpers";
 import { cache } from "../middleware";
+import { isReactRouterBuildRequest } from "../react-router-build-request";
 import type { HonoServerOptionsBase, WithoutWebsocket } from "../types/hono-server-options-base";
 
 export { createGetLoadContext };
@@ -123,7 +124,7 @@ export async function createHonoServer<E extends Env = BlankEnv>(
   /**
    * Wrap the app in the appropriate AWS handler
    */
-  if (PRODUCTION) {
+  if (PRODUCTION && !isReactRouterBuildRequest()) {
     if (mergedOptions.invokeMode === "stream") {
       return streamHandle(app);
     }

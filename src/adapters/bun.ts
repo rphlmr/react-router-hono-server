@@ -1,5 +1,4 @@
 import { type Env, Hono } from "hono";
-import { serveStatic } from "hono/bun";
 import { createMiddleware } from "hono/factory";
 import { logger } from "hono/logger";
 import type { ServeStaticOptions } from "hono/serve-static";
@@ -15,6 +14,7 @@ import {
   patchUpgradeListener,
 } from "../helpers";
 import { cache } from "../middleware";
+import { isReactRouterBuildRequest } from "../react-router-build-request";
 import type { HonoServerOptionsBase, WithoutWebsocket, WithWebsocket } from "../types/hono-server-options-base";
 
 export { createGetLoadContext };
@@ -117,26 +117,29 @@ export async function createHonoServer<E extends Env = BlankEnv>(options?: HonoS
   /**
    * Serve assets files from build/client/assets
    */
-  app.use(
-    `/${import.meta.env.REACT_ROUTER_HONO_SERVER_ASSETS_DIR}/*`,
-    cache(60 * 60 * 24 * 365), // 1 year
-    serveStatic({
-      root: clientBuildPath,
-      ...mergedOptions.serveStaticOptions?.clientAssets,
-    })
-  );
+  if (!isReactRouterBuildRequest()) {
+    const { serveStatic } = await import("hono/bun");
+    app.use(
+      `/${import.meta.env.REACT_ROUTER_HONO_SERVER_ASSETS_DIR}/*`,
+      cache(60 * 60 * 24 * 365), // 1 year
+      serveStatic({
+        root: clientBuildPath,
+        ...mergedOptions.serveStaticOptions?.clientAssets,
+      })
+    );
 
-  /**
-   * Serve public files
-   */
-  app.use(
-    "*",
-    cache(60 * 60), // 1 hour
-    serveStatic({
-      root: PRODUCTION ? clientBuildPath : "./public",
-      ...mergedOptions.serveStaticOptions?.publicAssets,
-    })
-  );
+    /**
+     * Serve public files
+     */
+    app.use(
+      "*",
+      cache(60 * 60), // 1 hour
+      serveStatic({
+        root: PRODUCTION ? clientBuildPath : "./public",
+        ...mergedOptions.serveStaticOptions?.publicAssets,
+      })
+    );
+  }
 
   /**
    * Add logger middleware
@@ -183,7 +186,7 @@ export async function createHonoServer<E extends Env = BlankEnv>(options?: HonoS
     development: !PRODUCTION,
   } as CustomBunServer;
 
-  if (PRODUCTION) {
+  if (PRODUCTION && !isReactRouterBuildRequest()) {
     server = injectWebSocket(server);
 
     // Actually start the server in production and store reference for graceful shutdown

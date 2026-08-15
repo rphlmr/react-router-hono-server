@@ -11,7 +11,7 @@ const REPO_ROOT = path.resolve(fileURLToPath(new URL("../..", import.meta.url)))
 const SKIP_COPY_DIRS = new Set(["node_modules", "build", ".react-router"]);
 const ARTIFACT_DIRECTORY = path.join(REPO_ROOT, "out", "test-artifacts");
 
-export type FixtureName = "basic";
+export type FixtureName = "basic" | "prerendered";
 
 export class FixtureApp {
   readonly name: FixtureName;
@@ -133,17 +133,13 @@ export class DevServerFixture extends FixtureApp {
 }
 
 async function createPreparedFixture(name: FixtureName, runtime: RuntimeName) {
-  const source = path.join(REPO_ROOT, "tests/fixtures", name);
   const cwd = await mkdtemp(path.join(os.tmpdir(), `react-router-hono-server-${runtime}-${name}-`));
 
   try {
-    await cp(source, cwd, {
-      recursive: true,
-      filter: (sourcePath) => {
-        const relative = path.relative(source, sourcePath);
-        return !relative.split(path.sep).some((part) => SKIP_COPY_DIRS.has(part));
-      },
-    });
+    await copyFixture(path.join(REPO_ROOT, "tests/fixtures/basic"), cwd);
+    if (name !== "basic") {
+      await copyFixture(path.join(REPO_ROOT, "tests/fixtures", name), cwd);
+    }
 
     if (runtime !== "node") {
       await cp(path.join(REPO_ROOT, "tests/fixtures/overlays", runtime), cwd, { recursive: true });
@@ -188,6 +184,16 @@ async function createPreparedFixture(name: FixtureName, runtime: RuntimeName) {
     await rm(cwd, { recursive: true, force: true });
     throw error;
   }
+}
+
+async function copyFixture(source: string, cwd: string) {
+  await cp(source, cwd, {
+    recursive: true,
+    filter: (sourcePath) => {
+      const relative = path.relative(source, sourcePath);
+      return !relative.split(path.sep).some((part) => SKIP_COPY_DIRS.has(part));
+    },
+  });
 }
 
 async function findPackageArtifact() {
