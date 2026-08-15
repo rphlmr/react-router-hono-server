@@ -10,6 +10,7 @@ import {
   createGetLoadContext,
   createWebSocket,
   getBuildMode,
+  handleChromeDevToolsWorkspaceRequest,
   importBuild,
 } from "../helpers";
 import { cache } from "../middleware";
@@ -146,6 +147,10 @@ export async function createHonoServer<E extends Env = BlankEnv>(options?: HonoS
     await mergedOptions.configure(app, { upgradeWebSocket });
   } else {
     await mergedOptions.configure?.(app);
+  }
+
+  if (!PRODUCTION) {
+    handleChromeDevToolsWorkspaceRequest(app);
   }
 
   /**

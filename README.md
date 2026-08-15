@@ -590,6 +590,24 @@ export default await createHonoServer({
 });
 ```
 
+### Chrome DevTools automatic workspaces
+
+To let Chrome DevTools automatically connect to your project, create
+`public/.well-known/appspecific/com.chrome.devtools.json` with your project's absolute path and a stable UUID v4:
+
+```json
+{
+  "workspace": {
+    "root": "/absolute/path/to/your/project",
+    "uuid": "53b029bb-c989-4dca-969b-835fecec3717"
+  }
+}
+```
+
+The development server serves this file before the React Router handler. When the file is absent, the discovery request
+returns a quiet `404`. See [Automatic Workspace connection in Chrome DevTools](https://developer.chrome.com/docs/devtools/automatic-workspaces)
+for setup details and security considerations.
+
 ### Typed React Router context
 
 React Router 8 always expects `getLoadContext` to return a `RouterContextProvider`.

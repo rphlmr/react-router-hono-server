@@ -50,6 +50,14 @@ export function registerDevServerTests(getApp: () => FixtureApp) {
     expect(await response.text()).toContain("SSR works");
   });
 
+  test("does not forward Chrome DevTools workspace discovery to React Router", async () => {
+    const app = getApp();
+    const response = await app.fetch("/.well-known/appspecific/com.chrome.devtools.json");
+
+    expect(response.status).toBe(404);
+    expect(app.logs()).not.toContain('No route matches URL "/.well-known/appspecific/com.chrome.devtools.json"');
+  });
+
   test("runs a loader in development", async () => {
     const response = await getApp().fetch("/loader");
 

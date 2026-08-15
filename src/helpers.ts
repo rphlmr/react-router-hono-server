@@ -213,6 +213,16 @@ export function bindIncomingRequestSocketInfo() {
 }
 
 /**
+ * Prevent Chrome DevTools workspace discovery from reaching React Router's catch-all route.
+ *
+ * Public files and user-defined routes are registered first so applications can opt into
+ * automatic workspace discovery.
+ */
+export function handleChromeDevToolsWorkspaceRequest<E extends Env>(app: Hono<E>) {
+  app.get("/.well-known/appspecific/com.chrome.devtools.json", (c) => c.notFound());
+}
+
+/**
  * Import React Router server build
  */
 export async function importBuild(): Promise<ServerBuild> {

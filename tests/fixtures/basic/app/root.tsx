@@ -1,3 +1,4 @@
+import { useEffect } from "react";
 import { Links, Meta, Outlet, Scripts, ScrollRestoration } from "react-router";
 
 export const links = () => [{ rel: "stylesheet", href: "/fixture.css" }];
@@ -21,5 +22,9 @@ export function Layout({ children }: { children: React.ReactNode }) {
 }
 
 export default function App() {
+  useEffect(() => {
+    document.documentElement.dataset.hydrated = "true";
+  }, []);
+
   return <Outlet />;
 }

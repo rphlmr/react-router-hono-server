@@ -19,6 +19,7 @@ export async function assertProductionBrowserBehavior(app: FixtureApp) {
 
   try {
     await page.goto(app.url);
+    await page.locator("html[data-hydrated=true]").waitFor();
     await page.getByRole("button", { name: "count:0" }).click();
     await expect.poll(() => page.getByRole("button").textContent()).toBe("count:1");
     await expect.poll(() => page.evaluate(() => getComputedStyle(document.body).color)).toBe("rgb(20, 30, 40)");
@@ -44,7 +45,9 @@ export function registerDevBrowserTests(getApp: () => FixtureApp) {
     page.on("pageerror", (error) => messages.push(`pageerror: ${error.message}`));
     try {
       await page.goto(getApp().url);
+      await page.locator("html[data-hydrated=true]").waitFor();
       await page.getByRole("button", { name: "count:0" }).click();
+      await expect.poll(() => page.getByRole("button").textContent()).toBe("count:1");
       await getApp().edit(
         "app/routes/_index.tsx",
         `import { useState } from "react";

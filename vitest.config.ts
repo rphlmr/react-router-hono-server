@@ -6,6 +6,15 @@ export default defineConfig({
     projects: [
       {
         test: {
+          name: "unit",
+          environment: "node",
+          globals: true,
+          include: ["tests/unit/**/*.test.ts"],
+          fileParallelism: true,
+        },
+      },
+      {
+        test: {
           name: "package",
           environment: "node",
           globals: true,

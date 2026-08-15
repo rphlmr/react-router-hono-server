@@ -67,6 +67,7 @@
   },
   "scripts": {
     "test": "vitest run",
+    "test:unit": "vitest run --project unit",
     "test:prepare": "node tests/prepare.ts",
     "test:package:prepared": "publint out/test-artifacts/*.tgz && attw out/test-artifacts/*.tgz --profile esm-only",
     "test:package": "pnpm test:prepare && pnpm test:package:prepared && vitest run tests/package/*.test.ts",
