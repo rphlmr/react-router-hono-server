@@ -104,3 +104,36 @@ jobs:
 
       - name: ⚡ Run Bun integration tests
         run: pnpm test:bun
+
+  test-deno:
+    name: ⚡ Deno Tests
+    runs-on: ubuntu-latest
+    steps:
+      - name: 🛑 Cancel Previous Runs
+        uses: styfle/cancel-workflow-action@0.12.1
+
+      - name: ⬇️ Checkout repo
+        uses: actions/checkout@v7
+
+      - name: 👷 Install pnpm
+        uses: pnpm/action-setup@v6
+
+      - name: ⎔ Setup node
+        uses: actions/setup-node@v6
+        with:
+          node-version-file: "package.json"
+          cache: "pnpm"
+
+      - name: 🦕 Setup Deno
+        uses: denoland/setup-deno@v2
+        with:
+          deno-version: v2.x
+
+      - name: 📥 Install dependencies
+        run: pnpm install
+
+      - name: 📦 Build library
+        run: pnpm build
+
+      - name: ⚡ Run Deno integration tests
+        run: pnpm test:deno
