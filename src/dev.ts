@@ -141,8 +141,9 @@ export function reactRouterHonoServer(options: ReactRouterHonoServerPluginOption
       }
 
       if (runtime === "bun") {
+        // Vite's SSR resolver defaults to the Node condition even when Vite runs under Bun.
         resolve.alias = {
-          "react-dom/server": "react-dom/server.node",
+          "react-dom/server": "react-dom/server.bun",
         };
       }
 

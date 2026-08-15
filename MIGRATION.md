@@ -17,6 +17,43 @@ Upgrade the application to:
 
 React 18, React Router 7, the legacy Cloudflare proxy integration, and compatibility code selected by `force_react_19` are removed. Remove `force_react_19` from every server and plugin configuration.
 
+## Bun React rendering
+
+Version 4 uses React 19's Bun-specific server renderer. React Router's default Node entry uses `renderToPipeableStream` and is no longer compatible with the Bun runtime.
+
+Reveal the React Router entries:
+
+```sh
+bunx --bun react-router reveal
+```
+
+Update `app/entry.server.tsx` to import and use `renderToReadableStream`:
+
+```tsx
+import { renderToReadableStream } from "react-dom/server";
+import type { EntryContext, RouterContextProvider } from "react-router";
+import { ServerRouter } from "react-router";
+
+export default async function handleRequest(
+  request: Request,
+  responseStatusCode: number,
+  responseHeaders: Headers,
+  routerContext: EntryContext,
+  _loadContext: RouterContextProvider
+) {
+  const reactStream = await renderToReadableStream(<ServerRouter context={routerContext} url={request.url} />);
+  const body = reactStream.pipeThrough(new TransformStream());
+
+  responseHeaders.set("Content-Type", "text/html");
+  return new Response(body, {
+    headers: responseHeaders,
+    status: responseStatusCode,
+  });
+}
+```
+
+Keep the application's bot handling, streaming error handling, and `reactStream.allReady` behavior when adapting a customized entry. The `TransformStream` boundary is required to preserve deferred streaming with Bun's direct React stream. Do not import `react-dom/server.node` for Bun.
+
 ## React Router context
 
 React Router middleware is unconditional in React Router 8. Remove obsolete middleware future flags and return a `RouterContextProvider` from `getLoadContext`.
@@ -129,7 +166,7 @@ Node:
 Bun:
 
 ```json
-{ "build": "react-router build", "dev": "bunx --bun react-router dev", "start": "bun ./build/server/index.js", "typecheck": "react-router typegen && tsc --noEmit" }
+{ "build": "bunx --bun react-router build", "dev": "bunx --bun react-router dev", "start": "bun ./build/server/index.js", "typecheck": "react-router typegen && tsc --noEmit" }
 ```
 
 Deno:

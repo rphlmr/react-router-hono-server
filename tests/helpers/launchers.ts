@@ -36,6 +36,7 @@ export const runtimeDefinitions = {
     packageManager: { command: "bun", installArgs: ["install", "--exact"], lockfile: "bun.lock" },
     scripts: {
       ...commonScripts,
+      build: "bunx --bun react-router build",
       dev: "bunx --bun vite",
       start: "bun ./build/server/index.js",
     },

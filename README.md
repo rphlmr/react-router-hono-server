@@ -198,8 +198,8 @@ npx react-router reveal
 
 The command generates both `app/entry.client.tsx` and `app/entry.server.tsx`.
 
-- Node.js, Bun, and AWS can use the standard Node streaming entry.
-- Deno and Cloudflare require a Web Streams entry based on `renderToReadableStream`.
+- Node.js and AWS can use the standard Node streaming entry.
+- Bun, Deno, and Cloudflare require a Web Streams entry based on `renderToReadableStream`.
 
 See the [React Router reveal documentation](https://reactrouter.com/api/other-api/dev#react-router-reveal) for the generated files.
 
@@ -254,7 +254,17 @@ import { createHonoServer } from "react-router-hono-server/bun";
 export default await createHonoServer();
 ```
 
-React Router's default Node streaming entry is compatible. Reveal it only when the application needs custom SSR behavior.
+#### Configure React rendering
+
+Reveal the React Router entries:
+
+```sh
+bunx --bun react-router reveal
+```
+
+Update `app/entry.server.tsx` to use `renderToReadableStream` from `react-dom/server`. React 19 selects its
+Bun-specific server renderer for this import. Before returning the response, pipe the React stream through a
+`TransformStream` so suspended content continues streaming after the initial shell.
 
 #### Add scripts
 
@@ -263,7 +273,7 @@ React Router's default Node streaming entry is compatible. Reveal it only when t
 ```json
 {
   "scripts": {
-    "build": "react-router build",
+    "build": "bunx --bun react-router build",
     "dev": "bunx --bun vite",
     "start": "bun ./build/server/index.js",
     "typecheck": "react-router typegen && tsc --noEmit"
@@ -285,6 +295,7 @@ bun run start
 #### Bun runtime notes
 
 - `bunx --bun vite` forces Vite and its child processes to run with Bun.
+- React SSR uses React 19's Bun-specific renderer and standard Web Streams.
 - `customBunServer` forwards options to `Bun.serve`.
 - Graceful shutdown, static-file customization, and WebSockets are supported.
 
