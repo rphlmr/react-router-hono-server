@@ -18,6 +18,6 @@ Helpers spawn:
 - Bun production: `bun ./build/server/index.js`
 - Bun development is skipped for now: `bunx --bun vite` crashes React Router typegen (`generate is not a function`), and the Bun adapter cannot boot under Node Vite (`Bun is not defined`).
 - Deno production: `deno run --unstable-cron -A ./build/server/index.js`
-- Deno development is skipped for now: the first Deno contract is production HTTP. `deno run ... npm:vite` is slower, and the Deno adapter cannot boot under Node Vite (`Deno` is not defined).
+- Deno development: `deno run --unstable-cron -A npm:vite dev --host 127.0.0.1 --port <free> --strictPort`
 
 Cloudflare launchers are not in this wave.

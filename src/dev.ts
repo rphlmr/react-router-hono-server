@@ -105,6 +105,7 @@ export function reactRouterHonoServer(options: ReactRouterHonoServerPluginOption
       }
 
       const serverEntryPoint = pluginConfig.serverEntryPoint;
+      const denoDevReactExternals = runtime === "deno" && env.mode === "development" ? ["react", "react-dom"] : [];
 
       if (
         env.mode === "development" &&
@@ -130,7 +131,9 @@ export function reactRouterHonoServer(options: ReactRouterHonoServerPluginOption
           // Ensure our package is not externalized during SSR build
           // This is necessary because we are using a virtual import to load the React Router server entry point
           noExternal: ["react-router-hono-server"],
-          external: ["@hono/node-ws"],
+          // Vite's ESM SSR runner cannot evaluate CJS `react-dom/server.*` (`require is not defined`).
+          // In Deno dev, let Deno's npm loader handle React instead of inlining those files.
+          external: ["@hono/node-ws", ...denoDevReactExternals],
           optimizeDeps: runtime === "bun" ? { include: ["react-dom/server"], exclude: ["react"] } : undefined,
         },
       } satisfies UserConfig;
@@ -157,14 +160,24 @@ export function reactRouterHonoServer(options: ReactRouterHonoServerPluginOption
         };
       }
 
-      if (runtime === "deno") {
+      if (runtime === "deno" && env.mode !== "development") {
+        // Official react-dom `deno` condition. Do not apply this alias in Vite
+        // dev: it forces a CJS file path that Vite's ESM runner evaluates with
+        // `require`, which Deno does not provide.
         resolve.alias = {
-          "react-dom/server": "react-dom/server.node",
+          "react-dom/server": "react-dom/server.browser",
         };
       }
 
       const ssrConfig = {
-        resolve,
+        resolve: {
+          ...resolve,
+          ...(denoDevReactExternals.length > 0
+            ? {
+                external: denoDevReactExternals,
+              }
+            : {}),
+        },
         build: {
           rollupOptions: {
             input: serverEntryPoint,

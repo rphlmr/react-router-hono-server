@@ -116,12 +116,20 @@ const denoLauncher: RuntimeLauncher = {
     });
   },
   startDev(cwd, port) {
-    // `deno run ... npm:vite` is slower and more brittle than Node Vite.
-    // Dev still uses `reactRouterHonoServer({ runtime: "deno" })` through Node Vite
-    // when we enable it; production is the first Deno contract.
     return spawnProcess({
-      command: fixtureBin(cwd, "react-router"),
-      args: ["dev", "--host", "127.0.0.1", "--port", String(port), "--strictPort"],
+      command: "deno",
+      args: [
+        "run",
+        "--unstable-cron",
+        "-A",
+        "npm:vite",
+        "dev",
+        "--host",
+        "127.0.0.1",
+        "--port",
+        String(port),
+        "--strictPort",
+      ],
       cwd,
       env: {
         ...process.env,
