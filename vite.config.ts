@@ -81,11 +81,31 @@ export default defineConfig({
     jsPlugins: [{ name: "vite-plus", specifier: "vite-plus/oxlint-plugin" }],
     rules: {
       "vite-plus/prefer-vite-plus-imports": "error",
+
+      // Promise / async correctness
+      "typescript/no-floating-promises": "error",
+      "typescript/no-misused-promises": "error",
       "typescript/return-await": ["error", "in-try-catch"],
       "typescript/only-throw-error": "error",
+
+      // TypeScript safety
+      "typescript/switch-exhaustiveness-check": "error",
+      "typescript/no-explicit-any": "off",
+      "typescript/no-non-null-assertion": "warn",
+      "typescript/consistent-type-imports": "warn",
+
+      // React correctness
+      "react/exhaustive-deps": "warn",
+
+      // Explicit preferences
+      "typescript/prefer-for-of": "warn",
+      "no-param-reassign": "warn",
       "prefer-template": "warn",
     },
-    options: { typeAware: true, typeCheck: true },
+    options: {
+      typeAware: true,
+      typeCheck: true,
+    },
   },
   pack: [
     {

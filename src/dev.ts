@@ -328,47 +328,55 @@ export function reactRouterHonoServer(options: ReactRouterHonoServerPluginOption
       }
     },
     configurePreviewServer(server) {
-      server.middlewares.use(async (req, res, next) => {
+      server.middlewares.use((req, res, next) => {
         if (runtime === "cloudflare" || !isReactRouterBuildRequest() || !pluginConfig) {
           next();
           return;
         }
 
-        try {
-          previewAppPromise ??= import(
-            pathToFileURL(
-              path.resolve(
-                pluginConfig.rootDirectory,
-                pluginConfig.buildDirectory,
-                "server/index.js",
-              ),
-            ).href
-          ).then((module) => module.default);
-          const app = await previewAppPromise;
-          const headers = new Headers();
-          for (const [name, value] of Object.entries(req.headers)) {
-            for (const item of Array.isArray(value) ? value : [value]) {
-              if (item !== undefined) headers.append(name, item);
-            }
-          }
-          const request = new Request(
-            `http://${req.headers.host ?? "localhost"}${req.url ?? "/"}`,
-            {
-              method: req.method,
-              headers,
-            },
-          );
-          const response = await app.fetch(request);
+        void (async () => {
+          try {
+            previewAppPromise ??= import(
+              pathToFileURL(
+                path.resolve(
+                  pluginConfig.rootDirectory,
+                  pluginConfig.buildDirectory,
+                  "server/index.js",
+                ),
+              ).href
+            ).then((module) => module.default);
 
-          res.statusCode = response.status;
-          response.headers.forEach((value, name) => {
-            res.setHeader(name, value);
-          });
-          res.end(Buffer.from(await response.arrayBuffer()));
-        } catch (error) {
-          console.error(error);
-          next(error);
-        }
+            const app = await previewAppPromise;
+
+            const headers = new Headers();
+            for (const [name, value] of Object.entries(req.headers)) {
+              for (const item of Array.isArray(value) ? value : [value]) {
+                if (item !== undefined) headers.append(name, item);
+              }
+            }
+
+            const request = new Request(
+              `http://${req.headers.host ?? "localhost"}${req.url ?? "/"}`,
+              {
+                method: req.method,
+                headers,
+              },
+            );
+
+            const response = await app.fetch(request);
+
+            res.statusCode = response.status;
+
+            response.headers.forEach((value, name) => {
+              res.setHeader(name, value);
+            });
+
+            res.end(Buffer.from(await response.arrayBuffer()));
+          } catch (error) {
+            console.error(error);
+            next(error);
+          }
+        })();
       });
     },
   };

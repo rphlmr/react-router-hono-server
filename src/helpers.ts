@@ -1,9 +1,10 @@
 import type { ServerType } from "@hono/node-server";
 import type { Env, Hono } from "hono";
 import type { UpgradeWebSocket } from "hono/ws";
-import type { IncomingMessage, Server } from "node:http";
+import type { IncomingMessage, Server, createServer } from "node:http";
 import type { Http2SecureServer, Http2Server } from "node:http2";
 import type { ServerBuild } from "react-router";
+import type { WebSocketServer } from "ws";
 
 import { createMiddleware } from "hono/factory";
 
@@ -19,7 +20,7 @@ type AnyServer = NodeServer | BunServeOptions;
 interface WebSocket {
   upgradeWebSocket: UpgradeWebSocket;
   injectWebSocket: <Server extends AnyServer>(server: Server) => Server;
-  nodeWebSocket?: { server: import("ws").WebSocketServer };
+  nodeWebSocket?: { server: WebSocketServer };
 }
 
 const defaultWebSocket = {
@@ -85,7 +86,7 @@ export async function createWebSocket({ app, enabled }: Config): Promise<WebSock
           websocket,
           // `createAdaptorServer` only uses this factory's return value to attach
           // its WebSocket listeners to Vite's already-running HTTP server.
-          createServer: (() => server as NodeServer) as typeof import("node:http").createServer,
+          createServer: (() => server as NodeServer) as typeof createServer,
         });
         return server;
       },

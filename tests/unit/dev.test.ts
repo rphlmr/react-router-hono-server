@@ -506,15 +506,25 @@ describe("reactRouterHonoServer configurePreviewServer hook", () => {
     callHook(plugin, "configurePreviewServer", server);
     const middleware = server.middlewares.use.mock.calls[0][0];
     process.env.IS_RR_BUILD_REQUEST = "yes";
-    const response = { end: vi.fn(), setHeader: vi.fn(), statusCode: 0 };
     const request = {
       headers: { host: "preview.test", "x-test": ["one", "two"], omitted: undefined },
       method: "GET",
       url: "/route?index",
     };
+    let resolveResponses: () => void = () => undefined;
+    const responsesComplete = new Promise<void>((resolve) => {
+      resolveResponses = resolve;
+    });
+    let responseEndCount = 0;
+    const end = vi.fn(() => {
+      responseEndCount += 1;
+      if (responseEndCount === 2) resolveResponses();
+    });
+    const response = { end, setHeader: vi.fn(), statusCode: 0 };
 
-    await middleware(request, response, vi.fn());
-    await middleware(request, response, vi.fn());
+    middleware(request, response, vi.fn());
+    middleware(request, response, vi.fn());
+    await responsesComplete;
 
     expect((globalThis as any).__rrhsPreviewLoads).toBe(1);
     expect((globalThis as any).__rrhsPreviewRequest).toEqual({
@@ -528,7 +538,7 @@ describe("reactRouterHonoServer configurePreviewServer hook", () => {
     expect(response.end).toHaveBeenCalledWith(Buffer.from([0, 255, 42]));
   });
 
-  test("bypasses ordinary preview requests, missing plugin context, and Cloudflare", async () => {
+  test("bypasses ordinary preview requests, missing plugin context, and Cloudflare", () => {
     const cases = [
       reactRouterHonoServer({ serverEntryPoint: "app/server.ts" }),
       reactRouterHonoServer(),
@@ -541,11 +551,7 @@ describe("reactRouterHonoServer configurePreviewServer hook", () => {
       const server = makeServer();
       callHook(plugin, "configurePreviewServer", server);
       const next = vi.fn();
-      await server.middlewares.use.mock.calls[0][0](
-        { headers: {}, method: "GET", url: "/" },
-        {},
-        next,
-      );
+      server.middlewares.use.mock.calls[0][0]({ headers: {}, method: "GET", url: "/" }, {}, next);
       expect(next).toHaveBeenCalledOnce();
     }
   });
@@ -565,14 +571,17 @@ describe("reactRouterHonoServer configurePreviewServer hook", () => {
     const server = makeServer();
     callHook(plugin, "configurePreviewServer", server);
     process.env.IS_RR_BUILD_REQUEST = "yes";
-    const next = vi.fn();
+    let resolveNextError: () => void = () => undefined;
+    const nextError = new Promise<void>((resolve) => {
+      resolveNextError = resolve;
+    });
+    const next = vi.fn((receivedError: unknown) => {
+      if (receivedError instanceof Error) resolveNextError();
+    });
     const error = vi.spyOn(console, "error").mockImplementation(() => undefined);
 
-    await server.middlewares.use.mock.calls[0][0](
-      { headers: {}, method: "GET", url: "/" },
-      {},
-      next,
-    );
+    server.middlewares.use.mock.calls[0][0]({ headers: {}, method: "GET", url: "/" }, {}, next);
+    await nextError;
 
     expect(error).toHaveBeenCalledOnce();
     expect(next).toHaveBeenCalledWith(expect.any(Error));

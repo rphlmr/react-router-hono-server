@@ -239,8 +239,8 @@ export async function createHonoServer<E extends Env = BlankEnv>(options?: HonoS
       };
       if (serverInstance != null) {
         // we have a server to shut down, and a callback - bind to signals
-        process.on("SIGTERM", () => gracefulShutdown("SIGTERM"));
-        process.on("SIGINT", () => gracefulShutdown("SIGINT"));
+        process.on("SIGTERM", () => void gracefulShutdown("SIGTERM"));
+        process.on("SIGINT", () => void gracefulShutdown("SIGINT"));
         console.log("✅ Graceful shutdown enabled. Press Ctrl+C to shutdown gracefully.");
       }
     }

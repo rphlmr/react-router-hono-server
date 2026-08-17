@@ -1,4 +1,5 @@
 import type { Fetcher, RequestInit } from "@cloudflare/workers-types";
+import type { upgradeWebSocket } from "hono/cloudflare-workers";
 import type { BlankEnv } from "hono/types";
 
 import { type Env, Hono } from "hono";
@@ -29,7 +30,7 @@ interface HonoCloudflareOptions<E extends Env = BlankEnv> extends Omit<
   "port"
 > {}
 
-type CloudflareUpgradeWebSocket = typeof import("hono/cloudflare-workers").upgradeWebSocket;
+type CloudflareUpgradeWebSocket = typeof upgradeWebSocket;
 
 type HonoServerOptionsWithWebSocket<E extends Env = BlankEnv> = HonoCloudflareOptions<E> &
   WithWebsocket<E, CloudflareUpgradeWebSocket>;
