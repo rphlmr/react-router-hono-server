@@ -10,6 +10,21 @@ import { cache } from "../../src/middleware";
 const artifactDirectory = path.resolve(import.meta.dirname, "../../out/test-artifacts");
 
 describe("packed public surface", () => {
+  test("owns the Node server implementation dependency", async () => {
+    const artifacts = (await readdir(artifactDirectory)).filter((file) => file.endsWith(".tgz"));
+    expect(artifacts).toHaveLength(1);
+    const manifest = JSON.parse(
+      execFileSync(
+        "tar",
+        ["-xOzf", path.join(artifactDirectory, artifacts[0]), "package/package.json"],
+        { encoding: "utf8" },
+      ),
+    );
+
+    expect(manifest.dependencies["@hono/node-server"]).toBe("2.1.1");
+    expect(manifest.peerDependencies["@hono/node-server"]).toBeUndefined();
+  });
+
   test("contains every declared export, declaration, runtime file, and binary", async () => {
     const artifacts = (await readdir(artifactDirectory)).filter((file) => file.endsWith(".tgz"));
     expect(artifacts).toHaveLength(1);

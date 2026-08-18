@@ -8,7 +8,7 @@ Version 4 aligns the package with React Router 8.3 and establishes an explicit c
 
 ### Breaking changes
 
-- Require Node.js 24.19+, React 19.2, React Router 8.3+, Vite 8, Hono 4, and `@hono/node-server` 2. Bun 1.3+, Deno 2, and the current Cloudflare Vite/Wrangler 4 toolchain are required for their respective runtimes.
+- Require Node.js 24.19+, React 19.2, React Router 8.3+, Vite 8, and Hono 4. Bun 1.3+, Deno 2, and the current Cloudflare Vite/Wrangler 4 toolchain are required for their respective runtimes. `@hono/node-server` 2 is installed as an implementation dependency rather than required from applications.
 - Remove React 18, React Router 7, the `force_react_19` compatibility flag, and the legacy Cloudflare proxy integration.
 - Follow React Router's dependency-selected server entries. Node.js and AWS applications should use `@react-router/node`; Bun, Deno, and Cloudflare applications should use React Router's Web Streams entry unless they provide a custom server entry.
 - Return a `RouterContextProvider` from `getLoadContext`; React Router middleware is now unconditional.

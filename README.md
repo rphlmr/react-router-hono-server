@@ -52,7 +52,8 @@ Choose the runtime that matches your deployment target. Application routes and H
 ### Supported versions
 
 - Node.js 24.19 or newer is required for installation, builds, and the CLI.
-- React 19.2, React DOM 19.2, React Router 8.3 or newer, Vite 8, Hono 4, and `@hono/node-server` 2 are supported.
+- React 19.2, React DOM 19.2, React Router 8.3 or newer, Vite 8, and Hono 4 are supported.
+- `@hono/node-server` 2 is installed with this package for Node-backed functionality; applications only need to install it directly when they import it themselves.
 - Bun 1.3 or newer is required for Bun execution.
 - Deno 2 is required for Deno execution.
 - Cloudflare projects require the current `@cloudflare/vite-plugin`, Wrangler 4, an `ASSETS` binding, and the `nodejs_compat` compatibility flag.
@@ -69,7 +70,7 @@ The following setup creates a Node.js server. The other runtime guides use the s
 ### 1. Install the packages
 
 ```sh
-pnpm add react-router-hono-server hono @hono/node-server @react-router/node
+pnpm add react-router-hono-server hono @react-router/node
 pnpm add -D @react-router/dev vite
 ```
 
@@ -245,7 +246,7 @@ Node.js is the default runtime and the shortest path to production. Follow the [
 #### Install
 
 ```sh
-bun add react-router-hono-server hono @hono/node-server
+bun add react-router-hono-server hono
 bun add -d @react-router/dev vite @types/bun
 ```
 
@@ -486,7 +487,7 @@ Deploy the generated Worker with your normal Cloudflare workflow.
 #### Install
 
 ```sh
-pnpm add react-router-hono-server hono @hono/node-server @react-router/node
+pnpm add react-router-hono-server hono @react-router/node
 pnpm add -D @react-router/dev vite
 ```
 

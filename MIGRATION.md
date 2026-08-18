@@ -11,9 +11,10 @@ Upgrade the application to:
 - React Router 8.3 or newer
 - Vite 8
 - Hono 4
-- `@hono/node-server` 2
 - Bun 1.3 when using Bun, or Deno 2 when using Deno
 - the current supported-major Cloudflare Vite plugin and Wrangler 4 for Workers
+
+`@hono/node-server` 2 is now installed as an implementation dependency of this package. Remove it from the application's dependencies unless application code imports it directly.
 
 React 18, React Router 7, the legacy Cloudflare proxy integration, and compatibility code selected by `force_react_19` are removed. Remove `force_react_19` from every server and plugin configuration.
 

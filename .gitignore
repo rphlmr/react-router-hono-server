@@ -137,3 +137,4 @@ build
 
 .idea
 .pnpm_store
+.pnpm-store
