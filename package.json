@@ -108,7 +108,7 @@
     "test:unit": "vp test run --project unit",
     "typecheck": "tsc",
     "validate": "vp check",
-    "version": "changeset version && vp fmt package.json"
+    "version": "changeset version && vp fmt package.json CHANGELOG.md"
   },
   "dependencies": {
     "@drizzle-team/brocli": "0.12.0",
