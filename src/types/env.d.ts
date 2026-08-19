@@ -3,6 +3,7 @@ interface ReactRouterHonoServerEnv {
   readonly REACT_ROUTER_HONO_SERVER_ASSETS_DIR: string;
   readonly REACT_ROUTER_HONO_SERVER_RUNTIME: string;
   readonly REACT_ROUTER_HONO_SERVER_BASENAME: string;
+  readonly REACT_ROUTER_HONO_SERVER_VITE_BASE: string;
 }
 
 interface ImportMetaEnv extends ReactRouterHonoServerEnv {}

@@ -39,6 +39,7 @@ function callHook(plugin: Plugin, name: keyof Plugin, ...args: any[]) {
 function makeReactRouterConfig({
   appDirectory = "/project/app",
   assetsDir = "static",
+  base,
   basename = "/base",
   buildDirectory = "/project/build",
   rootDirectory = "/project",
@@ -46,12 +47,14 @@ function makeReactRouterConfig({
 }: {
   appDirectory?: string;
   assetsDir?: string;
+  base?: string;
   basename?: string;
   buildDirectory?: string;
   rootDirectory?: string;
   serverBuildFile?: string;
 } = {}): UserConfig {
   return {
+    base,
     build: { assetsDir },
     __reactRouterPluginContext: {
       reactRouterConfig: {
@@ -149,6 +152,7 @@ describe("reactRouterHonoServer config hook", () => {
       makeReactRouterConfig({
         appDirectory: "/workspace/src/web",
         assetsDir: "bundled-assets",
+        base: "/vite/",
         basename: "/admin",
         buildDirectory: "/workspace/output",
         rootDirectory: "/workspace",
@@ -160,6 +164,7 @@ describe("reactRouterHonoServer config hook", () => {
       "import.meta.env.REACT_ROUTER_HONO_SERVER_ASSETS_DIR": '"bundled-assets"',
       "import.meta.env.REACT_ROUTER_HONO_SERVER_RUNTIME": '"node"',
       "import.meta.env.REACT_ROUTER_HONO_SERVER_BASENAME": '"/admin"',
+      "import.meta.env.REACT_ROUTER_HONO_SERVER_VITE_BASE": '"/vite/"',
     });
     expect(result.ssr).toMatchObject({ external: [], noExternal: ["react-router-hono-server"] });
     expect(result.environments.ssr.build.rollupOptions.input).toBe("src/custom-server.ts");
@@ -343,6 +348,7 @@ describe("reactRouterHonoServer configureServer hook", () => {
       export: "development",
       injectClientScript: false,
     });
+    expect(options).not.toHaveProperty("base");
 
     const [appAssetPattern, sourceAssetPattern] = options.exclude as [RegExp, RegExp];
     expect(appAssetPattern.test("/src/web/styles.css")).toBe(true);
@@ -353,8 +359,8 @@ describe("reactRouterHonoServer configureServer hook", () => {
     expect(options.exclude).toEqual(
       expect.arrayContaining([/\?import(\?.*)?$/, /^\/@.+$/, /^\/node_modules\/.*/, customExclude]),
     );
-    expect(options.exclude).toContain("^(?=\\/src/web/**/.*/**)");
-    expect(options.exclude).toContain("^(?=\\/src/**/.*/**)");
+    expect(options.exclude).toContain("^(?=/src/web/**/.*/**)");
+    expect(options.exclude).toContain("^(?=/src/**/.*/**)");
 
     const socketMiddleware = server.middlewares.use.mock.calls[0][0];
     const request = {
@@ -373,6 +379,35 @@ describe("reactRouterHonoServer configureServer hook", () => {
     ]);
     expect(next).toHaveBeenCalledOnce();
   });
+
+  test.each(["/v2/", "https://cdn.example.com/v2/"])(
+    "prefixes only Vite-owned development exclusions with the Vite pathname from %s",
+    (base) => {
+      const customExclude = /^\/custom\.txt$/;
+      const plugin = reactRouterHonoServer({
+        dev: { exclude: [customExclude] },
+        serverEntryPoint: "app/server.ts",
+      });
+      resolvePluginConfig(plugin, makeReactRouterConfig({ appDirectory: "/project/app", base }));
+
+      callHook(plugin, "configureServer", makeServer());
+
+      const options = mocks.honoDevServer.mock.calls[0][0];
+      const excludes = options.exclude as Array<RegExp | string>;
+      const matches = (url: string) =>
+        excludes.some((exclude) => exclude instanceof RegExp && exclude.test(url));
+
+      expect(matches("/v2/app/root.tsx")).toBe(true);
+      expect(matches("/v2/@vite/client")).toBe(true);
+      expect(matches("/v2/node_modules/react/index.js")).toBe(true);
+      expect(matches("/v2/dashboard")).toBe(false);
+      expect(matches("/v2/custom-hono")).toBe(false);
+      expect(matches("/v2/app/root.data?index")).toBe(false);
+      expect(customExclude.test("/custom.txt")).toBe(true);
+      expect(customExclude.test("/v2/custom.txt")).toBe(false);
+      expect(options).not.toHaveProperty("base");
+    },
+  );
 
   test("uses unknown socket metadata fallbacks", () => {
     const plugin = reactRouterHonoServer({ serverEntryPoint: "app/server.ts" });

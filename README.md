@@ -766,6 +766,27 @@ export default {
 
 React Router also accepts `basename`, `appDirectory`, and `buildDirectory` in the same configuration file.
 
+#### React Router `basename` and Vite `base`
+
+React Router's [`basename`](https://reactrouter.com/api/framework-conventions/react-router.config.ts#basename) and Vite's [`base`](https://vite.dev/config/shared-options.html#base) configure independent URL spaces:
+
+- `basename` mounts documents, route data requests, and the React Router handler.
+- `base` controls Vite development URLs and URLs emitted for generated JavaScript, CSS, and other bundled assets.
+
+For an application deployed entirely beneath `/v2`, configure both upstream tools:
+
+```ts
+// react-router.config.ts
+export default { basename: "/v2" };
+
+// vite.config.ts
+export default defineConfig({ base: "/v2/", plugins: [reactRouterHonoServer(), reactRouter()] });
+```
+
+The prefixes may intentionally differ. For example, `basename: "/v2/app"` with `base: "/v2/"` keeps application documents beneath `/v2/app` while generated assets remain beneath `/v2/assets`. Likewise, `basename: "/"` with `base: "/v2/"` keeps documents at the origin root and moves only Vite-owned URLs.
+
+The Node, Bun, and Deno adapters serve generated assets locally when `base` is an absolute pathname. Cloudflare Workers passes the original asset URL to its asset binding, and AWS production expects an external asset service. Full-URL bases remain externally owned. Relative bases (`""` and `"./"`) are preserved as emitted by Vite and do not create a fixed server-side mount. Public-directory files always remain available from the origin root rather than beneath `base`.
+
 #### Deployment behavior
 
 | Configuration                | Node, Bun, Deno, and Cloudflare Workers                                                   | AWS Lambda                                                                                                              |

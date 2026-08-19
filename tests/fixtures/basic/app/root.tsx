@@ -1,6 +1,8 @@
 import { useEffect } from "react";
 import { Links, Meta, Outlet, Scripts, ScrollRestoration } from "react-router";
 
+import "./generated.css";
+
 export const links = () => [{ rel: "stylesheet", href: "/fixture.css" }];
 
 export function Layout({ children }: { children: React.ReactNode }) {
