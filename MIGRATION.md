@@ -147,8 +147,8 @@ Bun:
 
 ```json
 {
-  "build": "react-router build",
-  "dev": "bunx --bun react-router dev",
+  "build": "bunx --bun react-router build",
+  "dev": "bunx --bun vite",
   "start": "bun ./build/server/index.js",
   "typecheck": "react-router typegen && tsc --noEmit"
 }
@@ -159,7 +159,7 @@ Deno:
 ```json
 {
   "build": "react-router build",
-  "dev": "deno run --allow-all npm:react-router dev",
+  "dev": "deno run --conditions=development --allow-all npm:@react-router/dev dev",
   "start": "deno run --allow-all ./build/server/index.js",
   "typecheck": "react-router typegen && tsc --noEmit"
 }

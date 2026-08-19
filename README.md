@@ -65,13 +65,17 @@ Choose the runtime that matches your deployment target. Application routes and H
 
 ## Minimal Node quick start
 
+This guide assumes you already have the default [React Router framework-mode project](https://reactrouter.com/start/framework/installation). This package adds a Hono server to that application; it does not scaffold the React Router application itself.
+
+The install commands below are changes to that default project. Keep its existing `@react-router/dev` and `vite` packages for every runtime. Keep `@react-router/node` for Node and AWS, but remove it for Bun, Deno, and Cloudflare so React Router selects its Web Streams renderer. This package replaces `@react-router/serve` on every runtime.
+
 The following setup creates a Node.js server. The other runtime guides use the same structure with a different adapter.
 
 ### 1. Install the packages
 
 ```sh
-pnpm add react-router-hono-server hono @react-router/node
-pnpm add -D @react-router/dev vite
+pnpm remove @react-router/serve
+pnpm add react-router-hono-server hono
 ```
 
 ### 2. Add the Vite plugin
@@ -246,8 +250,9 @@ Node.js is the default runtime and the shortest path to production. Follow the [
 #### Install
 
 ```sh
+bun remove @react-router/node @react-router/serve
 bun add react-router-hono-server hono
-bun add -d @react-router/dev vite @types/bun
+bun add -d @types/bun
 ```
 
 #### Configure Vite
@@ -285,7 +290,7 @@ export default await createHonoServer();
 ```json
 {
   "scripts": {
-    "build": "react-router build",
+    "build": "bunx --bun react-router build",
     "dev": "bunx --bun vite",
     "start": "bun ./build/server/index.js",
     "typecheck": "react-router typegen && tsc --noEmit"
@@ -306,6 +311,7 @@ bun run start
 
 #### Bun runtime notes
 
+- `bunx --bun react-router build` runs React Router and prerendering under Bun instead of following the CLI's Node.js shebang.
 - `bunx --bun vite` forces Vite and its child processes to run with Bun.
 - React Router automatically uses its Web Streams server entry.
 - `customBunServer` forwards options to `Bun.serve`.
@@ -315,7 +321,7 @@ bun run start
 
 #### Install
 
-Declare npm dependencies in `package.json`, then install them into the project:
+In `package.json`, remove `@react-router/node` and `@react-router/serve`, add `react-router-hono-server` and `hono` to `dependencies`, then install with Deno:
 
 ```sh
 deno install --allow-scripts --minimum-dependency-age=0
@@ -387,8 +393,9 @@ deno task start
 #### Install
 
 ```sh
+pnpm remove @react-router/node @react-router/serve
 pnpm add react-router-hono-server hono
-pnpm add -D @cloudflare/vite-plugin @cloudflare/workers-types @react-router/dev vite wrangler
+pnpm add -D @cloudflare/vite-plugin @cloudflare/workers-types wrangler
 ```
 
 #### Configure Vite
@@ -487,8 +494,8 @@ Deploy the generated Worker with your normal Cloudflare workflow.
 #### Install
 
 ```sh
-pnpm add react-router-hono-server hono @react-router/node
-pnpm add -D @react-router/dev vite
+pnpm remove @react-router/serve
+pnpm add react-router-hono-server hono
 ```
 
 #### Configure Vite

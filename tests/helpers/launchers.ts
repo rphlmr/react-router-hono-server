@@ -25,14 +25,14 @@ const commonScripts = {
   typecheck: "react-router typegen && tsc --noEmit",
 };
 
-const commonDependencies = { "@react-router/node": "8.3.0" };
+const nodeDependencies = { "@react-router/node": "8.3.0" };
 const webSocketDependencies = { "@types/ws": "8.18.1", ws: "8.21.0" };
 
 export const runtimeDefinitions = {
   node: {
     name: "node",
     packageManager: { command: "pnpm", installArgs: ["install"], lockfile: "pnpm-lock.yaml" },
-    dependencies: { ...commonDependencies, ...webSocketDependencies },
+    dependencies: { ...nodeDependencies, ...webSocketDependencies },
     scripts: { ...commonScripts, start: "node ./build/server/index.js" },
     environment: {},
     capabilities: { browser: true, webSocket: true, workerd: false },
@@ -43,6 +43,7 @@ export const runtimeDefinitions = {
     dependencies: { ...webSocketDependencies },
     scripts: {
       ...commonScripts,
+      build: "bunx --bun react-router build",
       dev: "bunx --bun vite",
       start: "bun ./build/server/index.js",
     },
@@ -75,7 +76,7 @@ export const runtimeDefinitions = {
   aws: {
     name: "aws",
     packageManager: { command: "pnpm", installArgs: ["install"], lockfile: "pnpm-lock.yaml" },
-    dependencies: { ...commonDependencies },
+    dependencies: { ...nodeDependencies },
     scripts: { ...commonScripts, dev: "react-router dev", start: "node ./build/server/index.js" },
     environment: {},
     capabilities: { browser: false, webSocket: false, workerd: false },
