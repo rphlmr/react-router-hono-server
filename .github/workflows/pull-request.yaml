@@ -1,75 +1,110 @@
-name: 🚀 PR
+name: Pull request
+
+on: pull_request
 
 concurrency:
   group: ${{ github.repository }}-${{ github.workflow }}-${{ github.ref }}
   cancel-in-progress: true
 
-on: [pull_request] # Run only on pull_request, to also get status updates in PRs. We omit push because this would run the steps two times (for push and pull_request).
-
 permissions:
-  actions: write
   contents: read
-  # Required to put a comment into the pull-request
-  pull-requests: write
 
 jobs:
-  lint:
-    name: ⬣ Linting
+  formatting:
+    name: Formatting
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
-      - uses: biomejs/setup-biome@v2
-      - run: biome ci . --reporter=github
-
-  typecheck:
-    name: 🔎 Type check
-    runs-on: ubuntu-latest
-    steps:
-      - name: 🛑 Cancel Previous Runs
-        uses: styfle/cancel-workflow-action@0.12.1
-
-      - name: ⬇️ Checkout repo
-        uses: actions/checkout@v7
-
-      - name: 👷 Install pnpm
-        uses: pnpm/action-setup@v6
-
-      - name: ⎔ Setup node
-        uses: actions/setup-node@v6
+      - uses: actions/checkout@v7
+      - uses: voidzero-dev/setup-vp@313600b80b104eadebb9111787d37a2e83e014ca # v1.17.0
         with:
-          node-version-file: "package.json"
-          cache: "pnpm"
+          node-version: "24"
+          cache: true
+      - run: vp install
+      - run: vp check
 
-      - name: 📥 Install dependencies
-        run: pnpm install
+  package-types:
+    name: Package and types
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+      - uses: voidzero-dev/setup-vp@313600b80b104eadebb9111787d37a2e83e014ca # v1.17.0
+        with:
+          node-version: "24"
+          cache: true
+      - run: vp install
+      - run: vp run typecheck
+      - run: vp run test:package
 
-      - name: 🔎 Type check
-        run: pnpm typecheck
+  node:
+    name: Node
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+      - uses: voidzero-dev/setup-vp@313600b80b104eadebb9111787d37a2e83e014ca # v1.17.0
+        with:
+          node-version: "24"
+          cache: true
+      - run: vp install
+      - run: vp exec playwright install --with-deps chromium
+        timeout-minutes: 10
+      - run: vp run test:node
 
-  # vitest:
-  #   name: ⚡ Unit Tests
-  #   runs-on: ubuntu-latest
-  #   steps:
-  #     - name: 🛑 Cancel Previous Runs
-  #       uses: styfle/cancel-workflow-action@0.12.1
+  aws:
+    name: AWS
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+      - uses: voidzero-dev/setup-vp@313600b80b104eadebb9111787d37a2e83e014ca # v1.17.0
+        with:
+          node-version: "24"
+          cache: true
+      - run: vp install
+      - run: vp run test:aws
 
-  #     - name: ⬇️ Checkout repo
-  #       uses: actions/checkout@v4
+  bun:
+    name: Bun
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+      - uses: voidzero-dev/setup-vp@313600b80b104eadebb9111787d37a2e83e014ca # v1.17.0
+        with:
+          node-version: "24"
+          cache: true
+      - uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: 1.3.14
+      - run: vp install
+      - run: vp exec playwright install --with-deps chromium
+        timeout-minutes: 10
+      - run: vp run test:bun
 
-  #     - name: ⎔ Setup node
-  #       uses: actions/setup-node@v4
-  #       with:
-  #         node-version-file: "package.json"
+  deno:
+    name: Deno
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+      - uses: voidzero-dev/setup-vp@313600b80b104eadebb9111787d37a2e83e014ca # v1.17.0
+        with:
+          node-version: "24"
+          cache: true
+      - uses: denoland/setup-deno@v2
+        with:
+          deno-version: v2.x
+      - run: vp install
+      - run: vp exec playwright install --with-deps chromium
+        timeout-minutes: 10
+      - run: vp run test:deno
 
-  #     - name: 📥 Download deps
-  #       uses: bahmutov/npm-install@v1
-  #       with:
-  #         useLockFile: false
-
-  #     - name: ⚡ Run vitest
-  #       run: npm run test:cov
-
-  #     - name: "Report Coverage"
-  #       # Only works if you set `reportOnFailure: true` in your vite config as specified above
-  #       if: always()
-  #       uses: davelosert/vitest-coverage-report-action@v2
+  cloudflare:
+    name: Cloudflare Workers
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+      - uses: voidzero-dev/setup-vp@313600b80b104eadebb9111787d37a2e83e014ca # v1.17.0
+        with:
+          node-version: "24"
+          cache: true
+      - run: vp install
+      - run: vp exec playwright install --with-deps chromium
+        timeout-minutes: 10
+      - run: vp run test:cloudflare

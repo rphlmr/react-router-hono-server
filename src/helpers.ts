@@ -1,10 +1,13 @@
-import type { IncomingMessage, Server } from "node:http";
-import type { Http2SecureServer, Http2Server } from "node:http2";
 import type { ServerType } from "@hono/node-server";
 import type { Env, Hono } from "hono";
-import { createMiddleware } from "hono/factory";
 import type { UpgradeWebSocket } from "hono/ws";
+import type { IncomingMessage, Server, createServer } from "node:http";
+import type { Http2SecureServer, Http2Server } from "node:http2";
 import type { ServerBuild } from "react-router";
+import type { WebSocketServer } from "ws";
+
+import { createMiddleware } from "hono/factory";
+
 import type { HonoServerOptionsBase } from "./types/hono-server-options-base";
 import type { Runtime } from "./types/runtime";
 
@@ -17,6 +20,7 @@ type AnyServer = NodeServer | BunServeOptions;
 interface WebSocket {
   upgradeWebSocket: UpgradeWebSocket;
   injectWebSocket: <Server extends AnyServer>(server: Server) => Server;
+  nodeWebSocket?: { server: WebSocketServer };
 }
 
 const defaultWebSocket = {
@@ -26,12 +30,24 @@ const defaultWebSocket = {
 
 type Config = { app: Hono<any>; enabled: boolean };
 
+async function importNodeWebSocket(runtime: Runtime, mode: "development" | "production") {
+  try {
+    return await import("ws");
+  } catch (cause) {
+    throw new Error(
+      `WebSocket support for the "${runtime}" runtime in ${mode} requires the optional "ws" peer dependency. Install "ws" before enabling useWebSocket.`,
+      { cause },
+    );
+  }
+}
+
 /**
  * Create WebSocket factory
  *
- * It harmonizes the WebSocket implementation between `node`, `bun` and `cloudflare`
+ * It harmonizes the WebSocket implementation between supported runtimes.
  *
- * For `bun` and `cloudflare`, in dev (which uses a node server), we hot-swap their native implementation with `@hono/node-ws`. This is the secret sauce!
+ * Node, Bun development, and Deno development use `@hono/node-server`.
+ * Cloudflare always uses Workerd's native implementation.
  *
  * **Implementation details: It will strip unused code from other runtimes at build time**
  *
@@ -45,16 +61,36 @@ export async function createWebSocket({ app, enabled }: Config): Promise<WebSock
   const DEV = mode === "development";
   const runtime = import.meta.env.REACT_ROUTER_HONO_SERVER_RUNTIME as Runtime;
 
-  if (DEV || runtime === "node") {
-    const { createNodeWebSocket } = await import("@hono/node-ws");
-    const { injectWebSocket, upgradeWebSocket } = createNodeWebSocket({ app });
+  if (runtime === "cloudflare") {
+    const { upgradeWebSocket } = await import("hono/cloudflare-workers");
+
+    return {
+      upgradeWebSocket: upgradeWebSocket as UpgradeWebSocket,
+      injectWebSocket: (server) => server,
+    };
+  }
+
+  if (runtime === "node" || (DEV && (runtime === "bun" || runtime === "deno"))) {
+    const [{ createAdaptorServer, upgradeWebSocket }, { WebSocketServer }] = await Promise.all([
+      import("@hono/node-server"),
+      importNodeWebSocket(runtime, mode),
+    ]);
+    const wss = new WebSocketServer({ noServer: true });
+    const websocket = { server: wss };
 
     return {
       upgradeWebSocket,
       injectWebSocket(server) {
-        injectWebSocket(server as NodeServer);
+        createAdaptorServer({
+          fetch: app.fetch,
+          websocket,
+          // `createAdaptorServer` only uses this factory's return value to attach
+          // its WebSocket listeners to Vite's already-running HTTP server.
+          createServer: (() => server as NodeServer) as typeof createServer,
+        });
         return server;
       },
+      nodeWebSocket: websocket,
     };
   }
 
@@ -66,6 +102,7 @@ export async function createWebSocket({ app, enabled }: Config): Promise<WebSock
       upgradeWebSocket,
       injectWebSocket: (server) => {
         return {
+          // oxlint-disable-next-line typescript/no-misused-spread
           ...server,
           websocket,
         };
@@ -73,13 +110,43 @@ export async function createWebSocket({ app, enabled }: Config): Promise<WebSock
     };
   }
 
+  if (runtime === "deno") {
+    const { upgradeWebSocket } = await import("hono/deno");
+
+    return {
+      upgradeWebSocket: upgradeWebSocket as UpgradeWebSocket,
+      injectWebSocket: (server) => server,
+    };
+  }
+
   return defaultWebSocket;
+}
+
+/**
+ * Attach the Node WebSocket bridge to Vite's HTTP server without intercepting HMR.
+ */
+export function attachWebSocketToVite(
+  injectWebSocket: WebSocket["injectWebSocket"],
+  onServe?: (server: ServerType) => void,
+) {
+  const httpServer = globalThis.__viteDevServer?.httpServer;
+
+  if (!httpServer) {
+    return false;
+  }
+
+  cleanUpgradeListeners(httpServer);
+  onServe?.(httpServer);
+  injectWebSocket(httpServer);
+  patchUpgradeListener(httpServer);
+
+  return true;
 }
 
 /**
  * Clean all user-defined upgrade listeners, except HMR
  *
- * Avoid conflicts on `already upgraded connections` when using `@hono/node-ws` on dev
+ * Avoid conflicts on already-upgraded connections when using Node WebSockets in dev.
  *
  */
 export function cleanUpgradeListeners(httpServer: ServerType) {
@@ -91,7 +158,7 @@ export function cleanUpgradeListeners(httpServer: ServerType) {
     httpServer.removeListener(
       "upgrade",
       /* @ts-expect-error - we don't care */
-      listener
+      listener,
     );
   }
 }
@@ -112,7 +179,7 @@ export function patchUpgradeListener(httpServer: ServerType) {
     httpServer.removeListener(
       "upgrade",
       /* @ts-expect-error - we don't care */
-      listener
+      listener,
     );
 
     // re-add the listener back, filtering out `vite-hmr`
@@ -150,10 +217,20 @@ export function bindIncomingRequestSocketInfo() {
 }
 
 /**
+ * Prevent Chrome DevTools workspace discovery from reaching React Router's catch-all route.
+ *
+ * Public files and user-defined routes are registered first so applications can opt into
+ * automatic workspace discovery.
+ */
+export function handleChromeDevToolsWorkspaceRequest<E extends Env>(app: Hono<E>) {
+  app.get("/.well-known/appspecific/com.chrome.devtools.json", (c) => c.notFound());
+}
+
+/**
  * Import React Router server build
  */
 export async function importBuild(): Promise<ServerBuild> {
-  return await import(
+  return import(
     // @ts-expect-error - Virtual module provided by React Router at build time
     "virtual:react-router/server-build"
   );

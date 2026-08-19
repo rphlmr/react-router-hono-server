@@ -14,20 +14,20 @@ jobs:
       - name: ⬇️ Checkout repo
         uses: actions/checkout@v7
 
-      - name: 👷 Install pnpm
-        uses: pnpm/action-setup@v6
-
-      - name: ⎔ Setup node
-        uses: actions/setup-node@v6
+      - name: ⎔ Setup Vite+
+        uses: voidzero-dev/setup-vp@313600b80b104eadebb9111787d37a2e83e014ca # v1.17.0
         with:
-          node-version-file: "package.json"
-          cache: "pnpm"
+          node-version: "24"
+          cache: true
 
       - name: 📥 Install dependencies
-        run: pnpm install
+        run: vp install
 
       - name: 📋 Version packages
-        run: pnpm changeset version
+        run: |
+          if find .changeset -maxdepth 1 -type f -name '*.md' ! -name 'README.md' -print -quit | grep -q .; then
+            vp exec changeset version
+          fi
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
@@ -46,7 +46,7 @@ jobs:
           fi
 
       - name: 🏗️ Build
-        run: pnpm build
+        run: vp run build
 
       - name: 📦 Publish (${{ steps.prerelease.outputs.mode }}) v${{ steps.prerelease.outputs.version }}
-        run: pnpm dlx pkg-pr-new publish --packageManager=pnpm
+        run: vp dlx pkg-pr-new publish --packageManager=pnpm

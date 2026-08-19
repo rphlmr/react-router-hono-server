@@ -1,0 +1,65 @@
+name: Latest compatible runtimes
+
+on:
+  schedule:
+    - cron: "0 3 * * *"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  package-types:
+    name: Package and types
+    runs-on: ubuntu-latest
+    env:
+      RRHS_LATEST_COMPATIBLE: "1"
+    steps:
+      - uses: actions/checkout@v7
+      - uses: voidzero-dev/setup-vp@313600b80b104eadebb9111787d37a2e83e014ca # v1.17.0
+        with:
+          node-version: latest
+          cache: true
+      - run: vp install
+      - run: vp run typecheck
+      - run: vp run test:package
+      - run: vp run test:unit
+
+  runtime:
+    name: ${{ matrix.name }}
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - name: Node.js
+            runtime: node
+          - name: Bun
+            runtime: bun
+          - name: Deno
+            runtime: deno
+          - name: Cloudflare Workers
+            runtime: cloudflare
+          - name: AWS Lambda
+            runtime: aws
+    env:
+      RRHS_LATEST_COMPATIBLE: "1"
+    steps:
+      - uses: actions/checkout@v7
+      - uses: voidzero-dev/setup-vp@313600b80b104eadebb9111787d37a2e83e014ca # v1.17.0
+        with:
+          node-version: latest
+          cache: true
+      - uses: oven-sh/setup-bun@v2
+        if: matrix.runtime == 'bun'
+        with:
+          bun-version: latest
+      - uses: denoland/setup-deno@v2
+        if: matrix.runtime == 'deno'
+        with:
+          deno-version: latest
+      - run: vp install
+      - run: vp exec playwright install --with-deps chromium
+        if: matrix.runtime != 'aws'
+        timeout-minutes: 10
+      - run: vp run test:${{ matrix.runtime }}

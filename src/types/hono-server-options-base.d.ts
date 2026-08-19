@@ -1,10 +1,8 @@
 import type { Context, Env, Hono } from "hono";
 import type { UpgradeWebSocket } from "hono/ws";
-import type { AppLoadContext, RouterContextProvider, ServerBuild, UNSAFE_MiddlewareEnabled } from "react-router";
+import type { RouterContextProvider, ServerBuild } from "react-router";
 
-export type ReactRouterHonoServerAppLoadContext = UNSAFE_MiddlewareEnabled extends true
-  ? RouterContextProvider
-  : AppLoadContext;
+export type ReactRouterHonoServerAppLoadContext = RouterContextProvider;
 
 export interface HonoServerOptionsBase<E extends Env> {
   /**
@@ -29,27 +27,15 @@ export interface HonoServerOptionsBase<E extends Env> {
    */
   port?: number;
   /**
-   * Augment the React Router AppLoadContext
+   * Create the React Router load context.
    *
-   * Don't forget to declare the AppLoadContext in your app, next to where you create the Hono server
-   *
-   * ```ts
-   * declare module "react-router" {
-   *   interface AppLoadContext {
-   *     // Add your custom context here
-   *     whatever: string;
-   *   }
-   * }
-   * ```
-   *
-   * **To make the typing works correctly, in your `react-router.config.ts` or where you want, add future v8_middleware flag type to true.**
+   * React Router 8 requires a `RouterContextProvider`. Define values with
+   * `createContext` and set them on the provider.
    *
    * ```ts
-   * declare module "react-router" {
-   *   interface Future {
-   *     v8_middleware: true; // 👈 Enable middleware types
-   *   }
-   * }
+   * const context = new RouterContextProvider();
+   * context.set(userContext, user);
+   * return context;
    * ```
    */
   getLoadContext?: (
@@ -57,7 +43,7 @@ export interface HonoServerOptionsBase<E extends Env> {
     options: {
       build: ServerBuild;
       mode: string;
-    }
+    },
   ) => Promise<ReactRouterHonoServerAppLoadContext> | ReactRouterHonoServerAppLoadContext;
   /**
    * Hook to add middleware that runs before any built-in middleware, including assets serving.
@@ -67,11 +53,11 @@ export interface HonoServerOptionsBase<E extends Env> {
   beforeAll?: (app: Hono<E>) => Promise<void> | void;
 }
 
-export interface WithWebsocket<E extends Env> {
+export interface WithWebsocket<E extends Env, TUpgradeWebSocket = UpgradeWebSocket> {
   /**
    * Enable WebSockets support in `configure`
    *
-   * For `bun` and `cloudflare` we will use the `@hono/node-ws`'s `injectWebSocket` on dev (only),
+   * Development uses the runtime's native implementation or the `@hono/node-server` bridge.
    *
    * Defaults to `false`
    */
@@ -81,14 +67,17 @@ export interface WithWebsocket<E extends Env> {
    *
    * It is applied after the default middleware and before the React Router middleware
    */
-  configure: (app: Hono<E>, options: { upgradeWebSocket: UpgradeWebSocket }) => Promise<void> | void;
+  configure: (
+    app: Hono<E>,
+    options: { upgradeWebSocket: TUpgradeWebSocket },
+  ) => Promise<void> | void;
 }
 
 export interface WithoutWebsocket<E extends Env> {
   /**
    * Enable WebSockets support in `configure`
    *
-   * For `bun` and `cloudflare` we will use the `@hono/node-ws`'s `injectWebSocket` on dev (only),
+   * Development uses the runtime's native implementation or the `@hono/node-server` bridge.
    *
    * Defaults to `false`
    */

@@ -1,5 +1,9 @@
 version: 2
 updates:
+  - package-ecosystem: "github-actions"
+    directory: "/"
+    schedule:
+      interval: "weekly"
   - package-ecosystem: "npm"
     directory: "/"
     schedule:
@@ -8,5 +12,3 @@ updates:
     # Restrict updates to direct deps to avoid failing runs (e.g. vite transitive attempts).
     allow:
       - dependency-type: "direct"
-    exclude-paths:
-      - "examples/**"

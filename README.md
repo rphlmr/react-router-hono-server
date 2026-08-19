@@ -1,1249 +1,820 @@
-# React Router v8 Hono Server
+# React Router Hono Server
 
-<!-- ![GitHub Repo stars](https://img.shields.io/github/stars/rphlmr/react-router-hono-server?style=social)
-![npm](https://img.shields.io/npm/v/open-source-stack?style=plastic)
-![GitHub](https://img.shields.io/github/license/rphlmr/react-router-hono-server?style=plastic)
-![npm](https://img.shields.io/npm/dy/open-source-stack?style=plastic)
-![npm](https://img.shields.io/npm/dw/open-source-stack?style=plastic)
-![GitHub top language](https://img.shields.io/github/languages/top/rphlmr/react-router-hono-server?style=plastic) -->
+Run a React Router framework-mode application on Hono—without giving up the runtime you want.
 
-## Psst!
+`react-router-hono-server` provides a Vite plugin and production adapters for Node.js, Bun, Deno, Cloudflare Workers, and AWS Lambda.
+
+It gives your application one clear server boundary:
+
+- React Router owns routes, loaders, actions, and rendering.
+- Hono owns middleware, API routes, request context, and runtime integration.
+- This package connects them and handles startup, static assets, and build output.
+
+## Why use it?
+
+- **One server API across five runtimes.** Move between runtimes without redesigning the application.
+- **First-class Hono customization.** Add middleware, API endpoints, typed context, and runtime options around React Router.
+- **Production and development parity.** Use the same server entry in Vite development and in the production runtime.
+- **React Router features stay intact.** SSR, prerendering, SPA output, basenames, and custom build layouts remain React Router configuration.
+- **Small default surface.** Start with a virtual server entry and reveal files only when customization is needed.
+
+## Contents
+
+- [Runtime matrix](#runtime-matrix)
+- [Requirements and compatibility](#requirements-and-compatibility)
+- [Minimal Node quick start](#minimal-node-quick-start)
+- [Runtime selection](#runtime-selection)
+- [Reveal and entry files](#reveal-and-entry-files)
+- [Runtime guides](#runtime-guides)
+  - [Node.js](#nodejs)
+  - [Bun](#bun)
+  - [Deno](#deno)
+  - [Cloudflare Workers](#cloudflare-workers)
+  - [AWS Lambda](#aws-lambda)
+- [Server customization](#server-customization)
+- [API and exports](#api-and-exports)
+- [Troubleshooting](#troubleshooting)
+
+## Runtime matrix
+
+| Runtime            | Development                         | Production                           | WebSockets | Static assets                   |
+| ------------------ | ----------------------------------- | ------------------------------------ | ---------- | ------------------------------- |
+| Node.js            | React Router dev server             | Node HTTP/HTTPS                      | Yes        | Node filesystem                 |
+| Bun                | Bun-powered React Router dev server | `Bun.serve`                          | Yes        | Bun filesystem                  |
+| Deno               | Deno-powered Vite dev server        | `Deno.serve`                         | Yes        | Deno filesystem                 |
+| Cloudflare Workers | Cloudflare Vite plugin and Workerd  | Worker + asset binding               | Yes        | Workers assets                  |
+| AWS Lambda         | React Router dev server             | Lambda handler or response streaming | No         | Use CloudFront/S3 in production |
+
+Choose the runtime that matches your deployment target. Application routes and Hono configuration remain portable; runtime-specific server options stay isolated in `app/server.ts`.
+
+## Requirements and compatibility
+
+### Supported versions
+
+- Node.js 24.19 or newer is required for installation, builds, and the CLI.
+- React 19.2, React DOM 19.2, React Router 8.3 or newer, Vite 8, and Hono 4 are supported.
+- `@hono/node-server` 2 is installed with this package for Node-backed functionality; applications only need to install it directly when they import it themselves.
+- Bun 1.3 or newer is required for Bun execution.
+- Deno 2 is required for Deno execution.
+- Cloudflare projects require the current `@cloudflare/vite-plugin`, Wrangler 4, an `ASSETS` binding, and the `nodejs_compat` compatibility flag.
+
 > [!IMPORTANT]
-> This package is only compatible with React Router v7
+> Keep the application and this package on one installation of React, React DOM, React Router, Hono, and Vite.
 >
-> You can still use the v1 with @remix-run. [Previous docs](https://github.com/rphlmr/react-router-hono-server/tree/v1.2.0)
->
-> Migration guide from v1 [here](#migrate-from-v1)
+> Aliased or duplicated framework packages can cause invalid hooks, incompatible contexts, and build failures.
 
-## TLDR
-This package contains a helper function `createHonoServer` that enables you to create a Hono
-server bound to your React Router v7 app.
+## Minimal Node quick start
 
-Since the Hono server is built along with the rest of your app, you may import app modules as needed.
+This guide assumes you already have the default [React Router framework-mode project](https://reactrouter.com/start/framework/installation). This package adds a Hono server to that application; it does not scaffold the React Router application itself.
 
-It also supports Vite HMR via the `react-router-hono-server/dev` plugin (which is required
-for this to function).
+The install commands below are changes to that default project. Keep its existing `@react-router/dev` and `vite` packages for every runtime. Keep `@react-router/node` for Node and AWS, but remove it for Bun, Deno, and Cloudflare so React Router selects its Web Streams renderer. This package replaces `@react-router/serve` on every runtime.
 
-It presets a default Hono server config that you can [customize](#options)
+The following setup creates a Node.js server. The other runtime guides use the same structure with a different adapter.
 
+### 1. Install the packages
 
-> [!IMPORTANT]
-> Only works with React Router v7 in **ESM mode**
->
-> Only works with **Vite**
->
-> Only **Node**, **Bun**, **Cloudflare Workers** and **AWS Lambda** (experimental) are supported
-
-> [!TIP]
-> 👨‍🏫 There is some examples in the [examples](./examples) folder. I hope they will help you.
->
-> You can use [remix-hono](https://github.com/sergiodxa/remix-hono) to add cool middleware like [`session`](https://github.com/sergiodxa/remix-hono?tab=readme-ov-file#session-management)
-
-## Installation
-
-Install the following npm package.
-
-> [!NOTE]
-> This is not a dev dependency, as it creates the Hono server used in production.
-
-```bash
-npm install react-router-hono-server hono @hono/node-server
-
-# For Bun you can install @hono/node-server as a dev dependency
-bun install -D @hono/node-server
-
-# For Cloudflare Workers, add the following
-npm install -D miniflare wrangler
+```sh
+pnpm remove @react-router/serve
+pnpm add react-router-hono-server hono
 ```
 
-> [!TIP]
-> If you use `pnpm`, and want to use some imports from `hono`, you may need to install `hono` manually or create a `.npmrc` file in your project with the following content:
->
-> ```
-> public-hoist-pattern[]=hono
-> ```
+### 2. Add the Vite plugin
 
-## Easy mode
-In your `vite.config.ts`, add the `reactRouterHonoServer` plugin.
+Create `vite.config.ts`. The Hono server plugin must come before `reactRouter()`.
+
+<!-- canonical:node-vite -->
 
 ```ts
 import { reactRouter } from "@react-router/dev/vite";
-import { reactRouterHonoServer } from "react-router-hono-server/dev"; // add this
+import { reactRouterHonoServer } from "react-router-hono-server/dev";
 import { defineConfig } from "vite";
-import tsconfigPaths from "vite-tsconfig-paths";
 
 export default defineConfig({
-  plugins: [
-    reactRouterHonoServer(), // add this
-    reactRouter(),
-    tsconfigPaths()
-  ],
-});
-```
-**That's all!**
-
-Wait, what?
-
-For really simple apps, that's all you need to do. Behind the hood, it will create a virtual module with a default Hono server.
-When building for production, it will create the server file at `build/server/index.js` and import your React Router app from `virtual:react-router/server-build` module (replacing it with the real file located in `build/server/assets/server-build-[hash].js`).
-
-## Configuration
-Ok, by default it works, but you may want to customize the server and use some middleware.
-
-> [!IMPORTANT]
-> Until you define your own `serverEntryPoint`, the file name `${appDirectory}/server.ts` and the folder name `${appDirectory}/server` are reserved words.
->
-> `reactRouterHonoServer` plugin is looking for them to find your server file.
-
-
-### Add the Vite plugin
-> [!NOTE]
-> It uses the `reactRouter` plugin to build your app and will automatically load its config.
-
-#### Node
-> [!TIP]
-> Check this [example](./examples/node/simple/) to see how to use it.
-
-```ts
-// vite.config.ts
-import { reactRouter } from "@react-router/dev/vite";
-import { reactRouterHonoServer } from "react-router-hono-server/dev"; // add this
-import { defineConfig } from "vite";
-import tsconfigPaths from "vite-tsconfig-paths";
-
-export default defineConfig({
-  plugins: [
-    reactRouterHonoServer(), // add this
-    reactRouter(),
-    tsconfigPaths()
-  ],
+  plugins: [reactRouterHonoServer(), reactRouter()],
 });
 ```
 
-#### Bun
-> [!TIP]
-> Check this [example](./examples/bun/simple/) to see how to use it.
+### 3. Create the server entry
 
-> [!IMPORTANT]
-> React 19 and `bun --bun` flag should work with the same `entry.server.tsx` file as Node. Check [Using `bun --bun` flag?](#using-bun---bun-flag)
-> Check this [example](./examples/bun/simple-bun-runtime/) to see how to use it.
+Create `app/server.ts`:
+
+<!-- canonical:node-server -->
 
 ```ts
-// vite.config.ts
-import { reactRouter } from "@react-router/dev/vite";
-import { reactRouterHonoServer } from "react-router-hono-server/dev"; // add this
-import { defineConfig } from "vite";
-import tsconfigPaths from "vite-tsconfig-paths";
-
-export default defineConfig({
-  plugins: [
-    reactRouterHonoServer({ runtime: "bun"} ), // add this
-    reactRouter(),
-    tsconfigPaths()
-  ],
-});
-```
-
-##### Using `bun --bun` flag?
-> [!TIP]
-> Check this [example](./examples/bun/simple-bun-runtime/) to see how to use it.
-
-If you are using the [`bun --bun` flag](https://bun.sh/docs/cli/run#bun), you need to have the same `entry.server.tsx` file as Node.
-
-When building for production, at least for React 19, it uses a special `react-dom/server.bun` import with only the `renderToReadableStream` function available.
-
-React Router Hono Server vite plugin will alias that to `react-dom/server.node`
-
-
-```ts
-import { PassThrough } from "node:stream";
-
-import type { AppLoadContext, EntryContext } from "react-router";
-import { createReadableStreamFromReadable } from "@react-router/node";
-import { ServerRouter } from "react-router";
-import { isbot } from "isbot";
-import type { RenderToPipeableStreamOptions } from "react-dom/server";
-import { renderToPipeableStream } from "react-dom/server";
-
-export const streamTimeout = 5_000;
-
-export default function handleRequest(
-  request: Request,
-  responseStatusCode: number,
-  responseHeaders: Headers,
-  routerContext: EntryContext,
-  loadContext: AppLoadContext,
-  // If you have middleware enabled:
-  // loadContext: unstable_RouterContextProvider
-) {
-  return new Promise((resolve, reject) => {
-    let shellRendered = false;
-    let userAgent = request.headers.get("user-agent");
-
-    // Ensure requests from bots and SPA Mode renders wait for all content to load before responding
-    // https://react.dev/reference/react-dom/server/renderToPipeableStream#waiting-for-all-content-to-load-for-crawlers-and-static-generation
-    let readyOption: keyof RenderToPipeableStreamOptions =
-      (userAgent && isbot(userAgent)) || routerContext.isSpaMode
-        ? "onAllReady"
-        : "onShellReady";
-
-    const { pipe, abort } = renderToPipeableStream(
-      <ServerRouter context={routerContext} url={request.url} />,
-      {
-        [readyOption]() {
-          shellRendered = true;
-          const body = new PassThrough();
-          const stream = createReadableStreamFromReadable(body);
-
-          responseHeaders.set("Content-Type", "text/html");
-
-          resolve(
-            new Response(stream, {
-              headers: responseHeaders,
-              status: responseStatusCode,
-            }),
-          );
-
-          pipe(body);
-        },
-        onShellError(error: unknown) {
-          reject(error);
-        },
-        onError(error: unknown) {
-          responseStatusCode = 500;
-          // Log streaming rendering errors from inside the shell.  Don't log
-          // errors encountered during initial shell rendering since they'll
-          // reject and get logged in handleDocumentRequest.
-          if (shellRendered) {
-            console.error(error);
-          }
-        },
-      },
-    );
-
-    // Abort the rendering stream after the `streamTimeout` so it has time to
-    // flush down the rejected boundaries
-    setTimeout(abort, streamTimeout + 1000);
-  });
-}
-```
-
-#### Cloudflare Workers
-> [!TIP]
-> Check this [example](./examples/cloudflare/simple/) to see how to use it.
-
-> [!IMPORTANT]
-> You need to add the `cloudflareDevProxy` plugin to use the Cloudflare Workers runtime on dev.
-
-
-```ts
-// vite.config.ts
-import { reactRouter } from "@react-router/dev/vite";
-import { cloudflareDevProxy } from "@react-router/dev/vite/cloudflare"; // add this
-import { reactRouterHonoServer } from "react-router-hono-server/dev"; // add this
-import { defineConfig } from "vite";
-import tsconfigPaths from "vite-tsconfig-paths";
-
-export default defineConfig({
-  plugins: [
-    cloudflareDevProxy(),
-    reactRouterHonoServer({ runtime: "cloudflare"} ), // add this
-    reactRouter(),
-    tsconfigPaths()
-  ],
-});
-```
-
-##### React 19
-> [!IMPORTANT]
-> Check this [example](./examples/cloudflare/simple-19/) to see how to use it.
-
-> [!TIP]
-> You may need to add the `force_react_19` flag to the `reactRouterHonoServer` plugin config.
-
-```ts
-// vite.config.ts
-reactRouterHonoServer({ runtime: "cloudflare", flag: { force_react_19: true } }), // add this
-```
-
-#### AWS Lambda
-> [!TIP]
-> AWS shares the same runtime as Node.
-<!-- > Check this [example](./examples/node/simple/) to see how to use it. -->
-
-```ts
-// vite.config.ts
-import { reactRouter } from "@react-router/dev/vite";
-import { reactRouterHonoServer } from "react-router-hono-server/dev"; // add this
-import { defineConfig } from "vite";
-import tsconfigPaths from "vite-tsconfig-paths";
-
-export default defineConfig({
-  plugins: [
-    reactRouterHonoServer({ runtime: "aws", dev: { export: "handler" } }), // add this
-    reactRouter(),
-    tsconfigPaths()
-  ],
-});
-```
-
-#### Deno
-> [!TIP]
-> Check this [example](./examples/deno/simple/) to see how to use it.
-
-```ts
-// vite.config.ts
-import { reactRouter } from "@react-router/dev/vite";
-import { reactRouterHonoServer } from "react-router-hono-server/dev"; // add this
-import { defineConfig } from "vite";
-import tsconfigPaths from "vite-tsconfig-paths";
-
-export default defineConfig({
-  plugins: [
-    reactRouterHonoServer({ runtime: "deno" }), // add this
-    reactRouter(),
-    tsconfigPaths()
-  ],
-});
-```
-
-### Create the server
-> [!TIP]
-> You can use the CLI to create the server file for you.
->
-> ```bash
-> npx react-router-hono-server reveal file
-> ```
-
-In your `app` folder, create a file named `server.ts` and export **as default** the server created by `createHonoServer`.
-
-```bash
-touch app/server.ts
-```
-
-```ts
-// app/server.ts
 import { createHonoServer } from "react-router-hono-server/node";
 
-export default createHonoServer({/* options */});
+export default await createHonoServer();
 ```
 
-#### Alternative
-You can define your server in `app/server/index.ts`.
+### 4. Add package scripts
 
-> [!TIP]
-> You can use the CLI to create the server file for you.
->
-> ```bash
-> npx react-router-hono-server reveal folder
-> ```
+Use these scripts in `package.json`:
 
-It is useful if you have many middleware and want to keep your server file clean.
+<!-- canonical:node-scripts -->
 
-```ts
-// app/server/index.ts
-
-import { createHonoServer } from "react-router-hono-server/node";
-
-export default createHonoServer({/* options */});
-```
-
-#### I don't like this default
-No problem, you can define your files wherever you want.
-
-Use the `serverEntryPoint` option of the Vite plugin `reactRouterHonoServer` to point to your server file.
-
-
-### Update your package.json scripts
-### Node
-It is not an error, you can keep the React Router defaults for `build` and `dev`!
 ```json
+{
   "scripts": {
     "build": "react-router build",
     "dev": "react-router dev",
     "start": "node ./build/server/index.js",
-  },
-```
-### Bun
-It is not an error, you can keep the React Router defaults for `build`!
-```json
-  "scripts": {
-    "build": "react-router build",
-    "dev": "bunx --bun vite",
-    "start": "bun ./build/server/index.js",
-  },
-```
-
-### Cloudflare
-It is not an error, you can keep the React Router defaults for `build` and `dev`!
-```json
-  "scripts": {
-    "build": "react-router build",
-    "dev": "react-router dev",
-    "start": "wrangler dev",
-  },
-```
-
-#### Wrangler
-Add a file named `wrangler.toml` at the root of your project (close to `package.json`).
-
-Adapt the `main` and `assets` fields based on your build output, if you changed them from the defaults.
-```toml
-workers_dev = true
-name = "my-worker"
-compatibility_date = "2024-11-18"
-main = "./build/server/index.js"
-assets = { directory = "./build/client/" }
-```
-
-##### Custom assets serving
-You can set Cloudflare `experimental_serve_directly` and delegate assets serving to Hono, like for Node and Bun.
-
-> [!TIP]
-> Check https://developers.cloudflare.com/workers/static-assets/binding/#experimental_serve_directly
-
-> [!TIP]
-> Check this [example](./examples/cloudflare/simple/) to see how to use it.
-
-```toml
-[assets]
-directory = "./build/client/"
-binding = "ASSETS"
-experimental_serve_directly = false
-```
-
-### AWS Lambda
-It is not an error, you can keep the React Router defaults for `build` and `dev`!
-```json
-  "scripts": {
-    "build": "react-router build",
-    "dev": "react-router dev",
-    "start": "I don't know how to start it in production mode 😅",
-  },
-```
-
-
-### Deno
-It is not an error, you can keep the React Router defaults for `build`!
-```json
-  "scripts": {
-    "build": "react-router build",
-    "dev": "deno run -A npm:react-router dev",
-    "start": "deno run -A ./build/server/index.js",
-  },
-```
-
-## How it works
-
-This helper works differently depending on the environment.
-
-In development, it uses [@hono/vite-dev-server](https://github.com/honojs/vite-plugins/tree/main/packages/dev-server) and loads your server and React Router app with `import('virtual:react-router/server-build')`.
-It can be configured in `vite.config.ts`.
-
-In `production`, it will create a standard node HTTP server listening at `HOST:PORT`.
-You can customize the production server port using the `port` option of `createHonoServer`.
-
-When building for production, the Hono server is compiled as `build/server/index.js` and imports your React Router app from `assets/server-build-[hash].js`.
-
-To run the server in production, use `node ./build/server/index.js`.
-
-That's all!
-
-### Options
-
-#### `reactRouterHonoServer` (Vite Plugin)
-```ts
-type Runtime = "node" | "bun" | "cloudflare" | "aws" | "deno";
-
-type ReactRouterHonoServerPluginOptions = {
-  /**
-   * The runtime to use for the server.
-   *
-   * Defaults to `node`.
-   */
-  runtime?: Runtime;
-  /**
-   * The path to the server file, relative to `vite.config.ts`.
-   *
-   * If it is a folder (`app/server`), it will look for an `index.ts` file.
-   *
-   * Defaults to `${appDirectory}/server[.ts | /index.ts]` if present.
-   *
-   * Fallback to a virtual module `virtual:react-router-hono-server/server`.
-   */
-  serverEntryPoint?: string;
-  /**
-   * The paths that are not served by the dev-server.
-   *
-   * Defaults include `appDirectory` content.
-   */
-  dev?: {
-    /**
-     * The paths that are not served by the dev-server.
-     *
-     * Defaults include `appDirectory` content.
-     */
-    exclude?: (string | RegExp)[];
-    /**
-     * The name of the export to use for the server.
-     *
-     * Defaults to `default`.
-     */
-    export?: string;
-  };
-};
-```
-
-#### `createHonoServer`
-##### All adapters
-```ts
-export type HonoServerOptions<E extends Env = BlankEnv> = {
-  /**
-   * The base Hono app to use
-   *
-   * It will be used to mount the React Router server on the `basename` path
-   * defined in the [React Router config](https://api.reactrouter.com/v7/types/_react_router_dev.config.Config.html)
-   *
-   * {@link Hono}
-   */
-  app?: Hono<E>;
-  /**
-   * Enable the default logger
-   *
-   * Defaults to `true`
-   */
-  defaultLogger?: boolean;
-  /**
-   * The port to start the server on
-   *
-   * Defaults to `process.env.PORT || 3000`
-   */
-  port?: number;
-  /**
-   * Customize the Hono server, for example, adding middleware
-   *
-   * It is applied after the default middleware and before the React Router middleware
-   */
-  configure?: <E extends Env = BlankEnv>(server: Hono<E>) => Promise<void> | void;
-  /**
-   * Augment the React Router AppLoadContext
-   *
-   * Don't forget to declare the AppLoadContext in your app, next to where you create the Hono server
-   *
-   * ```ts
-   * declare module "react-router" {
-   *   interface AppLoadContext {
-   *     // Add your custom context here
-   *     whatever: string;
-   *   }
-   * }
-   * ```
-   * 
-   * **To make the typing works correctly, in your `react-router.config.ts`, add future v8_middleware flag to true.**
-   *
-   * ```ts
-   * import { defineConfig } from "@react-router/dev";
-   *
-   * export default defineConfig({
-   *   future: {
-   *     v8_middleware: true,
-   *   },
-   *   // other config options...
-   * });
-   * ```
-   */
-  getLoadContext?: (
-    c: Context,
-    options: {
-      build: ServerBuild;
-      mode: "development" | "production" | "test";
-    }
-  ) => Promise<AppLoadContext> | AppLoadContext;
-  /**
-   * Hook to add middleware that runs before any built-in middleware, including assets serving.
-   *
-   * You can use it to add protection middleware, for example.
-   */
-  beforeAll?: (app: Hono<E>) => Promise<void> | void;
-};
-```
-
-You can add additional Hono middleware with the `configure` function. If you do not provide a function, it will create a default Hono server.
-
-If you want to set up the React Router `AppLoadContext`, pass in a function to `getLoadContext`.
-
-Modify the `AppLoadContext` interface used in your app.
-
-Since the Hono server is compiled in the same bundle as the rest of your React Router app, you can import app modules just like you normally would.
-
-###### Example
-
-```ts
-// app/server.ts
-
-import { createHonoServer } from "react-router-hono-server/node";
-
-/**
- * Declare our loaders and actions context type
- */
-declare module "react-router" {
-  interface AppLoadContext {
-    /**
-     * The app version from the build assets
-     */
-    readonly appVersion: string;
+    "typecheck": "react-router typegen && tsc --noEmit"
   }
 }
-
-export default createHonoServer({
-  getLoadContext(_, { build, mode }) {
-    const isProductionMode = mode === "production";
-    return {
-      appVersion: isProductionMode ? build.assets.version : "dev",
-    };
-  },
-});
 ```
 
-```ts
-// app/routes/test.tsx
-import type { Route } from "./+types/test";
-export async function loader({ context }: Route.LoaderArgs) {
-  // get the context provided from `getLoadContext`
-  return { appVersion: context.appVersion }
-}
+### 5. Run the application
+
+```sh
+# Development
+pnpm dev
+
+# Production
+pnpm build
+pnpm start
 ```
 
-> [!TIP]
-> If you declare your `getLoadContext` function in a separate file, you can use the helper `createGetLoadContext` from `react-router-hono-server/{adapter}`
-> ```ts
-> import { createGetLoadContext } from "react-router-hono-server/node";
->
-> export const getLoadContext = createGetLoadContext((c, { mode, build }) => {
->   const isProductionMode = mode === "production";
->   return {
->     appVersion: isProductionMode ? build.assets.version : "dev",
->   };
-> });
-> ```
+## Runtime selection
 
-##### Node
-```ts
-export interface HonoServerOptions<E extends Env = BlankEnv> extends HonoServerOptionsBase<E> {
-  /**
-   * Listening listener (production mode only)
-   *
-   * It is called when the server is listening
-   *
-   * Defaults log the port
-   */
-  listeningListener?: (info: AddressInfo) => void;
-  /**
-   * Customize the node server (ex: using http2)
-   *
-   * {@link https://hono.dev/docs/getting-started/nodejs#http2}
-   */
-  customNodeServer?: CreateNodeServerOptions;
-  /**
-   * Callback executed just after `serve` from `@hono/node-server`
-   *
-   * **Only applied to production mode**
-   *
-   * For example, you can use this to bind `@hono/node-ws`'s `injectWebSocket`
-   */
-  onServe?: (server: ServerType) => void;
-  /**
-   * The Node.js Adapter rewrites the global Request/Response and uses a lightweight Request/Response to improve performance.
-   *
-   * If you want this behavior, set it to `true`
-   *
-   * 🚨 Setting this to `true` can break `request.clone()` if you later check `instanceof Request`.
-   *
-   * {@link https://github.com/honojs/node-server?tab=readme-ov-file#overrideglobalobjects}
-   *
-   * @default false
-   */
-  overrideGlobalObjects?: boolean;
-  /**
-   * Customize the hostname of the node server
-   */
-  hostname?: string;
-  /**
-   * Customize the serve static options
-   */
-  serveStaticOptions?: {
-    /**
-     * Customize the public assets (what's in your `public` directory) serve static options.
-     *
-     */
-    publicAssets?: Omit<ServeStaticOptions<E>, "root">;
-    /**
-     * Customize the client assets (what's in your `build/client/assets` directory - React Router) serve static options.
-     *
-     */
-    clientAssets?: Omit<ServeStaticOptions<E>, "root">;
-  };
-}
-```
+The runtime is selected in two places:
 
-##### Bun
-```ts
-export interface HonoServerOptions<E extends Env = BlankEnv> extends HonoServerOptionsBase<E> {
-  /**
-   * Customize the bun server
-   *
-   * {@link https://bun.sh/docs/api/http#start-a-server-bun-serve}
-   */
-  customBunServer?: Serve.Options<unknown, string>;
-  /**
-   * Callback executed after server has closed and all inflight requests completed,
-   * before process exit. Only applicable in production mode.
-   *
-   * @example
-   * ```ts
-   * export default createHonoServer({
-   *   onGracefulShutdown: async () => {
-   *     await db.close();
-   *   },
-   * });
-   * ```
-   */
-  onGracefulShutdown?: () => Promise<void> | void;  
-  /**
-   * Customize the serve static options
-   */
-  serveStaticOptions?: {
-    /**
-     * Customize the public assets (what's in your `public` directory) serve static options.
-     *
-     */
-    publicAssets?: Omit<ServeStaticOptions<E>, "root">;
-    /**
-     * Customize the client assets (what's in your `build/client/assets` directory - React Router) serve static options.
-     *
-     */
-    clientAssets?: Omit<ServeStaticOptions<E>, "root">;
-  };
-}
-```
+1. Set `runtime` in `reactRouterHonoServer()`.
+2. Import the matching adapter from the server entry.
 
-##### Cloudflare Workers
-```ts
-export interface HonoServerOptions<E extends Env = BlankEnv> extends Omit<HonoServerOptionsBase<E>, "port"> {}
-```
-
-##### AWS Lambda
-```ts
-type InvokeMode = "default" | "stream";
-
-interface HonoAWSServerOptions<E extends Env = BlankEnv> extends Omit<HonoServerOptionsBase<E>, "port"> {
-  /**
-   * The invoke mode to use
-   *
-   * Defaults to `default`
-   *
-   * {@link https://hono.dev/docs/getting-started/aws-lambda#lambda-response-streaming}
-   */
-  invokeMode: InvokeMode;
-}
-```
-
-
-##### Deno
-```ts
-interface HonoDenoServerOptions<E extends Env = BlankEnv> extends HonoServerOptionsBase<E> {
-  /**
-   * Customize the deno server
-   *
-   * {@link https://docs.deno.com/api/deno/~/Deno.serve#parameters}
-   */
-  customDenoServer?: Deno.ServeOptions;
-
-  /**
-   * Callback executed after server has closed and all inflight requests completed,
-   * before process exit. Only applicable in production mode.
-   *
-   * @example
-   * ```ts
-   * export default createHonoServer({
-   *   onGracefulShutdown: async () => {
-   *     await db.close();
-   *   },
-   * });
-   * ```
-   */
-   
-  onGracefulShutdown?: () => Promise<void> | void;
-  /**
-   * Customize the serve static options
-   */
-  serveStaticOptions?: {
-    /**
-     * Customize the public assets (what's in your `public` directory) serve static options.
-     *
-     */
-    publicAssets?: Omit<ServeStaticOptions<E>, "root">;
-    /**
-     * Customize the client assets (what's in your `build/client/assets` directory - React Router) serve static options.
-     *
-     */
-    clientAssets?: Omit<ServeStaticOptions<E>, "root">;
-  };
-}
-```
-
-## Middleware
-
-🚨 Redirecting from a middleware
-> [!IMPORTANT]
-> TLDR: If you encounter a `Error: Unable to decode turbo-stream response` after a redirect from your middleware, try to use `redirect` instead of `c.redirect`.
->
-> `redirect` will use `c.redirect` for "normal" requests and a single-fetch-like response for React Router `.data` requests.
->
-> If the next handler is a Hono middleware (ex: https://github.com/rphlmr/react-router-hono-server/discussions/56), you can use `c.redirect` as usual.
->
-> You **have to** use the `redirect` helper to redirect from a middleware if the next handler that will receive this redirect is a React Router route.
->
-> It returns a single-fetch-like response.
->
-> If you use `c.redirect`, it will not work as expected and you will get a `Unable to decode turbo-stream response` error.
->
->```ts
-> import { redirect } from "react-router-hono-server/http";
->```
->
-> I'm sorry for this inconvenience, I hope it can be "fixed" in future React Router versions.
-
-Middleware are functions that are called before React Router calls your loader/action.
-
-Hono is the perfect tool for this, as it supports middleware out of the box.
-
-See the [Hono docs](https://hono.dev/docs/guides/middleware) for more information.
-
-You can imagine many use cases for middleware, such as authentication, protecting routes, caching, logging, etc.
-
-See how [Shelf.nu](https://github.com/Shelf-nu/shelf.nu/blob/main/server/middleware.ts) uses them!
-
-> [!TIP]
-> This lib exports one middleware `cache` (`react-router-hono-server/middleware`) that you can use to cache your responses.
-
-### `beforeAll`
-You can use the `beforeAll` option to add middleware that runs before any built-in middleware, including assets serving.
-
-You can use it to add protection middleware, for example.
-
-> [!TIP]
-> When you check the path to protect, don't forget to use `c.req.path.includes("")` to handle `.data` requests (`loader`)!
-
-```ts
-import { reactRouterRedirect } from "react-router-hono-server/http";
-import { createHonoServer } from "react-router-hono-server/node";
-
-export default createHonoServer({
-  beforeAll(app) {
-    app.use(async (c, next) => {
-      if (c.req.path.includes("/protected") && !c.req.header("Authorization")) {
-        return reactRouterRedirect("/login");
-      }
-
-      return next();
-    });
-  },
-});
-```
-
-### Using remix-hono middleware
-
-It is easy to use [remix-hono](https://github.com/sergiodxa/remix-hono) middleware with this package.
-
-```ts
-import { createCookieSessionStorage } from "react-router";
-import { createHonoServer } from "react-router-hono-server/node";
-import { session } from "remix-hono/session";
-
-export default createHonoServer({
-  configure: (server) => {
-    server.use(
-      session({
-        autoCommit: true,
-        createSessionStorage() {
-          const sessionStorage = createCookieSessionStorage({
-            cookie: {
-              name: "session",
-              httpOnly: true,
-              path: "/",
-              sameSite: "lax",
-              secrets: [process.env.SESSION_SECRET],
-              secure: process.env.NODE_ENV === "production",
-            },
-          });
-
-          return {
-            ...sessionStorage,
-            // If a user doesn't come back to the app within 30 days, their session will be deleted.
-            async commitSession(session) {
-              return sessionStorage.commitSession(session, {
-                maxAge: 60 * 60 * 24 * 30, // 30 days
-              });
-            },
-          };
-        },
-      })
-    );
-  },
-});
-```
-
-### Creating custom Hono Middleware
-
-You can create middleware using the [`createMiddleware`](https://hono.dev/docs/helpers/factory#createmiddleware) or [`createFactory`](https://hono.dev/docs/helpers/factory#createfactory) functions from `hono/factory`.
-
-Then, use them with the `configure` function of `createHonoServer`.
-
-```ts
-import { createMiddleware } from "hono/factory";
-import { createHonoServer } from "react-router-hono-server/node";
-
-export default createHonoServer({
-  configure: (server) => {
-    server.use(
-      createMiddleware(async (c, next) => {
-        console.log("middleware");
-        return next();
-      })
-    );
-  },
-});
-```
-
-### Using React Router Middleware
-You can use React Router middleware with this package.
-
-> [!TIP]
-> Check this [example](./examples/node/simple-future-middleware/) to see how to use it.
+| Runtime    | Plugin option     | Server import                         |
+| ---------- | ----------------- | ------------------------------------- |
+| Node.js    | omitted or `node` | `react-router-hono-server/node`       |
+| Bun        | `bun`             | `react-router-hono-server/bun`        |
+| Deno       | `deno`            | `react-router-hono-server/deno`       |
+| Cloudflare | `cloudflare`      | `react-router-hono-server/cloudflare` |
+| AWS Lambda | `aws`             | `react-router-hono-server/aws-lambda` |
 
 > [!IMPORTANT]
-> **To make the typing works correctly, in your `react-router.config.ts` or where you want, add future v8_middleware flag type to true.**
-> 
->  ```ts
-> declare module "react-router" {
->   interface Future {
->     v8_middleware: true; // 👈 Enable middleware types
->   }
-> }
-> ```
->
-> If you already have a custom `getLoadContext` function, you now have to return an instance of `RouterContextProvider` from it. Check this [example](./examples/node/simple-future-middleware/) for more information.
->
-> ```ts
-> import { RouterContextProvider, createContext } from "react-router";
-> import { createHonoServer } from "react-router-hono-server/node";
->
-> console.log("loading server");
->
-> type GlobalAppContext = {
->  appVersion: string;
-> };
->
-> export const globalAppContext = createContext<GlobalAppContext>();
->
-> export default await createHonoServer({
->  getLoadContext(_c, { mode, build }) {
->    const isProductionMode = mode === "production";
->    const context = new RouterContextProvider();
->
->    context.set(globalAppContext, { appVersion: isProductionMode ? build.assets.version : "dev" });
->
->    return context;
->  },
-> });
->```
+> The plugin must precede `reactRouter()`. On Cloudflare, `cloudflare()` must precede both plugins.
 
-Then, you can use the `use` function from `react-router` to access the context in your loaders and actions.
+## Reveal and entry files
 
-### Using WebSockets
-#### Node
-This package has a built-in helper to use `@hono/node-ws`.
+React Router and this package each provide a default entry file. These entries operate at different layers and solve different problems.
 
-When using WebSockets with the Node adapter, install `@hono/node-ws` in your app:
+| Entry                  | Owned by                   | Responsibility                                                         |
+| ---------------------- | -------------------------- | ---------------------------------------------------------------------- |
+| `app/server.ts`        | `react-router-hono-server` | Hono middleware, API routes, load context, assets, and runtime startup |
+| `app/entry.server.tsx` | React Router               | Rendering a matched React Router request into a response               |
+| `app/entry.client.tsx` | React Router               | Browser hydration                                                      |
 
-```bash
-npm install @hono/node-ws
+Reveal only the entry you need to customize.
+
+### Hono server entry
+
+Without `app/server.ts` or `app/server/index.ts`, the plugin supplies a virtual Hono server with default options.
+
+Reveal the Hono entry when you need any of the following:
+
+- Hono middleware or API routes
+- A React Router load context
+- WebSockets
+- Static-file configuration
+- Runtime-specific server options
+
+Create `app/server.ts`:
+
+```sh
+npx react-router-hono-server reveal file
 ```
 
-> [!TIP]
-> Check this [example](./examples/node/websocket/) to see how to use it.
+Use the folder form when the server has colocated modules:
 
-```ts
-import type { WSContext } from "hono/ws";
-import { createHonoServer } from "react-router-hono-server/node";
-
-// Store connected clients
-const clients = new Set<WSContext>();
-
-export default createHonoServer({
-  useWebSocket: true,
-  // 👆 Unlock this 👇 from @hono/node-ws
-  configure: (app, { upgradeWebSocket }) => {
-    app.get(
-      "/ws",
-      upgradeWebSocket((c) => ({
-        // https://hono.dev/helpers/websocket
-        onOpen(_, ws) {
-          console.log("New connection ⬆️");
-          clients.add(ws);
-        },
-        onMessage(event, ws) {
-          console.log("Context", c.req.header("Cookie"));
-          console.log("Event", event);
-          console.log(`Message from client: ${event.data}`);
-          // Broadcast to all clients except sender
-          clients.forEach((client) => {
-            if (client.readyState === 1) {
-              client.send(`${event.data}`);
-            }
-          });
-        },
-        onClose(_, ws) {
-          console.log("Connection closed");
-          clients.delete(ws);
-        },
-      }))
-    );
-  },
-});
+```sh
+npx react-router-hono-server reveal folder
 ```
 
-#### Bun
-This package has a built-in helper to use `hono/bun` in prod and `@hono/node-ws` in dev
+The CLI infers the runtime from `vite.config.ts`. If it cannot find a runtime option, it generates a Node.js entry.
 
-> [!TIP]
-> Check this [example](./examples/bun/websocket/) to see how to use it.
+> [!WARNING]
+> Run the command from the project root. The reveal command overwrites its target, so do not run it over an entry you have already customized.
 
-```ts
-import { WSContext } from "hono/ws";
-import { createHonoServer } from "react-router-hono-server/bun";
+### React Router rendering entries
 
-// Store connected clients
-const clients = new Set<WSContext>();
+React Router supplies hidden client and server rendering entries. It selects the server renderer from the application's dependencies:
 
-export default createHonoServer({
-  useWebSocket: true,
-  // 👆 Unlock this 👇 from @hono/node-ws in dev, hono/bun in prod
-  configure(app, { upgradeWebSocket }) {
-    app.get(
-      "/ws",
-      upgradeWebSocket((c) => ({
-        // https://hono.dev/helpers/websocket
-        onOpen(_, ws) {
-          console.log("New connection 🔥");
-          clients.add(ws);
-        },
-        onMessage(event, ws) {
-          console.log("Context", c.req.header("Cookie"));
-          console.log("Event", event);
-          console.log(`Message from client: ${event.data}`);
-          // Broadcast to all clients except sender
-          clients.forEach((client) => {
-            if (client.readyState === 1) {
-              client.send(`${event.data}`);
-            }
-          });
-        },
-        onClose(_, ws) {
-          console.log("Connection closed");
-          clients.delete(ws);
-        },
-      }))
-    );
-  },
-});
+- Applications with `@react-router/node`, `@react-router/express`, or `@react-router/serve` use the Node streaming entry.
+- Applications without those packages use the Web Streams entry.
+- A custom `app/entry.server.tsx` always takes precedence.
+
+Reveal the entries only when the application needs custom hydration or SSR behavior:
+
+```sh
+npx react-router reveal
 ```
 
-#### Cloudflare Workers
-Cloudflare requires a different approach to WebSockets, based on Durable Objects.
+The command generates both `app/entry.client.tsx` and `app/entry.server.tsx`.
 
-> [!TIP]
-> Check this [example](./examples/cloudflare/websocket/) to see how to use it.
+See the [React Router reveal documentation](https://reactrouter.com/api/other-api/dev#react-router-reveal) for the generated files.
 
-> [!IMPORTANT]
-> For now, HMR is not supported in Cloudflare Workers. Will try to come back to it later.
->
-> Work in progress on Cloudflare team: https://github.com/flarelabs-net/vite-plugin-cloudflare
+### Optional React Router future flags
 
-#### AWS
-Not supported.
-
-## Basename and Hono sub apps
-
-> [!NOTE]
-> By default, the React Router app is mounted at `/` (default `basename` value).
->
-> You may not need to use this option. It's for advanced use cases.
-
-> [!TIP]
-> Check this [example](./examples/node/custom-mount/) to see how to use it.
-
-You can use the `basename` option in your React Router config (`react-router.config.ts`) to mount your React Router app on a subpath.
-
-It will automatically mount the app on the subpath.
+React Router 8.3 has no stable future flags. Its two unstable flags are optional and belong in `react-router.config.ts`; `reactRouterHonoServer()` does not duplicate or enable them:
 
 ```ts
-// react-router.config.ts
 import type { Config } from "@react-router/dev/config";
 
 export default {
-  basename: "/app", // Now the React Router app will be mounted on /app
+  future: {
+    unstable_enableNodeReadableStream: true,
+    unstable_optimizeDeps: true,
+  },
 } satisfies Config;
 ```
 
-Then, you can use the `app` option in `createHonoServer` to pass your "root" Hono app. This will be used to mount the React Router app on the `basename` path.
+- `unstable_enableNodeReadableStream` makes React Router use its Web Streams default entry on Node. It has no effect when `app/entry.server.tsx` exists.
+- `unstable_optimizeDeps` adds the client entry and route modules to Vite's dependency optimizer in development. If it causes optimization issues, remove the flag and restart the dev server.
+
+These flags are experimental and may change in React Router minor releases. See React Router's [future changes guide](https://reactrouter.com/upgrading/future) and [changelog](https://reactrouter.com/changelog).
+
+## Runtime guides
+
+### Node.js
+
+Node.js is the default runtime and the shortest path to production. Follow the [minimal Node quick start](#minimal-node-quick-start); no runtime option is required.
+
+#### Node.js runtime notes
+
+- React Router's default Node rendering entry is compatible.
+- Set the listening port with `PORT` or the `port` server option.
+- Use `hostname` to control the listening interface.
+- Advanced options include `listeningListener`, `onServe`, `customNodeServer`, and `overrideGlobalObjects`.
+- Static-file customization and WebSockets are supported.
+
+### Bun
+
+#### Install
+
+```sh
+bun remove @react-router/node @react-router/serve
+bun add react-router-hono-server hono
+bun add -d @types/bun
+```
+
+#### Configure Vite
+
+Create `vite.config.ts` and select the Bun runtime:
+
+<!-- canonical:bun-vite -->
+
+```ts
+import { reactRouter } from "@react-router/dev/vite";
+import { reactRouterHonoServer } from "react-router-hono-server/dev";
+import { defineConfig } from "vite";
+
+export default defineConfig({
+  plugins: [reactRouterHonoServer({ runtime: "bun" }), reactRouter()],
+});
+```
+
+#### Create the server entry
+
+Create `app/server.ts`:
+
+<!-- canonical:bun-server -->
+
+```ts
+import { createHonoServer } from "react-router-hono-server/bun";
+
+export default await createHonoServer();
+```
+
+#### Add scripts
+
+<!-- canonical:bun-scripts -->
+
+```json
+{
+  "scripts": {
+    "build": "bunx --bun react-router build",
+    "dev": "bunx --bun vite",
+    "start": "bun ./build/server/index.js",
+    "typecheck": "react-router typegen && tsc --noEmit"
+  }
+}
+```
+
+#### Run
+
+```sh
+# Development
+bun run dev
+
+# Production
+bun run build
+bun run start
+```
+
+#### Bun runtime notes
+
+- `bunx --bun react-router build` runs React Router and prerendering under Bun instead of following the CLI's Node.js shebang.
+- `bunx --bun vite` forces Vite and its child processes to run with Bun.
+- React Router automatically uses its Web Streams server entry.
+- `customBunServer` forwards options to `Bun.serve`.
+- Graceful shutdown, static-file customization, and WebSockets are supported.
+
+### Deno
+
+#### Install
+
+In `package.json`, remove `@react-router/node` and `@react-router/serve`, add `react-router-hono-server` and `hono` to `dependencies`, then install with Deno:
+
+```sh
+deno install --allow-scripts --minimum-dependency-age=0
+```
+
+#### Configure Vite
+
+Create `vite.config.ts` and select the Deno runtime:
+
+<!-- canonical:deno-vite -->
+
+```ts
+import { reactRouter } from "@react-router/dev/vite";
+import { reactRouterHonoServer } from "react-router-hono-server/dev";
+import { defineConfig } from "vite";
+
+export default defineConfig({
+  plugins: [reactRouterHonoServer({ runtime: "deno" }), reactRouter()],
+});
+```
+
+#### Create the server entry
+
+Create `app/server.ts`:
+
+<!-- canonical:deno-server -->
+
+```ts
+import { createHonoServer } from "react-router-hono-server/deno";
+
+export default await createHonoServer();
+```
+
+#### Add scripts
+
+<!-- canonical:deno-scripts -->
+
+```json
+{
+  "scripts": {
+    "build": "react-router build",
+    "dev": "deno run --conditions=development --allow-all npm:@react-router/dev dev",
+    "start": "deno run --allow-all ./build/server/index.js",
+    "typecheck": "react-router typegen && tsc --noEmit"
+  }
+}
+```
+
+#### Run
+
+```sh
+# Development
+deno task dev
+
+# Production
+deno task build
+deno task start
+```
+
+#### Deno runtime notes
+
+- The development command enables the `development` export condition required by React Router.
+- `customDenoServer` forwards options to `Deno.serve`.
+- Graceful shutdown and static-file customization are supported.
+- WebSockets use the optional `ws` peer in Vite development and Deno's native implementation in production.
+
+### Cloudflare Workers
+
+#### Install
+
+```sh
+pnpm remove @react-router/node @react-router/serve
+pnpm add react-router-hono-server hono
+pnpm add -D @cloudflare/vite-plugin @cloudflare/workers-types wrangler
+```
+
+#### Configure Vite
+
+Create `vite.config.ts`. Plugin order is required:
+
+<!-- canonical:cloudflare-vite -->
+
+```ts
+import { cloudflare } from "@cloudflare/vite-plugin";
+import { reactRouter } from "@react-router/dev/vite";
+import { reactRouterHonoServer } from "react-router-hono-server/dev";
+import { defineConfig } from "vite";
+
+export default defineConfig({
+  plugins: [
+    cloudflare({ viteEnvironment: { name: "ssr" } }),
+    reactRouterHonoServer({ runtime: "cloudflare" }),
+    reactRouter(),
+  ],
+});
+```
+
+#### Create the server entry
+
+Create `app/server.ts`:
+
+<!-- canonical:cloudflare-server -->
+
+```ts
+import { createHonoServer } from "react-router-hono-server/cloudflare";
+
+export default await createHonoServer();
+```
+
+#### Configure Wrangler
+
+Create `wrangler.jsonc`:
+
+<!-- canonical:cloudflare-wrangler -->
+
+```jsonc
+{
+  "$schema": "./node_modules/wrangler/config-schema.json",
+  "name": "my-react-router-worker",
+  "compatibility_date": "2026-08-11",
+  "compatibility_flags": ["nodejs_compat"],
+  "main": "./app/server.ts",
+  "assets": {
+    "directory": "./build/client",
+    "binding": "ASSETS",
+  },
+}
+```
+
+The `ASSETS` binding connects the generated client directory to the Worker.
+
+#### Add scripts
+
+<!-- canonical:cloudflare-scripts -->
+
+```json
+{
+  "scripts": {
+    "build": "react-router build",
+    "dev": "vite dev",
+    "start": "vite preview",
+    "typecheck": "react-router typegen && tsc --noEmit"
+  }
+}
+```
+
+#### Run
+
+```sh
+# Workerd-backed development
+pnpm dev
+
+# Local production preview
+pnpm build
+pnpm start
+```
+
+Deploy the generated Worker with your normal Cloudflare workflow.
+
+#### Cloudflare runtime notes
+
+- Public files and generated client files are served through `ASSETS`.
+- Missing or unsuccessful asset responses fall through to Hono and React Router.
+- Prerendering and SPA mode are supported.
+- With `ssr: true`, a route without a generated asset falls through to runtime SSR.
+- WebSockets use Cloudflare's native `WebSocketPair` implementation in both workerd-backed development and production.
+
+### AWS Lambda
+
+#### Install
+
+```sh
+pnpm remove @react-router/serve
+pnpm add react-router-hono-server hono
+```
+
+#### Configure Vite
+
+Create `vite.config.ts` and select the AWS runtime:
+
+<!-- canonical:aws-vite -->
+
+```ts
+import { reactRouter } from "@react-router/dev/vite";
+import { reactRouterHonoServer } from "react-router-hono-server/dev";
+import { defineConfig } from "vite";
+
+export default defineConfig({
+  plugins: [reactRouterHonoServer({ runtime: "aws" }), reactRouter()],
+});
+```
+
+#### Create the Lambda entry
+
+Create `app/server.ts` for the default response mode:
+
+<!-- canonical:aws-server -->
+
+```ts
+import { createHonoServer } from "react-router-hono-server/aws-lambda";
+
+export default await createHonoServer({ invokeMode: "default" });
+```
+
+Set `invokeMode: "stream"` to use Lambda response streaming.
+
+React Router's default Node rendering entry is compatible. Reveal it only when the application needs custom SSR behavior.
+
+#### Add scripts
+
+<!-- canonical:aws-scripts -->
+
+```json
+{
+  "scripts": {
+    "build": "react-router build",
+    "dev": "react-router dev",
+    "typecheck": "react-router typegen && tsc --noEmit"
+  }
+}
+```
+
+#### Build and deploy
+
+Use `pnpm dev` locally, then run `pnpm build` before packaging `build/server` for Lambda.
+
+Your infrastructure must expose the generated default handler as the Lambda entry.
+
+#### AWS runtime notes
+
+- Production static files should be served by S3, CloudFront, or another asset service.
+- Prerendered files are generated in `build/client`; deploy them with the static assets.
+- Requests that reach Lambda continue through runtime SSR.
+- Both default responses and Lambda response streaming are supported.
+
+## Server customization
+
+Create or reveal a Hono server entry before using these options:
+
+```sh
+npx react-router-hono-server reveal file
+```
+
+### Hono app and middleware ordering
+
+Pass `app` to use an existing Hono instance. Hooks execute in this order:
+
+| Order | Hook or middleware      | Typical use                                                  |
+| ----- | ----------------------- | ------------------------------------------------------------ |
+| 1     | `beforeAll(app)`        | Authentication or request policy that must run before assets |
+| 2     | Built-in asset handling | Public files and generated client assets                     |
+| 3     | Built-in logger         | Request logging when `defaultLogger` is enabled              |
+| 4     | `configure(app)`        | API routes and application middleware                        |
+| 5     | React Router handler    | Loaders, actions, and rendered routes                        |
 
 ```ts
 import { Hono } from "hono";
 import { createHonoServer } from "react-router-hono-server/node";
-import { API_BASENAME, api } from "./api";
-import { getLoadContext } from "./context";
 
-// Create a root Hono app
 const app = new Hono();
 
-// Mount the API app at /api
-app.route(API_BASENAME, api);
-
-export default createHonoServer({
-  // Pass the root Hono app to the server.
-  // It will be used to mount the React Router app on the `basename` defined in react-router.config.ts
+export default await createHonoServer({
   app,
-  getLoadContext,
+  defaultLogger: false,
+  beforeAll(server) {
+    server.use("/private/*", async (c, next) => {
+      if (!c.req.header("authorization")) return c.text("Unauthorized", 401);
+      await next();
+    });
+  },
+  configure(server) {
+    server.get("/api/health", (c) => c.json({ ok: true }));
+  },
 });
 ```
-> [!NOTE]
-> You now have two entry points!
-> - `/api` - for your API
-> - `/app` - for your React Router app
 
-## Pre-rendering
-You should be able to use pre-rendering with this package.
+### Chrome DevTools automatic workspaces
 
-### Node and Bun
-> [!TIP]
-> Check this [example](./examples/node/with-pre-render/) to see how to use it.
+To let Chrome DevTools automatically connect to your project, create
+`public/.well-known/appspecific/com.chrome.devtools.json` with your project's absolute path and a stable UUID v4:
 
-> [!IMPORTANT]
-> You need to add the `serverBuildFile` option to your `react-router.config.ts` file.
->
-> The file path is fixed to `assets/server-build.js`.
-
-Add the pre-render option to your `react-router.config.ts`
-
-```ts
-import type { Config } from "@react-router/dev/config";
-
-export default {
-  prerender: ["/"],
-} satisfies Config;
-```
-
-### Cloudflare
-> [!TIP]
-> Check this [example](./examples/cloudflare/with-pre-render/) to see how to use it.
-
-Add the pre-render option to your `react-router.config.ts`
-
-```ts
-import type { Config } from "@react-router/dev/config";
-
-export default {
-  prerender: ["/"],
-} satisfies Config;
-```
-
-
-## Migrate from v1
-_You should not expect any breaking changes._
-
-### Install the latest version
-
-```bash
-npm install react-router-hono-server@latest
-```
-
-### Create the server file
-#### Option 1 - You previously had all your server code in `app/entry.server.tsx`
-```bash
-touch app/server.ts
-```
-or
-```bash
-npx react-router-hono-server reveal file
-```
-
-#### Option 2 - You previously had your server code in a `server` folder
-```bash
-mkdir app/server
-touch app/server/index.ts
-```
-or
-```bash
-npx react-router-hono-server reveal folder
-```
-
-### Move your server code
-Move your previous server code to the new file you created in the previous step.
-
-> [!NOTE]
-> You can remove the import from `react-router-hono-server/node` in your `entry.server.tsx` file and any other server code.
-
-Many options are gone, `serverBuildFile` `assetsDir` and `buildDirectory`.
-
-We now use the Vite virtual import `virtual:react-router/server-build` to load the server build and we read the Vite config thanks to the `reactRouterHonoServer` plugin.
-
-> [!IMPORTANT]
-> You now need to export the server created by `createHonoServer` as **default**.
->
-> ```ts
-> import { createHonoServer } from "react-router-hono-server/node";
->
-> export default createHonoServer({/* other options */});
-> ```
-
-### Update your `vite.config.ts`
-
-> [!IMPORTANT]
-> `devServer` is now `reactRouterHonoServer`.
-
-Many options are gone or have changed.
-
-`exportName` (`reactRouterHonoServer` expects a default export from your server file), `entry` is now `serverEntryPoint`. `appDirectory` is removed (read from `vite.config.ts`), and `exclude` has been moved under `dev`.
-
-
-##### You used `buildEnd` from `remix()` plugin or a custom `buildDirectory` option
-You may know that it has been moved to `react-router.config.ts` (see [here](https://reactrouter.com/upgrading/remix#5-add-a-react-router-config) for more information).
-
-If you used this hook for Sentry, check this [example](./examples/node/with-sentry/react-router.config.ts) to see how to migrate.
-
-If you used a custom `buildDirectory` option, check this [example](./examples/node/custom-build/react-router.config.ts) to see how to migrate.
-
-### Update your package.json scripts
 ```json
-  "scripts": {
-    "build": "react-router build",
-    "dev": "react-router dev",
-    "start": "node ./build/server/index.js",
-  },
+{
+  "workspace": {
+    "root": "/absolute/path/to/your/project",
+    "uuid": "53b029bb-c989-4dca-969b-835fecec3717"
+  }
+}
 ```
 
-## Special Thanks
+The development server serves this file before the React Router handler. When the file is absent, the discovery request
+returns a quiet `404`. See [Automatic Workspace connection in Chrome DevTools](https://developer.chrome.com/docs/devtools/automatic-workspaces)
+for setup details and security considerations.
 
-Inspired by [remix-express-vite-plugin](https://github.com/kiliman/remix-express-vite-plugin) from [@kiliman](https://github.com/kiliman)
+### Typed React Router context
 
-`remix` handler was forked from [remix-hono](https://github.com/sergiodxa/remix-hono) by [@sergiodxa](https://github.com/sergiodxa) as it is a small and simple core dependency of this library.
+React Router 8 always expects `getLoadContext` to return a `RouterContextProvider`.
 
-I will still help maintain it.
+```ts
+import { createContext, RouterContextProvider } from "react-router";
+import { createHonoServer } from "react-router-hono-server/node";
 
-## Contributors ✨
+export const requestIdContext = createContext<string>();
 
-<!-- ALL-CONTRIBUTORS-LIST:END -->
+export default await createHonoServer({
+  getLoadContext(c) {
+    const context = new RouterContextProvider();
+    context.set(requestIdContext, c.req.header("x-request-id") ?? crypto.randomUUID());
+    return context;
+  },
+});
+```
 
-This project follows the [all-contributors](https://github.com/all-contributors/all-contributors) specification. Contributions of any kind welcome!
+Each adapter also exports `createGetLoadContext` for separately declared callbacks that need contextual typing.
+
+### WebSockets
+
+Node, Bun, Deno, and Cloudflare Workers support the
+[Hono WebSocket helper](https://hono.dev/docs/helpers/websocket) in development
+and production.
+
+> [!NOTE]
+> Node always uses `@hono/node-server`.
+> Bun and Deno use it only while running through Vite in development.
+> Install the optional `ws` peer and its TypeScript declarations for those modes.
+>
+> Bun and Deno production builds use their native Hono adapters.
+> They do not load `ws` in production.
+>
+> Cloudflare uses its native `WebSocketPair` implementation in workerd-backed
+> Vite development and production, so it never requires `ws`.
+
+```sh
+pnpm add ws
+pnpm add -D @types/ws
+```
+
+The portable callback API exposes `upgradeWebSocket`:
+
+```ts
+import { createHonoServer } from "react-router-hono-server/deno";
+
+export default await createHonoServer({
+  useWebSocket: true,
+  configure(app, { upgradeWebSocket }) {
+    app.get(
+      "/ws",
+      upgradeWebSocket(() => ({
+        onMessage(event, ws) {
+          ws.send(`echo:${event.data}`);
+        },
+      })),
+    );
+  },
+});
+```
+
+Use the matching `/bun`, `/deno`, or `/cloudflare` adapter import.
+
+Cloudflare's Hono helper does not support `onOpen`.
+Use `onMessage`, `onClose`, and `onError` there.
+
+The Node adapter exposes its underlying `ws.WebSocketServer` as `wss`:
+
+```ts
+import { createHonoServer } from "react-router-hono-server/node";
+
+export default await createHonoServer({
+  useWebSocket: true,
+  configure(app, { upgradeWebSocket, wss }) {
+    wss.on("connection", (socket) => {
+      socket.send("connected");
+    });
+
+    app.get(
+      "/ws",
+      upgradeWebSocket(() => ({
+        onMessage(event, ws) {
+          ws.send(`echo:${event.data}`);
+        },
+      })),
+    );
+  },
+});
+```
+
+`wss` is Node-only because it is the concrete server created by the `ws` package.
+Bun, Deno, and Cloudflare use runtime-native, per-connection WebSocket APIs
+instead of an equivalent central `WebSocketServer`.
+
+The temporary `wss` used by Bun and Deno during Vite development is not exposed.
+Doing so would provide an API that disappears in production.
+
+Node WebSockets use `@hono/node-server` 2 and coexist with Vite HMR.
+Use `wss.on("connection")`, `wss.clients`, and the connection sockets' `ping()`
+method for server-level connection management and heartbeat handling.
+
+Bun, Deno, and Cloudflare expose only `upgradeWebSocket`.
+
+### Basename and prerendering
+
+Prerendering is configured by React Router in `react-router.config.ts`.
+
+#### Prerender every static route
+
+```ts
+import type { Config } from "@react-router/dev/config";
+
+export default {
+  prerender: true,
+} satisfies Config;
+```
+
+Dynamic routes are not included because their parameter values are unknown.
+
+#### Prerender selected routes
+
+```ts
+import type { Config } from "@react-router/dev/config";
+
+export default {
+  prerender: ["/", "/about", "/posts/launch"],
+} satisfies Config;
+```
+
+Use concrete paths such as `/posts/launch` for dynamic routes. Paths are relative to the React Router basename; do not include the basename itself.
+
+#### Discover routes asynchronously
+
+```ts
+import type { Config } from "@react-router/dev/config";
+
+export default {
+  prerender: {
+    async paths() {
+      return ["/", "/about"];
+    },
+    concurrency: 4,
+  },
+} satisfies Config;
+```
+
+React Router also accepts `basename`, `appDirectory`, and `buildDirectory` in the same configuration file.
+
+#### Deployment behavior
+
+| Configuration                | Node, Bun, Deno, and Cloudflare Workers                                                   | AWS Lambda                                                                                                              |
+| ---------------------------- | ----------------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------- |
+| `ssr: true` with `prerender` | Generates and serves static documents and route data.<br>Unmatched paths use runtime SSR. | Generates the same static output, but a separate AWS asset service must serve it.<br>Unmatched Lambda requests use SSR. |
+| `ssr: false`                 | Generates static output and an SPA fallback for static hosting                            | Generates static output and an SPA fallback for static hosting                                                          |
+
+- With `ssr: true`, generated files are used first and unmatched routes continue to runtime SSR.
+- With `ssr: false`, React Router emits static output and an SPA fallback for static hosting.
+- AWS generates the same client output, but a separate asset service must serve it before requests reach Lambda.
+
+The integration suite covers static and dynamic paths, async discovery, concurrency, SSR and SPA fallbacks, basenames, and custom application/build directories on every adapter.
+
+See React Router's [pre-rendering guide](https://reactrouter.com/how-to/pre-rendering) for the full configuration contract.
+
+The plugin reads React Router's resolved configuration and mounts the Hono-backed handler at the same basename.
+
+## API and exports
+
+| Export                         | Purpose                                                                               |
+| ------------------------------ | ------------------------------------------------------------------------------------- |
+| `react-router-hono-server/dev` | `reactRouterHonoServer(options)` Vite plugin                                          |
+| `/node`                        | Node `createHonoServer`, options, and `createGetLoadContext`                          |
+| `/bun`                         | Bun `createHonoServer`, options, and `createGetLoadContext`                           |
+| `/deno`                        | Deno `createHonoServer`, options, and `createGetLoadContext`                          |
+| `/cloudflare`                  | Cloudflare `createHonoServer`, options, and `createGetLoadContext`                    |
+| `/aws-lambda`                  | AWS handler factory, options, and `createGetLoadContext`                              |
+| `/middleware`                  | `cache(seconds)` static-response middleware                                           |
+| `/http`                        | `redirect(c, location)`, deprecated `reactRouterRedirect(location)`, and `getPath(c)` |
+| CLI                            | [`react-router-hono-server reveal file` or `reveal folder`](#hono-server-entry)       |
+
+### Vite plugin options
+
+| Option             | Purpose                                                         |
+| ------------------ | --------------------------------------------------------------- |
+| `runtime`          | Selects the production adapter; defaults to `node`              |
+| `serverEntryPoint` | Overrides discovery of `app/server.ts` or `app/server/index.ts` |
+| `dev.exclude`      | Extends the paths excluded from Hono dev-server handling        |
+| `dev.export`       | Selects a named export from the server entry during development |
+
+When no server entry is discovered, the plugin supplies a virtual default server for the selected runtime.
+
+## Troubleshooting
+
+| Problem                                     | Resolution                                                                           |
+| ------------------------------------------- | ------------------------------------------------------------------------------------ |
+| Cloudflare plugin is missing                | Add `cloudflare()` before both `reactRouterHonoServer()` and `reactRouter()`         |
+| Invalid hook calls or incompatible contexts | Remove aliases and duplicate framework installations, then perform one clean install |
+| Server entry is not discovered              | Create `app/server.ts`, create `app/server/index.ts`, or set `serverEntryPoint`      |
+| Load context fails at runtime               | Return a `RouterContextProvider`, not a plain object                                 |
+| An asset request returns application HTML   | Verify `buildDirectory`; on Cloudflare, also verify the `ASSETS` binding             |
+| Upgrading from the previous major           | Follow [MIGRATION.md](./MIGRATION.md) and complete its clean-install checklist       |
