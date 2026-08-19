@@ -60,4 +60,6 @@ jobs:
           deno-version: latest
       - run: vp install
       - run: vp exec playwright install --with-deps chromium
+        if: matrix.runtime != 'aws'
+        timeout-minutes: 10
       - run: vp run test:${{ matrix.runtime }}
