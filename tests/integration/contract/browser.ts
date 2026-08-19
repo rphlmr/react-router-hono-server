@@ -3,6 +3,11 @@ import { expect, test } from "vite-plus/test";
 
 import type { FixtureApp } from "../../helpers/fixture";
 
+function launchBrowser() {
+  const channel = process.env.RRHS_PLAYWRIGHT_CHANNEL;
+  return chromium.launch(channel ? { channel } : undefined);
+}
+
 export function registerProductionBrowserTests(getApp: () => FixtureApp) {
   test("hydrates, interacts, navigates, submits actions, and loads assets in Chromium", async () => {
     await assertProductionBrowserBehavior(getApp());
@@ -10,7 +15,7 @@ export function registerProductionBrowserTests(getApp: () => FixtureApp) {
 }
 
 export async function assertProductionBrowserBehavior(app: FixtureApp) {
-  const browser = await chromium.launch();
+  const browser = await launchBrowser();
   const page = await browser.newPage();
   const errors: string[] = [];
   page.on("console", (message) => {
@@ -41,7 +46,7 @@ export async function assertProductionBrowserBehavior(app: FixtureApp) {
 
 export function registerDevBrowserTests(getApp: () => FixtureApp) {
   test("applies browser HMR without reloading or losing state", async () => {
-    const browser = await chromium.launch();
+    const browser = await launchBrowser();
     const page = await browser.newPage();
     const messages: string[] = [];
     page.on("console", (message) => messages.push(`${message.type()}: ${message.text()}`));

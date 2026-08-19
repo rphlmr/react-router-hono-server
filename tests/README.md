@@ -220,7 +220,7 @@ The complete suite requires:
 Install the browser with:
 
 ```sh
-pnpm exec playwright install chromium
+pnpm exec playwright install --only-shell chromium
 ```
 
 Runtime coverage is not silently skipped.

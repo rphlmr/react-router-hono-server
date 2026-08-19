@@ -44,6 +44,7 @@ jobs:
             runtime: aws
     env:
       RRHS_LATEST_COMPATIBLE: "1"
+      RRHS_PLAYWRIGHT_CHANNEL: chrome
     steps:
       - uses: actions/checkout@v7
       - uses: voidzero-dev/setup-vp@313600b80b104eadebb9111787d37a2e83e014ca # v1.17.0
@@ -59,7 +60,4 @@ jobs:
         with:
           deno-version: latest
       - run: vp install
-      - run: vp exec playwright install --with-deps chromium
-        if: matrix.runtime != 'aws'
-        timeout-minutes: 10
       - run: vp run test:${{ matrix.runtime }}
