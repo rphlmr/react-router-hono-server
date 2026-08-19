@@ -23,9 +23,9 @@ test("serves callback documents statically and falls back to runtime SSR", async
   const response = await fixture.app.fetch("/loader");
   expect(response.status).toBe(200);
   expect(response.headers.get("content-length")).toBe(
-    String(Buffer.byteLength(fixture.callback.loaderHtml)),
+    String(Buffer.byteLength(fixture.withoutBasename.callback.loaderHtml)),
   );
-  expect(await response.text()).toBe(fixture.callback.loaderHtml);
+  expect(await response.text()).toBe(fixture.withoutBasename.callback.loaderHtml);
 
   const rootResponse = await fixture.app.fetch("/");
   expect(rootResponse.status).toBe(200);
