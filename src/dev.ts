@@ -12,6 +12,7 @@ import { pathToFileURL } from "node:url";
 import type { Runtime } from "./types/runtime";
 
 import { isReactRouterBuildRequest } from "./react-router-build-request";
+import { classifyVitePublicPath, vitePathnamePrefix } from "./vite-public-path";
 
 type MetaEnv<T> = {
   [K in keyof T as `import.meta.env.${string & K}`]: T[K];
@@ -127,6 +128,9 @@ export function reactRouterHonoServer(options: ReactRouterHonoServerPluginOption
           "import.meta.env.REACT_ROUTER_HONO_SERVER_RUNTIME": JSON.stringify(runtime),
           "import.meta.env.REACT_ROUTER_HONO_SERVER_BASENAME": JSON.stringify(
             pluginConfig.basename,
+          ),
+          "import.meta.env.REACT_ROUTER_HONO_SERVER_VITE_BASE": JSON.stringify(
+            pluginConfig.viteBase,
           ),
         } satisfies MetaEnv<ReactRouterHonoServerEnv>,
         ssr: {
@@ -276,33 +280,30 @@ export function reactRouterHonoServer(options: ReactRouterHonoServerPluginOption
       }
 
       // Create and apply the Hono dev server plugin
+      const vitePrefix = vitePathnamePrefix(classifyVitePublicPath(pluginConfig.viteBase));
+      const appDirectory = pluginConfig.appDirectory
+        .replace(/^[/\\]+|[/\\]+$/g, "")
+        .replaceAll(/[/\\]+/g, "/");
+      const sourceDirectory = appDirectory.split("/")[0];
+      const appPath = `${vitePrefix}/${appDirectory}`;
+      const sourcePath = `${vitePrefix}/${sourceDirectory}`;
+      const escapedAppPath = escapeRegExp(appPath);
+      const escapedSourcePath = escapeRegExp(sourcePath);
+      const escapedVitePrefix = escapeRegExp(vitePrefix);
+
       devServerPlugin = honoDevServer({
         adapter,
         injectClientScript: false,
         entry: pluginConfig.serverEntryPoint,
         export: options.dev?.export || "default",
         exclude: [
-          new RegExp(
-            `^(?=\\/${pluginConfig.appDirectory.replace(/^[/\\]+|[/\\]+$/g, "").replaceAll(/[/\\]+/g, "/")}\\/)((?!.*\\.data(\\?|$)).*\\..*(\\?.*)?$)`,
-          ),
-          new RegExp(
-            `^(?=\\/${
-              pluginConfig.appDirectory
-                .replace(/^[/\\]+|[/\\]+$/g, "")
-                .replaceAll(/[/\\]+/g, "/")
-                .split("/")[0]
-            }\\/)((?!.*\\.data(\\?|$)).*\\..*(\\?.*)?$)`,
-          ),
+          new RegExp(`^(?=${escapedAppPath}\\/)((?!.*\\.data(\\?|$)).*\\..*(\\?.*)?$)`),
+          new RegExp(`^(?=${escapedSourcePath}\\/)((?!.*\\.data(\\?|$)).*\\..*(\\?.*)?$)`),
           /\?import(\?.*)?$/,
-          /^\/@.+$/,
-          /^\/node_modules\/.*/,
-          `^(?=\\/${pluginConfig.appDirectory.replace(/^[/\\]+|[/\\]+$/g, "").replace(/[/\\]+/g, "/")}/**/.*/**)`,
-          `^(?=\\/${
-            pluginConfig.appDirectory
-              .replace(/^[/\\]+|[/\\]+$/g, "")
-              .replace(/[/\\]+/g, "/")
-              .split("/")[0]
-          }/**/.*/**)`,
+          new RegExp(`^${escapedVitePrefix}\\/@.+$`),
+          new RegExp(`^${escapedVitePrefix}\\/node_modules\\/.*`),
+          `^(?=${appPath}/**/.*/**)`,
+          `^(?=${sourcePath}/**/.*/**)`,
           ...(pluginConfig.dev?.exclude || []),
         ],
       });
@@ -404,6 +405,7 @@ function resolvePluginConfig(config: UserConfig, options: ReactRouterHonoServerP
   const serverEntryPoint = options.serverEntryPoint || findDefaultServerEntry(appDirectory);
   const serverBuildFile = reactRouterConfig.serverBuildFile;
   const basename = reactRouterConfig.basename;
+  const viteBase = config.base ?? "/";
 
   return {
     rootDirectory,
@@ -415,12 +417,17 @@ function resolvePluginConfig(config: UserConfig, options: ReactRouterHonoServerP
     dev: options.dev,
     serverBuildFile,
     basename,
+    viteBase,
   };
 }
 
 type PluginConfig = ReturnType<typeof resolvePluginConfig>;
 
 let warned = false;
+
+function escapeRegExp(value: string): string {
+  return value.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+}
 
 function findDefaultServerEntry(appDirectory: string): string {
   const fileWay = `${appDirectory}/server.ts`;

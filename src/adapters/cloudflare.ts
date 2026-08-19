@@ -22,6 +22,12 @@ import {
   importBuild,
 } from "../helpers";
 import { cache } from "../middleware";
+import {
+  classifyVitePublicPath,
+  stripVitePathnamePrefix,
+  type VitePublicPath,
+  viteGeneratedAssetsRoute,
+} from "../vite-public-path";
 
 export { createGetLoadContext };
 
@@ -61,6 +67,7 @@ export async function createHonoServer<E extends Env = BlankEnv>(options?: HonoS
   };
   const mode = getBuildMode();
   const PRODUCTION = mode === "production";
+  const vitePublicPath = classifyVitePublicPath(import.meta.env.REACT_ROUTER_HONO_SERVER_VITE_BASE);
   const app = new Hono<E>(mergedOptions.app);
   const { upgradeWebSocket } = await createWebSocket({
     app,
@@ -77,9 +84,9 @@ export async function createHonoServer<E extends Env = BlankEnv>(options?: HonoS
    */
   app.use(
     // https://developers.cloudflare.com/workers/static-assets/binding/#experimental_serve_directly
-    `/${import.meta.env.REACT_ROUTER_HONO_SERVER_ASSETS_DIR}/*`,
+    viteGeneratedAssetsRoute(vitePublicPath, import.meta.env.REACT_ROUTER_HONO_SERVER_ASSETS_DIR),
     cache(60 * 60 * 24 * 365), // 1 year
-    serveCloudflareAssets(),
+    serveCloudflareAssets(vitePublicPath),
   );
 
   /**
@@ -165,7 +172,7 @@ let warned = false;
  *
  * https://github.com/sergiodxa/remix-hono/blob/main/src/cloudflare.ts
  */
-function serveCloudflareAssets() {
+function serveCloudflareAssets(vitePublicPath?: VitePublicPath) {
   return createMiddleware(async (c, next) => {
     const binding = c.env?.ASSETS as Fetcher | undefined;
 
@@ -182,8 +189,12 @@ function serveCloudflareAssets() {
     let response: Response;
 
     try {
+      const url = new URL(c.req.url);
+      if (vitePublicPath) {
+        url.pathname = stripVitePathnamePrefix(url.pathname, vitePublicPath);
+      }
       response = (await binding.fetch(
-        c.req.url,
+        url.toString(),
         c.req.raw.clone() as unknown as RequestInit,
       )) as unknown as globalThis.Response;
     } catch {

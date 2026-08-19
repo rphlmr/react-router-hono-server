@@ -19,7 +19,15 @@ const REPO_ROOT = path.resolve(fileURLToPath(new URL("../..", import.meta.url)))
 const SKIP_COPY_DIRS = new Set(["node_modules", "build", ".react-router"]);
 const ARTIFACT_DIRECTORY = path.join(REPO_ROOT, "out", "test-artifacts");
 
-export type FixtureName = "basic" | "prerendered";
+export type FixtureName =
+  | "basic"
+  | "prerendered"
+  | "vite-base-root-documents"
+  | "vite-base-same-prefix"
+  | "vite-base-nested-documents"
+  | "vite-base-full-url"
+  | "vite-base-relative-empty"
+  | "vite-base-relative-dot";
 
 export class FixtureApp {
   readonly name: FixtureName;
@@ -156,6 +164,19 @@ async function createPreparedFixture(name: FixtureName, runtime: RuntimeName) {
       await cp(path.join(REPO_ROOT, "tests/fixtures/overlays", runtime), cwd, { recursive: true });
     }
 
+    const viteBase = viteBaseForFixture(name);
+    if (viteBase !== undefined) {
+      const viteConfigPath = path.join(cwd, "vite.config.ts");
+      const viteConfig = await readFile(viteConfigPath, "utf8");
+      await writeFile(
+        viteConfigPath,
+        viteConfig.replace(
+          "defineConfig({",
+          `defineConfig({\n  base: ${JSON.stringify(viteBase)},`,
+        ),
+      );
+    }
+
     const launcher = getLauncher(runtime);
     const artifact = await findPackageArtifact();
     let packageSource = artifact;
@@ -199,6 +220,24 @@ async function createPreparedFixture(name: FixtureName, runtime: RuntimeName) {
   } catch (error) {
     await rm(cwd, { recursive: true, force: true });
     throw error;
+  }
+}
+
+function viteBaseForFixture(name: FixtureName): string | undefined {
+  switch (name) {
+    case "vite-base-root-documents":
+    case "vite-base-same-prefix":
+    case "vite-base-nested-documents":
+      return "/v2/";
+    case "vite-base-full-url":
+      return "https://cdn.example.com/v2/";
+    case "vite-base-relative-empty":
+      return "";
+    case "vite-base-relative-dot":
+      return "./";
+    case "basic":
+    case "prerendered":
+      return undefined;
   }
 }
 

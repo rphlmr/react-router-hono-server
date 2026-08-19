@@ -23,6 +23,11 @@ import {
 } from "../helpers";
 import { cache } from "../middleware";
 import { isReactRouterBuildRequest } from "../react-router-build-request";
+import {
+  classifyVitePublicPath,
+  composeViteAssetRewriteRequestPath,
+  viteGeneratedAssetsRoute,
+} from "../vite-public-path";
 
 export { createGetLoadContext };
 
@@ -103,6 +108,7 @@ export async function createHonoServer<E extends Env = BlankEnv>(options?: HonoS
   const mode = getBuildMode();
   const PRODUCTION = mode === "production";
   const clientBuildPath = `${import.meta.env.REACT_ROUTER_HONO_SERVER_BUILD_DIRECTORY}/client`;
+  const vitePublicPath = classifyVitePublicPath(import.meta.env.REACT_ROUTER_HONO_SERVER_VITE_BASE);
 
   // Store the shutdown callback for use in shutdown()
   if (PRODUCTION && mergedOptions.onGracefulShutdown) {
@@ -129,12 +135,18 @@ export async function createHonoServer<E extends Env = BlankEnv>(options?: HonoS
    */
   if (!isReactRouterBuildRequest()) {
     const { serveStatic } = await import("hono/bun");
+    const rewriteClientAssetsPath: NonNullable<ServeStaticOptions<E>["rewriteRequestPath"]> =
+      composeViteAssetRewriteRequestPath(
+        vitePublicPath,
+        mergedOptions.serveStaticOptions?.clientAssets?.rewriteRequestPath,
+      );
     app.use(
-      `/${import.meta.env.REACT_ROUTER_HONO_SERVER_ASSETS_DIR}/*`,
+      viteGeneratedAssetsRoute(vitePublicPath, import.meta.env.REACT_ROUTER_HONO_SERVER_ASSETS_DIR),
       cache(60 * 60 * 24 * 365), // 1 year
       serveStatic({
         root: clientBuildPath,
         ...mergedOptions.serveStaticOptions?.clientAssets,
+        rewriteRequestPath: rewriteClientAssetsPath,
       }),
     );
 
