@@ -21,7 +21,7 @@ jobs:
           fetch-depth: 0
           ref: ${{ github.event.pull_request.head.ref }}
       - name: Update PR
-        uses: StafflinePeoplePlus/dependabot-changesets@v0.1.0
+        uses: StafflinePeoplePlus/dependabot-changesets@v0.1.5
         with:
           owner: ${{ github.repository_owner }}
           repo: ${{ github.event.repository.name }}
