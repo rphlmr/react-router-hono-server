@@ -119,7 +119,7 @@
     "@arethetypeswrong/cli": "0.18.5",
     "@changesets/changelog-github": "1.0.0",
     "@changesets/cli": "3.0.0",
-    "@cloudflare/workers-types": "5.20260817.1",
+    "@cloudflare/workers-types": "5.20260819.1",
     "@playwright/test": "1.62.1",
     "@types/bun": "1.3.14",
     "@types/deno": "2.7.0",
