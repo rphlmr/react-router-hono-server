@@ -11,7 +11,7 @@ Upgrade the application to:
 - React Router 8.3 or newer
 - Vite 8
 - Hono 4
-- Bun 1.3 when using Bun, or Deno 2 when using Deno
+- Bun 1.4 when using Bun, or Deno 2 when using Deno
 - the current supported-major Cloudflare Vite plugin and Wrangler 4 for Workers
 
 `@hono/node-server` 2 is now installed as an implementation dependency of this package. Remove it from the application's dependencies unless application code imports it directly.
