@@ -20,8 +20,11 @@ jobs:
         with:
           node-version: latest
           cache: true
-      - run: vp install
-      - run: vp run typecheck
+      - name: Install latest dependencies and compatible peers
+        run: |
+          vp update --latest
+          vp add --save-dev $(node -p 'Object.entries(require("./package.json").peerDependencies).map(([name, range]) => name + "@" + range).join(" ")')
+      - run: vp run check
       - run: vp run test:package
       - run: vp run test:unit
 
@@ -59,5 +62,8 @@ jobs:
         if: matrix.runtime == 'deno'
         with:
           deno-version: latest
-      - run: vp install
+      - name: Install latest dependencies and compatible peers
+        run: |
+          vp update --latest
+          vp add --save-dev $(node -p 'Object.entries(require("./package.json").peerDependencies).map(([name, range]) => name + "@" + range).join(" ")')
       - run: vp run test:${{ matrix.runtime }}

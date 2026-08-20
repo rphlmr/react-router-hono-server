@@ -32,7 +32,7 @@ jobs:
           node-version: "24"
           cache: true
       - run: vp install
-      - run: vp run typecheck
+      - run: vp run check
       - run: vp run test:package
 
   node:
@@ -82,6 +82,7 @@ jobs:
     name: Deno
     runs-on: ubuntu-latest
     env:
+      CHOKIDAR_USEPOLLING: "1"
       RRHS_PLAYWRIGHT_CHANNEL: chrome
     steps:
       - uses: actions/checkout@v7
