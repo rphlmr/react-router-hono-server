@@ -82,6 +82,7 @@ jobs:
     name: Deno
     runs-on: ubuntu-latest
     env:
+      CHOKIDAR_USEPOLLING: "1"
       RRHS_PLAYWRIGHT_CHANNEL: chrome
     steps:
       - uses: actions/checkout@v7
