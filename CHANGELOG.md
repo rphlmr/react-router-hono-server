@@ -1,5 +1,21 @@
 # react-router-hono-server
 
+## 4.1.1
+
+### Patch Changes
+
+- [#263](https://github.com/rphlmr/react-router-hono-server/pull/263) [`1c7cd5a`](https://github.com/rphlmr/react-router-hono-server/commit/1c7cd5a82b0e0825d024b85ac306ac687f49a970) Thanks [@dependabot](https://github.com/apps/dependabot)! - Bump @changesets/cli from 3.0.0 to 3.0.1
+
+- [#259](https://github.com/rphlmr/react-router-hono-server/pull/259) [`3c6b3d4`](https://github.com/rphlmr/react-router-hono-server/commit/3c6b3d45436d1686326c0a292206f91af66c291e) Thanks [@dependabot](https://github.com/apps/dependabot)! - Bump @cloudflare/workers-types from 5.20260817.1 to 5.20260819.1
+
+- [#264](https://github.com/rphlmr/react-router-hono-server/pull/264) [`d54034b`](https://github.com/rphlmr/react-router-hono-server/commit/d54034bff8fa5b9d4eb2e52e03e4d430562d40e3) Thanks [@rphlmr](https://github.com/rphlmr)! - Bump @vitest/coverage-v8 from 4.1.10 to 4.1.11
+
+- [#263](https://github.com/rphlmr/react-router-hono-server/pull/263) [`1c7cd5a`](https://github.com/rphlmr/react-router-hono-server/commit/1c7cd5a82b0e0825d024b85ac306ac687f49a970) Thanks [@dependabot](https://github.com/apps/dependabot)! - Bump hono from 4.13.2 to 4.13.3
+
+- [#263](https://github.com/rphlmr/react-router-hono-server/pull/263) [`1c7cd5a`](https://github.com/rphlmr/react-router-hono-server/commit/1c7cd5a82b0e0825d024b85ac306ac687f49a970) Thanks [@dependabot](https://github.com/apps/dependabot)! - Bump publint from 0.3.23 to 0.3.24
+
+- [#263](https://github.com/rphlmr/react-router-hono-server/pull/263) [`1c7cd5a`](https://github.com/rphlmr/react-router-hono-server/commit/1c7cd5a82b0e0825d024b85ac306ac687f49a970) Thanks [@dependabot](https://github.com/apps/dependabot)! - Bump vitest from 4.1.10 to 4.1.11
+
 ## 4.1.0
 
 ### Minor Changes
