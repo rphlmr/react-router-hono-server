@@ -1,6 +1,6 @@
 {
   "name": "react-router-hono-server",
-  "version": "4.0.3",
+  "version": "4.1.0",
   "description": "The Vite plugin you need to create a Hono server for your React Router app in less than 10 seconds.",
   "homepage": "https://github.com/rphlmr/react-router-hono-server#readme",
   "bugs": {

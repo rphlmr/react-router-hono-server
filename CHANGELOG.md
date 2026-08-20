@@ -1,5 +1,11 @@
 # react-router-hono-server
 
+## 4.1.0
+
+### Minor Changes
+
+- [#253](https://github.com/rphlmr/react-router-hono-server/pull/253) [`d1c5867`](https://github.com/rphlmr/react-router-hono-server/commit/d1c58677328e53e2cc645ef024e1f9fdf642c3df) Thanks [@rphlmr](https://github.com/rphlmr)! - feat: ✨ support bun 1.4.0
+
 ## 4.0.3
 
 ### Patch Changes
