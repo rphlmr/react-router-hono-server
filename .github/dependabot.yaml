@@ -16,3 +16,12 @@ updates:
     # Restrict updates to direct deps to avoid failing runs (e.g. vite transitive attempts).
     allow:
       - dependency-type: "direct"
+    groups:
+      dependencies:
+        dependency-type: "production"
+        patterns:
+          - "*"
+      dev-dependencies:
+        dependency-type: "development"
+        patterns:
+          - "*"
