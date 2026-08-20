@@ -3,8 +3,9 @@ import type { Env, Hono } from "hono";
 import type { UpgradeWebSocket } from "hono/ws";
 import type { IncomingMessage, Server, createServer } from "node:http";
 import type { Http2SecureServer, Http2Server } from "node:http2";
+import type { Duplex } from "node:stream";
 import type { ServerBuild } from "react-router";
-import type { WebSocketServer } from "ws";
+import type * as WsModule from "ws";
 
 import { createMiddleware } from "hono/factory";
 
@@ -13,6 +14,8 @@ import type { Runtime } from "./types/runtime";
 
 type NodeServer = Server | Http2Server | Http2SecureServer;
 
+type UpgradeListener = (request: IncomingMessage, socket: Duplex, head: Buffer) => void;
+
 type BunServeOptions = Bun.Serve.Options<unknown, string>;
 
 type AnyServer = NodeServer | BunServeOptions;
@@ -20,7 +23,7 @@ type AnyServer = NodeServer | BunServeOptions;
 interface WebSocket {
   upgradeWebSocket: UpgradeWebSocket;
   injectWebSocket: <Server extends AnyServer>(server: Server) => Server;
-  nodeWebSocket?: { server: WebSocketServer };
+  nodeWebSocket?: { server: WsModule.WebSocketServer };
 }
 
 const defaultWebSocket = {
@@ -32,6 +35,15 @@ type Config = { app: Hono<any>; enabled: boolean };
 
 async function importNodeWebSocket(runtime: Runtime, mode: "development" | "production") {
   try {
+    if (runtime === "bun" && typeof Bun !== "undefined") {
+      // Bun replaces the bare `ws` import with a compatibility shim that cannot
+      // attach to Vite's HTTP server. Load the installed Node implementation explicitly.
+      const { createRequire } = await import("node:module");
+      const require = createRequire(import.meta.url);
+      const entry = require.resolve("ws/package.json").replace(/package\.json$/, "index.js");
+      return require(entry) as typeof WsModule;
+    }
+
     return await import("ws");
   } catch (cause) {
     throw new Error(
@@ -152,14 +164,10 @@ export function attachWebSocketToVite(
 export function cleanUpgradeListeners(httpServer: ServerType) {
   const upgradeListeners = httpServer
     .listeners("upgrade")
-    .filter((listener) => listener.name !== "hmrServerWsListener");
+    .filter((listener) => listener.name !== "hmrServerWsListener") as UpgradeListener[];
 
   for (const listener of upgradeListeners) {
-    httpServer.removeListener(
-      "upgrade",
-      /* @ts-expect-error - we don't care */
-      listener,
-    );
+    httpServer.removeListener("upgrade", listener);
   }
 }
 
@@ -172,23 +180,19 @@ export function cleanUpgradeListeners(httpServer: ServerType) {
 export function patchUpgradeListener(httpServer: ServerType) {
   const upgradeListeners = httpServer
     .listeners("upgrade")
-    .filter((listener) => listener.name !== "hmrServerWsListener");
+    .filter((listener) => listener.name !== "hmrServerWsListener") as UpgradeListener[];
 
   for (const listener of upgradeListeners) {
     // remove the original listener
-    httpServer.removeListener(
-      "upgrade",
-      /* @ts-expect-error - we don't care */
-      listener,
-    );
+    httpServer.removeListener("upgrade", listener);
 
     // re-add the listener back, filtering out `vite-hmr`
-    httpServer.on("upgrade", (request, ...rest) => {
+    httpServer.on("upgrade", (request, socket, head) => {
       if (request.headers["sec-websocket-protocol"] === "vite-hmr") {
         return;
       }
 
-      return listener(request, ...rest);
+      return listener(request, socket, head);
     });
   }
 }

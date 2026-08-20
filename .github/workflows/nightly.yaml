@@ -2,7 +2,7 @@ name: Latest compatible runtimes
 
 on:
   schedule:
-    - cron: "0 3 * * *"
+    - cron: "30 3,15 * * *"
   workflow_dispatch:
 
 permissions:

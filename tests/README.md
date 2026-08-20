@@ -213,7 +213,7 @@ It does not modify the repository lockfile.
 The complete suite requires:
 
 - Node.js and pnpm;
-- Bun;
+- Bun 1.4 or newer;
 - Deno;
 - Playwright Chromium and its system dependencies.
 
