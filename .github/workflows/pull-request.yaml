@@ -32,7 +32,7 @@ jobs:
           node-version: "24"
           cache: true
       - run: vp install
-      - run: vp run typecheck
+      - run: vp run check
       - run: vp run test:package
 
   node:
