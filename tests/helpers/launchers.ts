@@ -44,7 +44,7 @@ export const runtimeDefinitions = {
     scripts: {
       ...commonScripts,
       build: "bunx --bun react-router build",
-      dev: "bun run --bun vite",
+      dev: "bunx --bun vite",
       start: "bun ./build/server/index.js",
     },
     environment: {},
