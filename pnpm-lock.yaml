@@ -50,8 +50,8 @@ importers:
         specifier: 3.0.0
         version: 3.0.0
       '@cloudflare/workers-types':
-        specifier: 5.20260817.1
-        version: 5.20260817.1
+        specifier: 5.20260819.1
+        version: 5.20260819.1
       '@playwright/test':
         specifier: 1.62.1
         version: 1.62.1
@@ -332,8 +332,8 @@ packages:
     resolution: {integrity: sha512-y7/yvZ2TPAnR9+jnc00klvNNLkJiXFFrQA/hlLCcxA9a2A4zQIOimyFQ9XfwYKiGD1fb5GY8vbKIIgO8d5Tb2A==}
     engines: {node: '>= 20.12.0'}
 
-  '@cloudflare/workers-types@5.20260817.1':
-    resolution: {integrity: sha512-5Dv+cyjusBTPLMRedUCiLJu3zqeeupgyn1QcHmpHJV9k/TjQAxx79AO8RVtpjVaO2CB+Oh3ywAp1UuNpbyDjGQ==}
+  '@cloudflare/workers-types@5.20260819.1':
+    resolution: {integrity: sha512-nUoWrl+16WfocHgXAARAvpQ7dLMF4tSmTvvgLLg5clYhP2j8CYerZ2KC8agnlWHqOAKp45B3F+LcsjNZrZyiRA==}
 
   '@colors/colors@1.5.0':
     resolution: {integrity: sha512-ooWCrlZP11i8GImSjTHYHLkvFDP48nS4+204nGb1RiX/WXYHmJA2III9/e2DWVabCESdW7hBAEzHRqUn9OUVvQ==}
@@ -2716,7 +2716,7 @@ snapshots:
       fast-wrap-ansi: 0.2.2
       sisteransi: 1.0.5
 
-  '@cloudflare/workers-types@5.20260817.1': {}
+  '@cloudflare/workers-types@5.20260819.1': {}
 
   '@colors/colors@1.5.0':
     optional: true
