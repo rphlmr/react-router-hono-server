@@ -75,6 +75,11 @@ jobs:
       - uses: oven-sh/setup-bun@v2
         with:
           bun-version: "1.x"
+      - name: Runtime diagnostics
+        run: |
+          echo "Bun version: $(bun --version)"
+          echo "Bun revision: $(bun --revision)"
+          uname -a
       - run: vp install
       - run: vp run test:bun
 

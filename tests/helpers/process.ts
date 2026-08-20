@@ -164,15 +164,28 @@ export async function waitForHttp(
   let lastError: unknown;
 
   while (Date.now() < deadline) {
-    if (options.process && options.process.child.exitCode !== null) {
-      throw new Error(`Process exited before ${url} became ready.\n\n${options.logs?.() ?? ""}`);
+    if (
+      options.process &&
+      (options.process.child.exitCode !== null || options.process.child.signalCode !== null)
+    ) {
+      const { exitCode, signalCode } = options.process.child;
+      throw new Error(
+        [
+          `Process exited before ${url} became ready.`,
+          `exitCode=${String(exitCode)} signalCode=${String(signalCode)}`,
+          options.logs?.(),
+        ]
+          .filter(Boolean)
+          .join("\n\n"),
+      );
     }
     try {
-      await fetch(url, {
+      const response = await fetch(url, {
         redirect: "manual",
         headers: { "user-agent": BROWSER_UA },
-        signal: AbortSignal.timeout(1_000),
+        signal: AbortSignal.timeout(5_000),
       });
+      await response.body?.cancel();
       return;
     } catch (error) {
       lastError = error;
@@ -182,7 +195,16 @@ export async function waitForHttp(
 
   const logs = options.logs?.();
   const detail = lastError instanceof Error ? lastError.message : String(lastError);
-  throw new Error([`Timed out waiting for ${url}: ${detail}`, logs].filter(Boolean).join("\n\n"));
+  const processState = options.process
+    ? [
+        `pid=${String(options.process.child.pid)}`,
+        `exitCode=${String(options.process.child.exitCode)}`,
+        `signalCode=${String(options.process.child.signalCode)}`,
+      ].join(" ")
+    : "no tracked process";
+  throw new Error(
+    [`Timed out waiting for ${url}: ${detail}`, processState, logs].filter(Boolean).join("\n\n"),
+  );
 }
 
 function appendBounded(current: string, chunk: string) {
