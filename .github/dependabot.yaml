@@ -4,10 +4,14 @@ updates:
     directory: "/"
     schedule:
       interval: "weekly"
+    cooldown:
+      default-days: 1
   - package-ecosystem: "npm"
     directory: "/"
     schedule:
       interval: "weekly"
+    cooldown:
+      default-days: 1
     # Dependabot cannot update transitive deps with pnpm lockfiles.
     # Restrict updates to direct deps to avoid failing runs (e.g. vite transitive attempts).
     allow:
