@@ -96,7 +96,7 @@
     "release": "changeset publish",
     "test": "vp test run",
     "test:aws": "pnpm test:prepare && vp test run --project runtime tests/integration/aws",
-    "test:bun": "pnpm test:prepare && vp test run --project runtime tests/integration/bun --no-file-parallelism",
+    "test:bun": "pnpm test:prepare && vp test run --project runtime tests/integration/bun",
     "test:cloudflare": "pnpm test:prepare && vp test run --project runtime tests/integration/cloudflare",
     "test:cov": "vp test run --coverage",
     "test:deno": "pnpm test:prepare && vp test run --project runtime tests/integration/deno",

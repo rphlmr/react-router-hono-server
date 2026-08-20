@@ -52,11 +52,20 @@ export class ManagedProcess {
 
   async stop(timeoutMs = 5_000) {
     const { pid } = this.child;
-    if (pid && this.child.exitCode === null) {
-      killProcessTree(pid, "SIGTERM");
-      const exited = await waitForExit(this.child, timeoutMs);
-      if (!exited && this.child.exitCode === null) {
+    if (pid) {
+      let exited = this.child.exitCode !== null || this.child.signalCode !== null;
+      if (!exited) {
+        killProcessTree(pid, "SIGTERM");
+        exited = await waitForExit(this.child, timeoutMs);
+      }
+      if (process.platform !== "win32") {
+        // The launcher can exit before its descendants. Always clean up the detached
+        // process group so a surviving runtime cannot interfere with the next fixture.
+        killProcessGroup(pid, "SIGKILL");
+      } else if (!exited && this.child.exitCode === null) {
         killProcessTree(pid, "SIGKILL");
+      }
+      if (!exited && this.child.exitCode === null) {
         await waitForExit(this.child, 2_000);
       }
     }
@@ -197,6 +206,14 @@ function killProcessTree(pid: number, signal: NodeJS.Signals) {
     } catch {
       // already exited
     }
+  }
+}
+
+function killProcessGroup(pid: number, signal: NodeJS.Signals) {
+  try {
+    process.kill(-pid, signal);
+  } catch {
+    // already exited
   }
 }
 
