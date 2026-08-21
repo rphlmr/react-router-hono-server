@@ -72,5 +72,5 @@ jobs:
           bun --version || true
           deno --version || true
           vp --version
-          pnpm list @hono/node-server @hono/node-ws hono vite @react-router/dev react-router ws --depth 10
+          vp list --depth 10
       - run: vp run test:${{ matrix.runtime }}
