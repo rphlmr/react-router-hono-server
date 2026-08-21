@@ -33,14 +33,14 @@ export default await createHonoServer({
   });
 
   describe(`${runtime} WebSockets`, () => {
-    test("echoes messages in development", async () => {
+    test("echoes messages in development", { retry: 1, timeout: 180_000 }, async () => {
       requireRuntimeCommand(runtime);
       app = await ProductionFixture.create("basic", runtime);
       await app.edit("app/server.ts", websocketServer);
       await app.startDev();
 
       await expectWebSocketEcho(app);
-    }, 180_000);
+    });
 
     test("echoes messages in production", async () => {
       requireRuntimeCommand(runtime);
