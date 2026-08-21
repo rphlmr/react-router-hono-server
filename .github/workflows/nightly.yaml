@@ -66,11 +66,4 @@ jobs:
         run: |
           vp update --latest $(node -p 'const manifest = require("./package.json"); [...Object.keys(manifest.dependencies), ...Object.keys(manifest.devDependencies)].filter((name) => name !== "typescript" && name !== "@types/node").join(" ")')
           vp add --save-dev $(node -p 'Object.entries(require("./package.json").peerDependencies).map(([name, range]) => name + "@" + range).join(" ")')
-      - name: Runtime versions
-        run: |
-          node --version
-          bun --version || true
-          deno --version || true
-          vp --version
-          vp list --depth 10
       - run: vp run test:${{ matrix.runtime }}
