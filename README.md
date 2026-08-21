@@ -1,5 +1,7 @@
 # React Router Hono Server
 
+[![Latest compatible runtimes](https://github.com/rphlmr/react-router-hono-server/actions/workflows/nightly.yaml/badge.svg)](https://github.com/rphlmr/react-router-hono-server/actions/workflows/nightly.yaml)
+
 Run a React Router framework-mode application on Hono—without giving up the runtime you want.
 
 `react-router-hono-server` provides a Vite plugin and production adapters for Node.js, Bun, Deno, Cloudflare Workers, and AWS Lambda.
