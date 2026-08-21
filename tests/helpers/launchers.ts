@@ -43,8 +43,8 @@ export const runtimeDefinitions = {
     dependencies: { ...webSocketDependencies },
     scripts: {
       ...commonScripts,
-      build: "bunx --bun react-router build",
-      dev: "bunx --bun vite",
+      build: "bun x --bun react-router build",
+      dev: "bun x --bun vite",
       start: "bun ./build/server/index.js",
     },
     environment: {},

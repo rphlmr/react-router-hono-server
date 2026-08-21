@@ -290,8 +290,8 @@ export default await createHonoServer();
 ```json
 {
   "scripts": {
-    "build": "bunx --bun react-router build",
-    "dev": "bunx --bun vite",
+    "build": "bun x --bun react-router build",
+    "dev": "bun x --bun vite",
     "start": "bun ./build/server/index.js",
     "typecheck": "react-router typegen && tsc --noEmit"
   }
@@ -311,8 +311,8 @@ bun run start
 
 #### Bun runtime notes
 
-- `bunx --bun react-router build` runs React Router and prerendering under Bun instead of following the CLI's Node.js shebang.
-- `bunx --bun vite` forces Vite and its child processes to run with Bun.
+- `bun x --bun react-router build` runs React Router and prerendering under Bun instead of following the CLI's Node.js shebang.
+- `bun x --bun vite` forces Vite and its child processes to run with Bun.
 - React Router automatically uses its Web Streams server entry.
 - `customBunServer` forwards options to `Bun.serve`.
 - Graceful shutdown, static-file customization, and WebSockets are supported.
