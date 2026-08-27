@@ -20,6 +20,25 @@ jobs:
         with:
           fetch-depth: 0
           ref: ${{ github.event.pull_request.head.ref }}
+      - name: Setup Node.js
+        uses: actions/setup-node@v6
+        with:
+          node-version: 24
+      - name: Enable Corepack
+        run: corepack enable
+      - name: Regenerate pnpm lockfile
+        run: pnpm install --lockfile-only --ignore-scripts
+      - name: Commit pnpm lockfile
+        run: |
+          if git diff --quiet -- pnpm-lock.yaml; then
+            exit 0
+          fi
+
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add pnpm-lock.yaml
+          git commit -m "chore: regenerate pnpm lockfile"
+          git push
       - name: Update PR
         uses: StafflinePeoplePlus/dependabot-changesets@v0.1.5
         with:
