@@ -3,6 +3,8 @@ name: Add changeset to Dependabot updates
 on:
   pull_request_target:
     types: [opened, synchronize, labeled]
+    paths-ignore:
+      - ".github/workflows/dependabot-changeset.yaml"
 
 permissions:
   contents: write
