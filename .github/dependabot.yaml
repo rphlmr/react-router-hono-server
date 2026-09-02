@@ -3,13 +3,15 @@ updates:
   - package-ecosystem: "github-actions"
     directory: "/"
     schedule:
-      interval: "weekly"
+      interval: "cron"
+      cronjob: "every 3 days"
     cooldown:
       default-days: 1
   - package-ecosystem: "npm"
     directory: "/"
     schedule:
-      interval: "weekly"
+      interval: "cron"
+      cronjob: "every 3 days"
     cooldown:
       default-days: 1
     # Dependabot cannot update transitive deps with pnpm lockfiles.
