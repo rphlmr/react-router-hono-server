@@ -3,6 +3,8 @@ name: Add changeset to Dependabot updates
 on:
   pull_request_target:
     types: [opened, synchronize, labeled]
+    paths-ignore:
+      - ".github/workflows/dependabot-changeset.yaml"
 
 permissions:
   contents: write
@@ -39,23 +41,7 @@ jobs:
           git add pnpm-lock.yaml
           git commit -m "chore: regenerate pnpm lockfile"
           git push
-      - name: Check changed files
-        id: changed-files
-        env:
-          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        run: |
-          files=$(gh api \
-            "repos/${{ github.repository }}/pulls/${{ github.event.pull_request.number }}/files" \
-            --paginate \
-            --jq '.[].filename')
-
-          if [ "$files" = ".github/workflows/dependabot-changeset.yaml" ]; then
-            echo "changeset=false" >> "$GITHUB_OUTPUT"
-          else
-            echo "changeset=true" >> "$GITHUB_OUTPUT"
-          fi
       - name: Update PR
-        if: steps.changed-files.outputs.changeset == 'true'
         uses: StafflinePeoplePlus/dependabot-changesets@v0.1.5
         with:
           owner: ${{ github.repository_owner }}
