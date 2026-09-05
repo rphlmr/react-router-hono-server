@@ -1,5 +1,11 @@
 # react-router-hono-server
 
+## 4.1.3
+
+### Patch Changes
+
+- [#278](https://github.com/rphlmr/react-router-hono-server/pull/278) [`1dfb25f`](https://github.com/rphlmr/react-router-hono-server/commit/1dfb25f5ec00561bf81e4846366c178eafa74637) Thanks [@dependabot](https://github.com/apps/dependabot)! - Bump @cloudflare/workers-types from 5.20260826.1 to 5.20260902.1 in the dev-dependencies group
+
 ## 4.1.2
 
 ### Patch Changes
