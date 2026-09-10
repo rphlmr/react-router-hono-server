@@ -144,6 +144,7 @@
     "react-dom": "19.2.8",
     "typescript": "6.0.3",
     "vite-plus": "catalog:",
+    "vitest": "catalog:",
     "ws": "8.21.3"
   },
   "peerDependencies": {
