@@ -94,7 +94,7 @@
     "prepare": "vp config",
     "prepublishOnly": "pnpm run build",
     "release": "changeset publish",
-    "test": "vp test run",
+    "test": "pnpm test:suite",
     "test:aws": "pnpm test:prepare && vp test run --project runtime tests/integration/aws",
     "test:aws:nightly": "RRHS_LATEST_COMPATIBLE=1 vp run test:aws",
     "test:aws:nightly:docker": "docker build --file tests/nightly/aws/Dockerfile --tag react-router-hono-server-nightly-aws tests/nightly && docker run --rm --network=host --mount \"type=bind,source=$PWD,target=/source,readonly\" react-router-hono-server-nightly-aws",
@@ -121,39 +121,40 @@
     "version": "changeset version && vp fmt package.json CHANGELOG.md"
   },
   "dependencies": {
-    "@drizzle-team/brocli": "0.12.0",
+    "@drizzle-team/brocli": "0.12.1",
     "@hono/node-server": "2.1.1",
     "@hono/vite-dev-server": "0.26.1"
   },
   "devDependencies": {
     "@arethetypeswrong/cli": "0.18.5",
-    "@changesets/changelog-github": "1.0.0",
-    "@changesets/cli": "3.0.1",
+    "@changesets/changelog-github": "1.0.1",
+    "@changesets/cli": "3.0.2",
     "@cloudflare/workers-types": "5.20260902.1",
-    "@playwright/test": "1.62.1",
-    "@types/bun": "1.4.0",
+    "@playwright/test": "1.63.0",
+    "@types/bun": "1.4.2",
     "@types/deno": "2.7.0",
-    "@types/node": "24.13.3",
-    "@types/react-dom": "19.2.5",
+    "@types/node": "22.20.2",
+    "@types/react-dom": "19.3.0",
     "@types/ws": "8.18.1",
     "@vitest/coverage-v8": "catalog:",
-    "hono": "4.13.5",
+    "hono": "4.13.7",
     "npm-run-all": "4.1.5",
     "publint": "0.3.24",
-    "react": "19.2.8",
-    "react-dom": "19.2.8",
+    "react": "19.3.0",
+    "react-dom": "19.3.0",
     "typescript": "6.0.3",
     "vite-plus": "catalog:",
+    "vitest": "catalog:",
     "ws": "8.21.3"
   },
   "peerDependencies": {
     "@react-router/dev": "^8.3.0",
     "@types/ws": "^8.18.1",
-    "hono": "^4.13.2",
-    "react": "^19.2.8",
-    "react-dom": "^19.2.8",
-    "react-router": "^8.3.0",
-    "vite": ">=8.2.1",
+    "hono": "^4.13.7",
+    "react": "^19.3.0",
+    "react-dom": "^19.3.0",
+    "react-router": "^8.3.1",
+    "vite": ">=8.3.0",
     "ws": "^8.21.3"
   },
   "peerDependenciesMeta": {
@@ -169,5 +170,5 @@
     "deno": ">=2.0.0",
     "node": ">=24.19.0"
   },
-  "packageManager": "pnpm@11.22.0+sha512.1ff870c4c6133dfd88fb2afc46dd13d47f09c9794b438c6fdb47ca98caf3bc16381ee0be93a091b8e3824cf01f889f46d7d9e20910fb0be1ab0fb5baa80dd621"
+  "packageManager": "pnpm@12.3.4+sha512.961aa41fb077da3a04a441d9f8e15ebc0c96da8ef710b2eb67bf9ee7cb0610eabd48f1fd85f51cffe73846785fa0f87c56a3a872a1d893f8446741b5cce45457"
 }

@@ -125,10 +125,12 @@ export default defineConfig({
       clean: true,
       dts: true,
       deps: {
+        resolveDepSubpath: true,
         neverBundle: ["react", "virtual:react-router/server-build"],
       },
     },
     {
+      deps: { resolveDepSubpath: true },
       entry: ["src/cli.ts"],
       outDir: "dist",
       format: ["esm"],

@@ -4,14 +4,14 @@ updates:
     directory: "/"
     schedule:
       interval: "cron"
-      cronjob: "every 3 days"
+      cronjob: "every 2 days"
     cooldown:
       default-days: 1
   - package-ecosystem: "npm"
     directory: "/"
     schedule:
       interval: "cron"
-      cronjob: "every 3 days"
+      cronjob: "every 2 days"
     cooldown:
       default-days: 1
     # Dependabot cannot update transitive deps with pnpm lockfiles.
