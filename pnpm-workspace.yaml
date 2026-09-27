@@ -2,6 +2,9 @@ allowBuilds:
   esbuild: true
   sharp: true
   workerd: true
+# Vite+ selects the pinned pnpm version. Keep one lockfile document for Dependabot.
+# https://github.com/dependabot/dependabot-core/issues/15904
+pmOnFail: ignore
 minimumReleaseAge: 1440
 catalog:
   vite: npm:@voidzero-dev/vite-plus-core@0.3.1

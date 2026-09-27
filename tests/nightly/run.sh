@@ -33,8 +33,9 @@ fi
 
 export RRHS_LATEST_COMPATIBLE=1
 
+# Vite+, its Vite alias, and Vitest must be upgraded together with `vp migrate`.
 mapfile -t dependency_names < <(
-  node -p 'const manifest = require("./package.json"); [...Object.keys(manifest.dependencies), ...Object.keys(manifest.devDependencies)].filter((name) => name !== "typescript" && name !== "@types/node").join("\n")'
+  node -p 'const manifest = require("./package.json"); [...Object.keys(manifest.dependencies), ...Object.keys(manifest.devDependencies)].filter((name) => !["typescript", "@types/node", "vite-plus", "vitest", "@vitest/coverage-v8"].includes(name)).join("\n")'
 )
 mapfile -t peer_dependency_specs < <(
   node -p 'Object.entries(require("./package.json").peerDependencies).map(([name, range]) => name + "@" + range).join("\n")'

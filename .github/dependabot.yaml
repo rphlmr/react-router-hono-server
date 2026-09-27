@@ -4,20 +4,26 @@ updates:
     directory: "/"
     schedule:
       interval: "cron"
-      cronjob: "every 2 days"
+      cronjob: "0 6 */2 * *"
     cooldown:
       default-days: 1
   - package-ecosystem: "npm"
     directory: "/"
     schedule:
       interval: "cron"
-      cronjob: "every 2 days"
+      cronjob: "0 6 */2 * *"
     cooldown:
       default-days: 1
     # Dependabot cannot update transitive deps with pnpm lockfiles.
     # Restrict updates to direct deps to avoid failing runs (e.g. vite transitive attempts).
     allow:
       - dependency-type: "direct"
+    # Upgrade these together with `vp migrate` to preserve Vite+ version alignment.
+    ignore:
+      - dependency-name: "vite-plus"
+      - dependency-name: "vite"
+      - dependency-name: "vitest"
+      - dependency-name: "@vitest/coverage-v8"
     groups:
       dependencies:
         dependency-type: "production"
