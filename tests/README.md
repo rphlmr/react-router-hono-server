@@ -139,10 +139,17 @@ Splitting runtimes into jobs makes failures attributable to a platform and preve
 
 ### Nightly: early warning for upstream changes
 
-The `Latest compatible runtimes` workflow runs every day at 03:00 UTC and can also be started manually.
+The `Latest compatible runtimes` workflow runs every day at 03:30 and 15:30 UTC and can also be started manually.
 
-It installs the latest stable Node.js, Bun, and Deno releases, then runs package checks and each runtime suite in
+It installs the latest Node.js 24, Bun, and Deno releases, then runs package checks and each runtime suite in
 parallel jobs.
+
+The library's build toolchain stays pinned: TypeScript, Node types, Vite+, its Vite alias, Vitest, and coverage.
+Upgrade the Vite+ packages together with `vp migrate`; Dependabot also excludes them to avoid incompatible partial upgrades.
+Other direct dependencies are updated before testing.
+
+Use `vp install` to select the pnpm version pinned in `package.json`. `pmOnFail: ignore` leaves version selection to Vite+
+and keeps the lockfile readable by Dependabot. pnpm 12.7.0 also fixes proxy handling in its binary downloader.
 
 The workflow sets `RRHS_LATEST_COMPATIBLE=1`.
 
