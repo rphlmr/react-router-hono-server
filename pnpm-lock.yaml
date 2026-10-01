@@ -29,10 +29,10 @@ importers:
         version: 0.12.1
       '@hono/node-server':
         specifier: 2.1.1
-        version: 2.1.1(hono@4.13.9)
+        version: 2.1.1(hono@4.13.11)
       '@hono/vite-dev-server':
         specifier: 0.26.1
-        version: 0.26.1(hono@4.13.9)
+        version: 0.26.1(hono@4.13.11)
       '@react-router/dev':
         specifier: ^8.3.0
         version: 8.3.0(@voidzero-dev/vite-plus-core@0.3.1(@arethetypeswrong/core@0.18.5)(@types/node@24.13.3)(publint@0.3.24)(typescript@6.0.3)(yaml@2.9.0))(react-router@8.3.1(react-dom@19.3.0(react@19.3.0))(react@19.3.0))(supports-color@7.2.0)(typescript@6.0.3)
@@ -53,8 +53,8 @@ importers:
         specifier: 3.0.3
         version: 3.0.3
       '@cloudflare/workers-types':
-        specifier: 5.20260927.1
-        version: 5.20260927.1
+        specifier: 5.20260930.1
+        version: 5.20260930.1
       '@playwright/test':
         specifier: 1.63.0
         version: 1.63.0
@@ -71,14 +71,14 @@ importers:
         specifier: 19.3.0
         version: 19.3.0(@types/react@19.3.0)
       '@types/ws':
-        specifier: 8.18.1
-        version: 8.18.1
+        specifier: 8.18.2
+        version: 8.18.2
       '@vitest/coverage-v8':
         specifier: 'catalog:'
         version: 4.1.11(@vitest/browser@4.1.11)(vitest@4.1.11)
       hono:
-        specifier: 4.13.9
-        version: 4.13.9
+        specifier: 4.13.11
+        version: 4.13.11
       npm-run-all:
         specifier: 4.1.5
         version: 4.1.5
@@ -338,8 +338,8 @@ packages:
     resolution: {integrity: sha512-y7/yvZ2TPAnR9+jnc00klvNNLkJiXFFrQA/hlLCcxA9a2A4zQIOimyFQ9XfwYKiGD1fb5GY8vbKIIgO8d5Tb2A==}
     engines: {node: '>= 20.12.0'}
 
-  '@cloudflare/workers-types@5.20260927.1':
-    resolution: {integrity: sha512-7/L0y4Pb8ig/8QSQW4/g4WbGyPYKniw+uC03nkN7VMvawHTWEuqeoVCKi9nOHKiya434eeEUaic2o0+vJhKjYw==}
+  '@cloudflare/workers-types@5.20260930.1':
+    resolution: {integrity: sha512-ZUHwK/kG4GD6owwHY+Le+QYq/LO+R0f8b51cE3+IXe4bcKefKWIVYYqsUrKwSTo9su1LSIxKEfqui4r7LrxU1Q==}
 
   '@colors/colors@1.5.0':
     resolution: {integrity: sha512-ooWCrlZP11i8GImSjTHYHLkvFDP48nS4+204nGb1RiX/WXYHmJA2III9/e2DWVabCESdW7hBAEzHRqUn9OUVvQ==}
@@ -788,8 +788,8 @@ packages:
   '@types/react@19.3.0':
     resolution: {integrity: sha512-N0rFCuH9YoxG9/m61l9MfpJKfmLOVU0em7ipIz6TRgSSkvReLB9vL85GB+yr8Bs5leqpvg96JSwF4ZS1s4viQg==}
 
-  '@types/ws@8.18.1':
-    resolution: {integrity: sha512-ThVF6DCVhA8kUGy+aazFQ4kXQ7E1Ty7A3ypFOe0IcJV8O/M511G99AW24irKrW56Wt44yG9+ij8FaqoBGkuBXg==}
+  '@types/ws@8.18.2':
+    resolution: {integrity: sha512-67MQl+fpWKVTT1NYdnmo3U4sc/xPo/zQBncVnI74qmQa0z/b+1g6iYqNmGCPbxO+zz2aklb08a0oHfegiVd0/w==}
 
   '@vitest/browser-preview@4.1.11':
     resolution: {integrity: sha512-iPKSE6Ibayey6HFgK1V1/aHgyhx7HSRk1YMi+lnBZGmlIiNV5Uc7xRkD9Su8RDylTxDECK23t7kTHdRKoqSYDQ==}
@@ -1488,8 +1488,8 @@ packages:
   highlight.js@10.7.3:
     resolution: {integrity: sha512-tzcUFauisWKNHaRkN4Wjl/ZA07gENAjFl3J/c480dprkGTg5EQstgaNFqBfUqCq54kZRIEcreTsAgF/m2quD7A==}
 
-  hono@4.13.9:
-    resolution: {integrity: sha512-7dMkQmZoC4E6F7AtaQSPhlWAdnBti+j7rreMZl8QB4jFiEhP9TWbGWUMi8WYzBCgmgulxuvLQupKqo+Co6Omyg==}
+  hono@4.13.11:
+    resolution: {integrity: sha512-/SMX/RQNJn7oNmFwH6DtwDqcrzZU2otm1FD6OJe2cWF6cfy/F8hq0XVBv7xW3FTJshRQwuBnXHDq2kNsdZnshg==}
     engines: {node: '>=16.9.0'}
 
   hosted-git-info@2.8.9:
@@ -2738,25 +2738,25 @@ snapshots:
       fast-wrap-ansi: 0.2.2
       sisteransi: 1.0.5
 
-  '@cloudflare/workers-types@5.20260927.1': {}
+  '@cloudflare/workers-types@5.20260930.1': {}
 
   '@colors/colors@1.5.0':
     optional: true
 
   '@drizzle-team/brocli@0.12.1': {}
 
-  '@hono/node-server@1.19.17(hono@4.13.9)':
+  '@hono/node-server@1.19.17(hono@4.13.11)':
     dependencies:
-      hono: 4.13.9
+      hono: 4.13.11
 
-  '@hono/node-server@2.1.1(hono@4.13.9)':
+  '@hono/node-server@2.1.1(hono@4.13.11)':
     dependencies:
-      hono: 4.13.9
+      hono: 4.13.11
 
-  '@hono/vite-dev-server@0.26.1(hono@4.13.9)':
+  '@hono/vite-dev-server@0.26.1(hono@4.13.11)':
     dependencies:
-      '@hono/node-server': 1.19.17(hono@4.13.9)
-      hono: 4.13.9
+      '@hono/node-server': 1.19.17(hono@4.13.11)
+      hono: 4.13.11
       minimatch: 9.0.9
 
   '@jridgewell/gen-mapping@0.3.13':
@@ -3040,7 +3040,7 @@ snapshots:
     dependencies:
       csstype: 3.2.3
 
-  '@types/ws@8.18.1':
+  '@types/ws@8.18.2':
     dependencies:
       '@types/node': 24.13.3
 
@@ -3708,7 +3708,7 @@ snapshots:
 
   highlight.js@10.7.3: {}
 
-  hono@4.13.9: {}
+  hono@4.13.11: {}
 
   hosted-git-info@2.8.9: {}
 
