@@ -1,6 +1,6 @@
 import { Hono } from "hono";
 import { execFileSync } from "node:child_process";
-import { readdir } from "node:fs/promises";
+import { readdir, readFile } from "node:fs/promises";
 import path from "node:path";
 import { describe, expect, test } from "vite-plus/test";
 
@@ -21,7 +21,12 @@ describe("packed public surface", () => {
       ),
     );
 
-    expect(manifest.dependencies["@hono/node-server"]).toBe("2.1.1");
+    const sourceManifest = JSON.parse(
+      await readFile(path.resolve(import.meta.dirname, "../../package.json"), "utf8"),
+    );
+    const nodeServerVersion = manifest.dependencies["@hono/node-server"];
+    expect(nodeServerVersion).toBe(sourceManifest.dependencies["@hono/node-server"]);
+    expect(nodeServerVersion).toMatch(/^\d+\.\d+\.\d+$/);
     expect(manifest.peerDependencies["@hono/node-server"]).toBeUndefined();
   });
 
