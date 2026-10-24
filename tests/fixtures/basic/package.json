@@ -18,13 +18,13 @@
     "react-router-hono-server": "0.0.0-test-artifact"
   },
   "devDependencies": {
-    "@cloudflare/vite-plugin": "1.54.7",
+    "@cloudflare/vite-plugin": "1.65.0",
     "@react-router/dev": "8.3.1",
-    "@types/node": "22.20.2",
+    "@types/node": "24.19.2",
     "@types/react": "19.3.0",
-    "typescript": "6.0.3",
+    "typescript": "7.0.2",
     "vite": "8.3.0",
-    "wrangler": "4.131.0"
+    "wrangler": "4.152.0"
   },
   "engines": {
     "node": ">=24.19.0"
