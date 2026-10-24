@@ -1,7 +1,8 @@
 name: Add changeset to Dependabot updates
 
+# Dependabot PRs live in this repo, so `pull_request` gets the write token below without `pull_request_target`.
 on:
-  pull_request_target:
+  pull_request:
     types: [opened, synchronize, labeled]
     paths-ignore:
       - ".github/workflows/dependabot-changeset.yaml"
@@ -19,7 +20,8 @@ jobs:
   dependabot:
     name: Update Dependabot PR
     runs-on: ubuntu-latest
-    if: github.actor == 'dependabot[bot]' && contains(github.event.pull_request.labels.*.name, 'dependencies')
+    # Gate on the PR author, not the event actor, so `@dependabot recreate` from a maintainer still runs.
+    if: github.event.pull_request.user.login == 'dependabot[bot]' && contains(github.event.pull_request.labels.*.name, 'dependencies')
 
     steps:
       - name: Checkout
