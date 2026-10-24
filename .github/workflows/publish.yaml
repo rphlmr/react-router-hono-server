@@ -1,8 +1,5 @@
 name: Publish Package to npmjs
 on:
-  release:
-    types: [published]
-  workflow_dispatch:
   push:
     branches: [main]
 
@@ -15,27 +12,30 @@ jobs:
   release:
     runs-on: ubuntu-latest
     if: github.repository_owner == 'rphlmr'
+    # npm trusted publishing is bound to this environment, which only main can deploy to.
+    environment: npm-release
     steps:
       - name: ⬇️ Checkout repo
-        uses: actions/checkout@v7
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           fetch-depth: 0
 
       - name: ⎔ Setup Vite+
-        uses: voidzero-dev/setup-vp@v1.21.1
+        uses: voidzero-dev/setup-vp@3754dd7dbdb32bd8f6d28b6043de13ad3a75f21f # v1.21.1
         with:
           node-version: "24"
-          cache: true
+          # Other workflows write the default-branch cache, so the release job never restores it.
+          cache: false
 
       - name: 📥 Install dependencies
         run: vp install
 
       - name: ⬆️ Enable npm trusted publishing
-        run: npm install -g npm@^12.0.2
+        run: npm install -g npm@12.2.1
 
       - name: 🦋 Create Release Pull Request or Publish
         id: changesets
-        uses: changesets/action@v2
+        uses: changesets/action@ae32849d5ba541f9ae29e40e22a623bc13562f51 # v2.1.2
         with:
           version-script: vp run version
           publish-script: vp run release
