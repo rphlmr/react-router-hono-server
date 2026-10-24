@@ -6,6 +6,11 @@ on:
     paths-ignore:
       - ".github/workflows/dependabot-changeset.yaml"
 
+# The opened, labeled and synchronize events fire together; run them one at a time per PR so pushes don't race.
+concurrency:
+  group: ${{ github.workflow }}-${{ github.event.pull_request.number }}
+  cancel-in-progress: false
+
 permissions:
   contents: write
   pull-requests: write
