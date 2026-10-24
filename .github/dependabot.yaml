@@ -35,6 +35,11 @@ updates:
       - dependency-name: "vite"
       - dependency-name: "vitest"
       - dependency-name: "@vitest/coverage-v8"
+      # Majors are upgraded by hand, as in the nightly workflow, so one breaking release can't block the shared PR.
+      - dependency-name: "typescript"
+        update-types: ["version-update:semver-major"]
+      - dependency-name: "@types/node"
+        update-types: ["version-update:semver-major"]
     groups:
       # Security fixes (often transitive deps) can't join the multi-ecosystem group,
       # so they share one PR of their own instead of one PR per package.
