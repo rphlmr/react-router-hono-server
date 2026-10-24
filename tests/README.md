@@ -145,7 +145,7 @@ It installs the latest Node.js 24, Bun, and Deno releases, then runs package che
 parallel jobs.
 
 The library's build toolchain stays pinned: TypeScript, Node types, Vite+, its Vite alias, Vitest, and coverage.
-Upgrade the Vite+ packages together with `vp migrate`; Dependabot also excludes them to avoid incompatible partial upgrades.
+Dependabot bumps `vite-plus` only. The Dependabot PR workflow then runs `vp migrate` to align the Vite alias, Vitest and coverage with that release.
 Other direct dependencies are updated before testing.
 
 Use `vp install` to select the pnpm version pinned in `package.json`. `pmOnFail: ignore` leaves version selection to Vite+
