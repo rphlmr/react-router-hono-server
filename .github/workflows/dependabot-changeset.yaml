@@ -29,24 +29,37 @@ jobs:
         with:
           fetch-depth: 0
           ref: ${{ github.event.pull_request.head.ref }}
-      - name: Setup Node.js
-        uses: actions/setup-node@v7
+      # Installs the vite-plus version from the catalog, so `vp migrate` targets the release Dependabot picked.
+      - name: Setup Vite+
+        uses: voidzero-dev/setup-vp@cab1ab9eaff52d4857875f4f2c016e36af8f2c76 # v1.22.0
         with:
-          node-version: 24
-      - name: Enable Corepack
-        run: corepack enable
-      - name: Regenerate pnpm lockfile
-        run: pnpm install --lockfile-only --ignore-scripts
-      - name: Commit pnpm lockfile
+          node-version: "24"
+          run-install: false
+      - name: Align Vite+ toolchain
+        env:
+          # Dependency scripts must not run with the write token.
+          npm_config_ignore_scripts: "true"
         run: |
-          if git diff --quiet -- pnpm-lock.yaml; then
+          vite_plus=$(sed -n 's/^  vite-plus: //p' pnpm-workspace.yaml)
+          if grep -q "^  vite: npm:@voidzero-dev/vite-plus-core@${vite_plus}$" pnpm-workspace.yaml; then
+            exit 0
+          fi
+
+          vp migrate --no-interactive --no-hooks --no-agent --no-editor
+          # Fixtures install plain Vite as user apps do, so keep their `vite` imports.
+          git checkout -- tests/fixtures
+      - name: Regenerate pnpm lockfile
+        run: vp install --lockfile-only --ignore-scripts
+      - name: Commit changes
+        run: |
+          if [ -z "$(git status --porcelain)" ]; then
             exit 0
           fi
 
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add pnpm-lock.yaml
-          git commit -m "chore: regenerate pnpm lockfile"
+          git add --all
+          git commit -m "chore: align Vite+ toolchain and regenerate pnpm lockfile"
           git push
       - name: Update PR
         uses: StafflinePeoplePlus/dependabot-changesets@4844c33bad364143ee39ef4150c60409f306ed21 # v0.1.5

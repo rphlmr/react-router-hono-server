@@ -29,9 +29,9 @@ updates:
     # Restrict updates to direct deps to avoid failing runs (e.g. vite transitive attempts).
     allow:
       - dependency-type: "direct"
-    # Upgrade these together with `vp migrate` to preserve Vite+ version alignment.
+    # Dependabot bumps vite-plus only. The dependabot-changeset workflow runs `vp migrate`
+    # to align the vite alias and the Vitest pins with that release.
     ignore:
-      - dependency-name: "vite-plus"
       - dependency-name: "vite"
       - dependency-name: "vitest"
       - dependency-name: "@vitest/coverage-v8"
