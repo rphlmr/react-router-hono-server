@@ -1,17 +1,28 @@
 version: 2
-updates:
-  - package-ecosystem: "github-actions"
-    directory: "/"
+
+# One open PR for all version updates (npm + GitHub Actions).
+# Dependabot refreshes it on each run until it is merged, then opens a new one.
+multi-ecosystem-groups:
+  dependencies:
     schedule:
       interval: "cron"
       cronjob: "0 6 */2 * *"
+    labels:
+      - "dependencies"
+
+updates:
+  - package-ecosystem: "github-actions"
+    directory: "/"
+    multi-ecosystem-group: "dependencies"
+    patterns:
+      - "*"
     cooldown:
       default-days: 1
   - package-ecosystem: "npm"
     directory: "/"
-    schedule:
-      interval: "cron"
-      cronjob: "0 6 */2 * *"
+    multi-ecosystem-group: "dependencies"
+    patterns:
+      - "*"
     cooldown:
       default-days: 1
     # Dependabot cannot update transitive deps with pnpm lockfiles.
@@ -25,11 +36,9 @@ updates:
       - dependency-name: "vitest"
       - dependency-name: "@vitest/coverage-v8"
     groups:
-      dependencies:
-        dependency-type: "production"
-        patterns:
-          - "*"
-      dev-dependencies:
-        dependency-type: "development"
+      # Security fixes (often transitive deps) can't join the multi-ecosystem group,
+      # so they share one PR of their own instead of one PR per package.
+      security:
+        applies-to: security-updates
         patterns:
           - "*"
