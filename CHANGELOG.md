@@ -1,5 +1,19 @@
 # react-router-hono-server
 
+## 4.1.9
+
+### Patch Changes
+
+- [#318](https://github.com/rphlmr/react-router-hono-server/pull/318) [`427aa84`](https://github.com/rphlmr/react-router-hono-server/commit/427aa8408bb155e5a9abe4fbbc561b3206574448) Thanks [@dependabot](https://github.com/apps/dependabot)! - Bump @cloudflare/workers-types from 5.20261104.1 to 5.20261110.1
+
+- [#318](https://github.com/rphlmr/react-router-hono-server/pull/318) [`427aa84`](https://github.com/rphlmr/react-router-hono-server/commit/427aa8408bb155e5a9abe4fbbc561b3206574448) Thanks [@dependabot](https://github.com/apps/dependabot)! - Bump @playwright/test from 1.64.1 to 1.65.0
+
+- [#318](https://github.com/rphlmr/react-router-hono-server/pull/318) [`427aa84`](https://github.com/rphlmr/react-router-hono-server/commit/427aa8408bb155e5a9abe4fbbc561b3206574448) Thanks [@dependabot](https://github.com/apps/dependabot)! - Bump hono from 4.13.16 to 4.13.17
+
+- [#318](https://github.com/rphlmr/react-router-hono-server/pull/318) [`427aa84`](https://github.com/rphlmr/react-router-hono-server/commit/427aa8408bb155e5a9abe4fbbc561b3206574448) Thanks [@dependabot](https://github.com/apps/dependabot)! - Bump vite-plus from 1.5.0 to 1.5.1
+
+- [#318](https://github.com/rphlmr/react-router-hono-server/pull/318) [`427aa84`](https://github.com/rphlmr/react-router-hono-server/commit/427aa8408bb155e5a9abe4fbbc561b3206574448) Thanks [@dependabot](https://github.com/apps/dependabot)! - Bump ws from 8.22.1 to 8.22.2
+
 ## 4.1.8
 
 ### Patch Changes
