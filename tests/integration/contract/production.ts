@@ -4,8 +4,10 @@ import type { FixtureApp } from "../../helpers/fixture";
 
 import { prefixBefore } from "../../helpers/stream";
 import { registerProductionBrowserTests } from "./browser";
+import { registerHttpHelperTests } from "./http";
 
 export function registerProductionTests(getApp: () => FixtureApp) {
+  registerHttpHelperTests(getApp);
   registerProductionBrowserTests(getApp);
   test("builds a React Router application", () => {
     expect(getApp().buildResult?.exitCode).toBe(0);

@@ -55,7 +55,8 @@ export function reactRouterRedirect(location: string) {
  * It follows the Single Fetch Redirect protocol, if the request path ends with `.data`.
  */
 export function redirect(c: Context, location: string) {
-  if (c.req.path.includes(".data")) {
+  // Detect the protocol before Hono decodes the path, as React Router does.
+  if (new URL(c.req.url).pathname.endsWith(".data")) {
     return reactRouterRedirect(location);
   }
 
@@ -66,7 +67,18 @@ export function redirect(c: Context, location: string) {
  * Get the current request path
  *
  * If the path ends with `.data` (React Router Single Fetch query), it will be removed.
+ * The `/_.data` suffix is normalized to `/` for root and trailing-slash routes.
  */
 export function getPath(c: Context) {
-  return c.req.path.replace(".data", "");
+  // Hono may decode an encoded suffix or underscore that React Router treats literally.
+  const pathname = new URL(c.req.url).pathname;
+  if (pathname.endsWith("/_.data")) {
+    return c.req.path.replace(/_\.data$/, "");
+  }
+
+  if (pathname.endsWith(".data")) {
+    return c.req.path.replace(/\.data$/, "");
+  }
+
+  return c.req.path;
 }

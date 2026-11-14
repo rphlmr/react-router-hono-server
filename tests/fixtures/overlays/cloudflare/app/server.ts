@@ -1,6 +1,7 @@
 import { RouterContextProvider } from "react-router";
 import { createHonoServer } from "react-router-hono-server/cloudflare";
 import { testContext } from "./load-context";
+import { httpHelpers } from "./http-helpers";
 
 type Env = {
   Variables: {
@@ -10,6 +11,7 @@ type Env = {
 
 export default await createHonoServer<Env>({
   async configure(app) {
+    app.use("*", httpHelpers);
     app.use("*", async (c, next) => {
       c.set("testValue", "from-hono");
       await next();

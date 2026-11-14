@@ -3,6 +3,7 @@ import { expect, test } from "vite-plus/test";
 import type { FixtureApp } from "../../helpers/fixture";
 
 import { registerDevBrowserTests } from "./browser";
+import { registerHttpHelperTests } from "./http";
 
 function loaderSource(message: string) {
   return `import { message as serverMessage } from "../message.server";
@@ -45,6 +46,7 @@ const DYNAMIC_ROUTE = `export default function DynamicRoute() {
 `;
 
 export function registerDevServerTests(getApp: () => FixtureApp) {
+  registerHttpHelperTests(getApp);
   test("boots the development server", async () => {
     const response = await getApp().fetch("/");
 
