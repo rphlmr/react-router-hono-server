@@ -1,6 +1,7 @@
 import { RouterContextProvider } from "react-router";
 import { createHonoServer } from "react-router-hono-server/aws-lambda";
 import { testContext } from "./load-context";
+import { httpHelpers } from "./http-helpers";
 
 type Env = {
   Variables: {
@@ -11,6 +12,7 @@ type Env = {
 const server = await createHonoServer<Env>({
   invokeMode: "default",
   async configure(app) {
+    app.use("*", httpHelpers);
     app.use("*", async (c, next) => {
       c.set("testValue", "from-hono");
       await next();
