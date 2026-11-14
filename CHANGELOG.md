@@ -1,5 +1,13 @@
 # react-router-hono-server
 
+## 4.1.10
+
+### Patch Changes
+
+- [#321](https://github.com/rphlmr/react-router-hono-server/pull/321) [`d5f027a`](https://github.com/rphlmr/react-router-hono-server/commit/d5f027a267a776046edbc2168f269f73b32261ce) Thanks [@rphlmr](https://github.com/rphlmr)! - Fix `redirect()` and `getPath()` to recognize only a trailing Single Fetch `.data` suffix and correctly normalize `/_.data` for root and trailing-slash routes. Detect suffixes on the original encoded URL so Hono's path decoding does not misclassify encoded dots, suffixes, or underscores.
+
+  Thanks @trackoor for reporting this in [#320](https://github.com/rphlmr/react-router-hono-server/issues/320).
+
 ## 4.1.9
 
 ### Patch Changes
