@@ -122,14 +122,14 @@
   },
   "dependencies": {
     "@drizzle-team/brocli": "0.12.1",
-    "@hono/node-server": "2.1.8",
+    "@hono/node-server": "2.1.9",
     "@hono/vite-dev-server": "0.26.1"
   },
   "devDependencies": {
     "@arethetypeswrong/cli": "0.18.5",
     "@changesets/changelog-github": "1.0.1",
     "@changesets/cli": "3.0.3",
-    "@cloudflare/workers-types": "5.20261116.1",
+    "@cloudflare/workers-types": "5.20261118.1",
     "@playwright/test": "1.65.1",
     "@types/bun": "1.4.4",
     "@types/deno": "2.7.0",
@@ -137,7 +137,7 @@
     "@types/react-dom": "19.3.0",
     "@types/ws": "8.18.2",
     "@vitest/coverage-v8": "catalog:",
-    "hono": "4.13.18",
+    "hono": "4.13.19",
     "npm-run-all": "4.1.5",
     "publint": "0.3.25",
     "react": "19.3.1",
